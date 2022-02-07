@@ -1,7 +1,23 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using BoardMan.Web.Data;
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
+var configuration = builder.Configuration;
+
+var connectionString = configuration.GetConnectionString("BoardManDbContextConnection"); 
+services.AddDbContext<BoardManDbContext>(options =>
+	 options.UseSqlServer(connectionString)); builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
+	  .AddEntityFrameworkStores<BoardManDbContext>();
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+services.AddControllersWithViews();
+
+services.AddAuthentication().AddGoogle(googleOptions =>
+{
+	googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
+	googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+});
 
 var app = builder.Build();
 
@@ -17,11 +33,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
 
 app.Run();
