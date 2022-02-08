@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using BoardMan.Web.Data;
 var builder = WebApplication.CreateBuilder(args);
@@ -6,9 +5,8 @@ var services = builder.Services;
 var configuration = builder.Configuration;
 
 var connectionString = configuration.GetConnectionString("BoardManDbContextConnection"); 
-services.AddDbContext<BoardManDbContext>(options =>
-	 options.UseSqlServer(connectionString)); builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
-	  .AddEntityFrameworkStores<BoardManDbContext>();
+services.AddDbContext<BoardManDbContext>(options => options.UseSqlServer(connectionString)); 
+services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<BoardManDbContext>();
 
 // Add services to the container.
 services.AddControllersWithViews();
