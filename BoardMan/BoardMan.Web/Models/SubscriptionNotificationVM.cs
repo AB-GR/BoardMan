@@ -9,6 +9,9 @@
 
     public enum SubscriptionStatus
     {
-        NoSubscription, SubscriptionAboutToExpire, SubscriptionExpiredPriosubscriptionValid, SubscriptionExpiredPriosubscriptionInValid
+        NoSubscriptionAvailable, 
+        SubscriptionValid,
+        SubscriptionAboutToExpire, 
+        SubscriptionExpired
     }
 }

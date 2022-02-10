@@ -7,18 +7,23 @@ namespace BoardMan.Web.Data;
 
 public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
 {
+    public BoardManDbContext()
+	{
+
+	}
+
     public BoardManDbContext(DbContextOptions<BoardManDbContext> options)
         : base(options)
     {
     }
 
-    public DbSet<DbSubscription> Subscriptions { get; set; }
+    public virtual DbSet<DbSubscription> Subscriptions { get; set; }
 
-    public DbSet<DbPlan> Plans { get; set; }
+    public virtual DbSet<DbPlan> Plans { get; set; }
 
-    public DbSet<DbPlanDiscount> PlanDiscounts { get; set; }
+    public virtual DbSet<DbPlanDiscount> PlanDiscounts { get; set; }
 
-    public DbSet<DbPaymentTrasaction> PaymentTransactions { get; set; }
+    public virtual DbSet<DbPaymentTrasaction> PaymentTransactions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

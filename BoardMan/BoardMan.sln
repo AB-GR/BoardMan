@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardMan.Web", "BoardMan.Web\BoardMan.Web.csproj", "{7F211078-52B8-46B9-8221-FA5CDEB91671}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoardMan.Web", "BoardMan.Web\BoardMan.Web.csproj", "{7F211078-52B8-46B9-8221-FA5CDEB91671}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardMan.Tests", "BoardMan.Tests\BoardMan.Tests.csproj", "{597A880B-E63D-4F55-9976-A4D2D603A4DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{7F211078-52B8-46B9-8221-FA5CDEB91671}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F211078-52B8-46B9-8221-FA5CDEB91671}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F211078-52B8-46B9-8221-FA5CDEB91671}.Release|Any CPU.Build.0 = Release|Any CPU
+		{597A880B-E63D-4F55-9976-A4D2D603A4DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{597A880B-E63D-4F55-9976-A4D2D603A4DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{597A880B-E63D-4F55-9976-A4D2D603A4DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{597A880B-E63D-4F55-9976-A4D2D603A4DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

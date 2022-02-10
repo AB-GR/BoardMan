@@ -19,10 +19,24 @@ namespace BoardMan.Web.Managers
 
         public async Task<SubscriptionNotificationVM> GetSubscriptionNotificationAsync(Guid userId)
         {
-            var latestSubscription = await _dbContext.Subscriptions.Where(x => x.UserId == userId && 
-            x.DeletedAt.GetValueOrDefault() == DateTime.MinValue).OrderByDescending(x => x.ExpireAt).FirstOrDefaultAsync();
+            var latestSubscription = await _dbContext.Subscriptions
+                .Where(x => x.UserId == userId && x.DeletedAt.GetValueOrDefault() == DateTime.MinValue)
+                .Include(x => x.PaymentTrasaction.Plan)
+                .OrderByDescending(x => x.ExpireAt).FirstOrDefaultAsync();			
 
-            return new SubscriptionNotificationVM ();
+			return new SubscriptionNotificationVM
+            {
+                SubscriptionStatus = latestSubscription == null ? 
+                SubscriptionStatus.NoSubscriptionAvailable :
+                    !latestSubscription.Expired ? 
+                        latestSubscription.ExpireAt.Subtract(DateTime.UtcNow).Days <= 7 ? 
+                            SubscriptionStatus.SubscriptionAboutToExpire 
+                                : SubscriptionStatus.SubscriptionValid
+                    : SubscriptionStatus.SubscriptionExpired,
+
+                PriorPlanId = latestSubscription != null && !latestSubscription.PaymentTrasaction.Plan.Expired ? 
+                                latestSubscription.PaymentTrasaction.PlanId : null
+            }; ;
         }
     }
 }
