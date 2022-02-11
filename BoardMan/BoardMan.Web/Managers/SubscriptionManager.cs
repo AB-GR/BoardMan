@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardMan.Web.Managers
 {
-    public interface ISubscriptionManaer
+    public interface ISubscriptionManager
     {
         Task<SubscriptionNotificationVM> GetSubscriptionNotificationAsync(Guid userId);
     }
 
-    public class SubscriptionManager : ISubscriptionManaer
+    public class SubscriptionManager : ISubscriptionManager
     {
         private readonly BoardManDbContext _dbContext;
 		private readonly IConfiguration configuration;
@@ -23,7 +23,7 @@ namespace BoardMan.Web.Managers
         public async Task<SubscriptionNotificationVM> GetSubscriptionNotificationAsync(Guid userId)
         {
             var latestSubscription = await _dbContext.Subscriptions
-                .Where(x => x.UserId == userId && x.DeletedAt.GetValueOrDefault() == DateTime.MinValue)
+                .Where(x => x.UserId == userId && (x.DeletedAt == null || x.DeletedAt == DateTime.MinValue))
                 .Include(x => x.PaymentTrasaction.Plan)
                 .OrderByDescending(x => x.ExpireAt).FirstOrDefaultAsync();			
 

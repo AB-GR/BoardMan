@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using BoardMan.Web.Data;
+using BoardMan.Web.Managers;
+
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var configuration = builder.Configuration;
@@ -7,6 +9,7 @@ var configuration = builder.Configuration;
 var connectionString = configuration.GetConnectionString("BoardManDbContextConnection"); 
 services.AddDbContext<BoardManDbContext>(options => options.UseSqlServer(connectionString)); 
 services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<BoardManDbContext>();
+services.AddScoped<ISubscriptionManager, SubscriptionManager>();
 
 // Add services to the container.
 services.AddControllersWithViews();
