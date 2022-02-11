@@ -3,6 +3,8 @@ using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
 using GenFu;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Primitives;
 using MockQueryable.Moq;
 using Moq;
 using System;
@@ -15,71 +17,91 @@ namespace BoardMan.Tests
 {
 	public class SubscriptionManagerTests
 	{
-		private List<AppUser> appUsers = A.ListOf<AppUser>(2);
+		private AppUser appUser = A.New<AppUser>();
 
-		[Fact]
-		public async Task GetSubscriptionNotificationAsync_Test()
+		[Theory]
+		[MemberData(nameof(Data))]
+		public async Task GetSubscriptionNotificationAsync_Test(bool validUser, 
+			bool requireSubscriptions, 
+			DateTime? subscriptionEndDate, DateTime? planEndDate, SubscriptionStatus expected, bool isPlanIdNull)
 		{
 			// arrange
-			var context = CreateDbContext();
+			var dbContext = InitializeData(requireSubscriptions, subscriptionEndDate, planEndDate);
+			var inMemorySettings = new Dictionary<string, string> {
+				{"SubscriptionAboutToExpireDays", "7"}				
+			};
 
-			var subManager = new SubscriptionManager(context.Object);
+			IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings).Build();
+
+			var subManager = new SubscriptionManager(dbContext.Object, configuration);
 
 			// act
-			var subscriptionVm = await subManager.GetSubscriptionNotificationAsync(appUsers[0].Id);
+			var subNotificationVm = await subManager.GetSubscriptionNotificationAsync(validUser ? appUser.Id : Guid.NewGuid());
 
 			// assert
-			Assert.Equal(SubscriptionStatus.NoSubscriptionAvailable, subscriptionVm.SubscriptionStatus);
+			Assert.Equal(expected, subNotificationVm.SubscriptionStatus);
+			Assert.Equal(isPlanIdNull, subNotificationVm.PriorPlanId == null);
 		}
 
-		private Mock<BoardManDbContext> CreateDbContext()
+		public static IEnumerable<object[]> Data =>
+		new List<object[]>
 		{
+			new object[] { false, false, null, null, SubscriptionStatus.NoSubscriptionAvailable, true },
+			new object[] { true, false, null, null, SubscriptionStatus.NoSubscriptionAvailable, true },
+			new object[] { true, true, DateTime.UtcNow.AddDays(5), null, SubscriptionStatus.SubscriptionAboutToExpire, false },
+			new object[] { true, true, DateTime.UtcNow.AddDays(8).AddMinutes(1), null, SubscriptionStatus.SubscriptionValid, false },
+			new object[] { true, true, DateTime.UtcNow.AddDays(5), DateTime.UtcNow.AddDays(-1), SubscriptionStatus.SubscriptionAboutToExpire, true }
+		};
+
+		private Mock<BoardManDbContext> InitializeData(bool requireSubscriptions = true, DateTime? subscriptionEndDate = null, DateTime? planEndDate = null)
+		{
+			var context = new Mock<BoardManDbContext>();
 			var planDiscounts = A.ListOf<DbPlanDiscount>(2);
 			planDiscounts.ForEach(x =>
 			{
 				x.Plan = A.New<DbPlan>();
-				x.PlanId = x.Plan.Id;
+				x.PlanId = x.Plan.Id;				
+				x.Plan.ExpireAt = planEndDate ?? DateTime.UtcNow.AddDays(1);
 			});
 
 			var plans = planDiscounts.Select(x => x.Plan).ToList();
 
-			var subscriptions = A.ListOf<DbSubscription>(2);
-			subscriptions.ForEach(x =>
+			var subscriptions = new List<DbSubscription>();
+			var paymentTransactions = new List<DbPaymentTrasaction>();
+
+			if (requireSubscriptions)
 			{
-				var i = 0;
-				x.Id = Guid.NewGuid();
-				x.UserId = appUsers[i].Id;
-				x.AppUser = appUsers[i];
-				x.PaymentTrasaction = A.New<DbPaymentTrasaction>();
-				x.PaymentTrasactionId = x.PaymentTrasaction.Id;
-				x.PaymentTrasaction.PlanDiscount = planDiscounts[i];
-				x.PaymentTrasaction.Plan = planDiscounts[i].Plan;
-				i++;
-			});
+				subscriptions = A.ListOf<DbSubscription>(2);
+				subscriptions.ForEach(x =>
+				{
+					var i = 0;
+					x.Id = Guid.NewGuid();
+					x.StartedAt = DateTime.UtcNow.AddDays(-10);
+					x.ExpireAt = subscriptionEndDate ?? DateTime.UtcNow;
+					x.UserId = appUser.Id;
+					x.AppUser = appUser;
+					x.DeletedAt = null;
+					x.PaymentTrasaction = A.New<DbPaymentTrasaction>();
+					x.PaymentTrasactionId = x.PaymentTrasaction.Id;
+					x.PaymentTrasaction.PlanDiscount = planDiscounts[i];
+					x.PaymentTrasaction.Plan = planDiscounts[i].Plan;
+					i++;
+				});
 
-			var paymentTransactions = subscriptions.Select(x => x.PaymentTrasaction).ToList();
+				paymentTransactions = subscriptions.Select(x => x.PaymentTrasaction).ToList();			
+				
+			}
+
 			Mock<DbSet<DbSubscription>> subscriptionsDbSet = subscriptions.AsQueryable().BuildMockDbSet();
-			Mock<DbSet<DbPlan>> plansDbSet = plans.AsQueryable().BuildMockDbSet();
-			Mock<DbSet<DbPlanDiscount>> plansDiscountsDbSet = planDiscounts.AsQueryable().BuildMockDbSet();
 			Mock<DbSet<DbPaymentTrasaction>> paymentTranscationsDbSet = paymentTransactions.AsQueryable().BuildMockDbSet();
-
-			var context = new Mock<BoardManDbContext>();
-			context.Setup(c => c.Subscriptions).Returns(subscriptionsDbSet.Object);
+			Mock<DbSet<DbPlan>> plansDbSet = plans.AsQueryable().BuildMockDbSet();
+			Mock<DbSet<DbPlanDiscount>> plansDiscountsDbSet = planDiscounts.AsQueryable().BuildMockDbSet();					
 			context.Setup(c => c.Plans).Returns(plansDbSet.Object);
 			context.Setup(c => c.PlanDiscounts).Returns(plansDiscountsDbSet.Object);
+			context.Setup(c => c.Subscriptions).Returns(subscriptionsDbSet.Object);
 			context.Setup(c => c.PaymentTransactions).Returns(paymentTranscationsDbSet.Object);
 
 			return context;
-		}
-
-		private static Mock<DbSet<T>> GenerateDbSet<T>(List<T> entityList) where T : class
-		{
-			var subscriptionsDbSet = new Mock<DbSet<T>>();			
-			subscriptionsDbSet.As<IQueryable<T>>().Setup(m => m.Provider).Returns(entityList.AsQueryable().Provider);
-			subscriptionsDbSet.As<IQueryable<T>>().Setup(m => m.Expression).Returns(entityList.AsQueryable().Expression);
-			subscriptionsDbSet.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(entityList.AsQueryable().ElementType);
-			subscriptionsDbSet.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(entityList.AsQueryable().GetEnumerator());
-			return subscriptionsDbSet;
 		}
 	}
 }

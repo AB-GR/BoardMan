@@ -33,7 +33,7 @@ namespace BoardMan.Web.Data
 		public string Name { get; set; }
 
 		[Required]
-		public DateTime StarteAt { get; set; }
+		public DateTime StartedAt { get; set; }
 
 		[Required]
 		public DateTime ExpireAt { get; set; }

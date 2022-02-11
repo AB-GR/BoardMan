@@ -12,10 +12,13 @@ namespace BoardMan.Web.Managers
     public class SubscriptionManager : ISubscriptionManaer
     {
         private readonly BoardManDbContext _dbContext;
-        public SubscriptionManager(BoardManDbContext dbContext)
+		private readonly IConfiguration configuration;
+
+		public SubscriptionManager(BoardManDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
-        }
+			this.configuration = configuration;
+		}
 
         public async Task<SubscriptionNotificationVM> GetSubscriptionNotificationAsync(Guid userId)
         {
@@ -29,7 +32,7 @@ namespace BoardMan.Web.Managers
                 SubscriptionStatus = latestSubscription == null ? 
                 SubscriptionStatus.NoSubscriptionAvailable :
                     !latestSubscription.Expired ? 
-                        latestSubscription.ExpireAt.Subtract(DateTime.UtcNow).Days <= 7 ? 
+                        latestSubscription.ExpireAt.Subtract(DateTime.UtcNow).Days <= this.configuration.GetValue("SubscriptionAboutToExpireDays", 7) ? 
                             SubscriptionStatus.SubscriptionAboutToExpire 
                                 : SubscriptionStatus.SubscriptionValid
                     : SubscriptionStatus.SubscriptionExpired,
