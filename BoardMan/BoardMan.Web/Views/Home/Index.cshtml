@@ -1,4 +1,5 @@
-﻿@using BoardMan.Web.Data
+﻿@using BoardMan.Web.Controllers
+@using BoardMan.Web.Data
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<AppUser> SignInManager
 @model SubscriptionNotificationVM
@@ -14,7 +15,7 @@
         if(Model.SubscriptionStatus == SubscriptionStatus.NoSubscriptionAvailable || Model.PriorPlanId == null)
         {
             <div class="lead">
-                You havent subscribed yet, please subscribe using any of these <a asp-controller="Plans" asp-action="Index">plans</a>
+                You havent subscribed yet, please subscribe using any of these <a asp-controller="@(ControllerUtils.GetControllerName<PlansController>())" asp-action="@nameof(PlansController.Index)">plans</a>
             </div>
         }
         else
@@ -22,13 +23,13 @@
             if(Model.SubscriptionStatus == SubscriptionStatus.SubscriptionAboutToExpire)
             {
                 <div>
-                    Your plan is about to expire, please renew the subscription using the same <a asp-controller="Home" asp-action="Index">plan</a> or any of these <a asp-controller="Home" asp-action="Index">plans</a>
+                    Your plan is about to expire, please renew the subscription using the same <a asp-controller="Home" asp-action="Index">plan</a> or any of these <a asp-controller="@(ControllerUtils.GetControllerName<PlansController>())" asp-action="@nameof(PlansController.Index)">plans</a>
                 </div>
             }
             else
             {
                 <div>
-                    Your plan has expired, please renew the subscription using the same <a asp-controller="Home" asp-action="Index">plan</a> or any of these <a asp-controller="Home" asp-action="Index">plans</a>
+                    Your plan has expired, please renew the subscription using the same <a asp-controller="Home" asp-action="Index">plan</a> or any of these <a asp-controller="@(ControllerUtils.GetControllerName<PlansController>())" asp-action="@nameof(PlansController.Index)">plans</a>
                 </div>
             }
         }
