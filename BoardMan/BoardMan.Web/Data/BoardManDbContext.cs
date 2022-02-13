@@ -66,6 +66,11 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
         {
             relationship.DeleteBehavior = DeleteBehavior.NoAction;
         }
+
+        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard", Cost = 99, Currency = "USD", Description = "This is the standard monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
+        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard", Cost = 948, Currency = "USD", Description = "This is the standard annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
+        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium", Cost = 299, Currency = "USD", Description = "This is the premium monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
+        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium", Cost = 3000, Currency = "USD", Description = "This is the premium annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
     }
 }
 

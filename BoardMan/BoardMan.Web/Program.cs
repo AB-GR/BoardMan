@@ -9,7 +9,9 @@ var configuration = builder.Configuration;
 var connectionString = configuration.GetConnectionString("BoardManDbContextConnection"); 
 services.AddDbContext<BoardManDbContext>(options => options.UseSqlServer(connectionString)); 
 services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<BoardManDbContext>();
+services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 services.AddScoped<ISubscriptionManager, SubscriptionManager>();
+services.AddScoped<IPlanManager, PlanManager>();
 
 // Add services to the container.
 services.AddControllersWithViews();

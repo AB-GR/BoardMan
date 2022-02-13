@@ -23,7 +23,7 @@ namespace BoardMan.Web.Managers
         public async Task<SubscriptionNotificationVM> GetSubscriptionNotificationAsync(Guid userId)
         {
             var latestSubscription = await _dbContext.Subscriptions
-                .Where(x => x.UserId == userId && (x.DeletedAt == null || x.DeletedAt == DateTime.MinValue))
+                .Where(x => x.UserId == userId && x.DeletedAt == null)
                 .Include(x => x.PaymentTrasaction.Plan)
                 .OrderByDescending(x => x.ExpireAt).FirstOrDefaultAsync();			
 

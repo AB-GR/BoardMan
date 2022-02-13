@@ -1,4 +1,5 @@
 ﻿using BoardMan.Web.Data;
+using BoardMan.Web.Extensions;
 using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
 using Microsoft.AspNetCore.Identity;
@@ -21,10 +22,8 @@ namespace BoardMan.Web.Controllers
 		}
 
 		public async Task<IActionResult> IndexAsync()
-		{
-			var userId = this.userManager.GetUserId(User);
-			var subNotificationVm = await subscriptionManager.GetSubscriptionNotificationAsync(Guid.Parse(userId));
-			return View();
+		{			
+			return View(await subscriptionManager.GetSubscriptionNotificationAsync(this.userManager.GetGuidUserId(User)));
 		}
 
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
