@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace BoardMan.Web.Utils
+namespace BoardMan.Web.Infrastructure.Utils
 {
 	public class ControllerUtils
 	{

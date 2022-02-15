@@ -1,15 +1,25 @@
 ﻿using BoardMan.Web.Managers;
+using BoardMan.Web.Models;
+using BoardMan.Web.Infrastructure.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+using BoardMan.Web.Data;
 
 namespace BoardMan.Web.Controllers
 {
 	public class PlansController : Controller
 	{
+		private readonly UserManager<AppUser> userManager;
 		private readonly IPlanManager planManager;
+		private readonly IConfiguration	configuration;
+		private readonly ILogger<PlansController> logger;
 
-		public PlansController(IPlanManager planManager)
+		public PlansController(UserManager<AppUser> userManager, IPlanManager planManager, IConfiguration configuration, ILogger<PlansController> logger)
 		{
+			this.userManager = userManager;
 			this.planManager = planManager;
+			this.configuration = configuration;
+			this.logger = logger;
 		}
 
 		// GET: PlansController
@@ -86,6 +96,40 @@ namespace BoardMan.Web.Controllers
 			{
 				return View();
 			}
+		}
+
+		// GET: PlansController/Buy
+		public async Task<ActionResult> Buy(Guid planId)
+		{
+			var plan = await this.planManager.GetPlanAsync(planId);
+			if (plan == null)
+			{
+				this.logger.LogInformation("No plan exists with the planId in /Plans/Buy?{planId}", planId);
+				return new NotFoundViewResult("PlanNotFound");
+			}
+
+			var stripeApiKey = configuration.GetValue<string>("StripePublicKey");
+			if(string.IsNullOrWhiteSpace(stripeApiKey))
+			{
+				this.logger.LogError("StripePublicKey has not been configured and is required for payment integration");
+				throw new InsufficientDataToProcessException("Payment integration could not be initialized");
+			}
+
+			var currentUser = await this.userManager.GetUserAsync(User);
+
+			return View(new BuyPlanVM
+			{
+				PlanId = planId,
+				PlanDescription = plan.Description,
+				PlanName = plan.Name,
+				Cost = plan.Cost,
+				Currency = plan.Currency,
+				PaymentKey = stripeApiKey,
+				UserEmail = currentUser.Email,
+				UserFirstName = currentUser.FirstName,
+				UserLastName = currentUser.LastName,
+				BillingDetails = new BillingDetails()
+			});
 		}
 	}
 }
