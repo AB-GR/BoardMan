@@ -1,9 +1,14 @@
 ﻿@using BoardMan.Web.Controllers
 @model BuyPlanVM
+@inject IConfiguration	configuration
 
 @{
     ViewData["Title"] = "Buy";
 }
+<div class="overlay" style="display:none;">
+    <div class="spinner"></div>
+    <span class="payment-text">Payment in progress...</span>
+</div>
 
 <div class="row">
     <form id="paymentForm">
@@ -28,19 +33,19 @@
     <h2>Billing details</h2>
     <hr />    
     <div class="form-group">
-        <label asp-for="UserFirstName"></label>
-        <input asp-for="UserFirstName" class="form-control" aria-required="true" />        
-        <span asp-validation-for="UserFirstName" class="text-danger"></span>
+        <label asp-for="BillingDetails.UserFirstName"></label>
+        <input asp-for="BillingDetails.UserFirstName" class="form-control" aria-required="true" />        
+        <span asp-validation-for="BillingDetails.UserFirstName" class="text-danger"></span>
     </div>
      <div class="form-group">
-         <label asp-for="UserLastName"></label>
-        <input asp-for="UserLastName" class="form-control" aria-required="true" />        
-        <span asp-validation-for="UserLastName" class="text-danger"></span>
+         <label asp-for="BillingDetails.UserLastName"></label>
+        <input asp-for="BillingDetails.UserLastName" class="form-control" aria-required="true" />        
+        <span asp-validation-for="BillingDetails.UserLastName" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="UserEmail"></label>
-        <input asp-for="UserEmail" class="form-control" aria-required="true" />        
-        <span asp-validation-for="UserEmail" class="text-danger"></span>
+        <label asp-for="BillingDetails.UserEmail"></label>
+        <input asp-for="BillingDetails.UserEmail" class="form-control" aria-required="true" />        
+        <span asp-validation-for="BillingDetails.UserEmail" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="BillingDetails.AddressLine1"></label>
@@ -84,8 +89,8 @@
          </div>
      </div>
       <div class="form-group">
-        <input asp-for="BillingDetails.NameAsOnCard" class="form-control" aria-required="true" />
         <label asp-for="BillingDetails.NameAsOnCard"></label>
+          <input asp-for="BillingDetails.NameAsOnCard" class="form-control" aria-required="true" />        
         <span asp-validation-for="BillingDetails.NameAsOnCard" class="text-danger"></span>
     </div>
     <button id="paySubmit" type="submit" class="w-100 btn btn-lg btn-primary">Pay</button>
@@ -101,6 +106,7 @@
             document.getElementById("paymentForm").onsubmit = (e) => submitForPayment(e);
             initStripeElements();
             $("#paySubmit").text("Pay " + $("#costDisplayLbl").text());
+            window.paymentUrl = `@(configuration.GetValue<string>("BaseUrl"))/Payments`;
         });
 
         function submitForPayment(event) {
@@ -110,25 +116,29 @@
             }
 
             var paymentIntentRequest = {
-                planId: orderModel.planId,
-                currency: orderSummaryModel.currency,
-                userId: customerModel.userId,
+                planId: '@Model.PlanId',
+                currency: '@Model.Currency',
+                userId: '@Model.UserId',
                 billingDetail: {
-                    customerEmail: customerModel.customerEmail,
-                    customerName: customerModel.customerName,
-                    line1: customerModel.addressLine1,
-                    line2: customerModel.addressLine2,
-                    city: customerModel.city,
-                    state: customerModel.state,
-                    postalCode: customerModel.postalCode,
-                    countryCode: customerModel.countryCode
+                    userEmail: $("#UserEmail").val(),
+                    userFirstName: $("#UserFirstName").val(),
+                    userLastName: $("#UserLastName").val(),
+                    nameAsOnCard: $("#BillingDetails_NameAsOnCard").val(),
+                    addressLine1: $("#BillingDetails_AddressLine1").val(),
+                    addressLine2: $("#BillingDetails_AddressLine2").val(),
+                    city: $("#BillingDetails_City").val(),
+                    state: $("#BillingDetails_State").val(),
+                    zipCode: $("#BillingDetails_ZipCode").val(),
+                    country: $("select[id='BillingDetails_Country']").val()
                 }
             };
 
-            createPaymentIntent(paymentIntentRequest).then(onCreatePaymentIntent)
-                .catch(function(error) {
-                    console.log(error);
-                });
+            startSpinner();
+            createPaymentIntent(paymentIntentRequest)
+            .then(onCreatePaymentIntent)
+            .catch(function(error) {
+                console.log(error);
+            });
         }
 
         function initStripeElements() {
@@ -166,6 +176,106 @@
                 console.log(error);
             }
         }
+
+        function createPaymentIntent(paymentIntentRequest) {
+            return fetch(window.paymentUrl + `/CreatePaymentIntent`,
+            {
+                method: "post",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(paymentIntentRequest)
+            })
+            .then(function (response) {
+                return response.json();
+            });
+        }
+
+        function onCreatePaymentIntent(paymentIntentResponseJson) {
+            if (paymentIntentResponseJson.Result.similar("OK")) {
+                var paymentIntentResponse = paymentIntentResponseJson.Record;
+                if (!notNullOrEmpty(paymentIntentResponse)) {
+                    //utilitiesModel.showValidationErrorDialog("Server error, payment cannot be completed.");
+                    console.log("Server error, payment cannot be completed.");
+                    return;
+                }
+
+                window.stripe.confirmCardPayment(paymentIntentResponse.ClientSecret,
+                {
+                        payment_method: {
+                            card: window.card,
+                            billing_details: {
+                                "address": {
+                                    "city": $("#BillingDetails_City").val(),
+                                    "country": $("select[id='BillingDetails_Country']").val(),
+                                    "line1": $("#BillingDetails_AddressLine1").val(),
+                                    "line2": $("#BillingDetails_AddressLine2").val(),
+                                    "postal_code": $("#BillingDetails_ZipCode").val(),
+                                    "state": $("#BillingDetails_State").val()
+                                },
+                                "email": $("#UserEmail").val(),
+                                "name": $("#BillingDetails_NameAsOnCreditCard").val()
+                            }
+                        }
+                    }
+                 ).then(function (result) {
+                    if (result.error) {
+                        stopSpinner();
+                        var displayError = document.getElementById("card-errors");
+                        displayError.textContent = result.error.message;
+                    } else {
+                        stripePaymentHandler({
+                            paymentIntentId: paymentIntentResponse.PaymentIntentId
+                        });
+                    }
+                })
+                .catch(function(error) {
+                    console.log(error);
+                });
+            } 
+            else {
+                stopSpinner();
+                //utilitiesModel.showValidationErrorDialog(`Could not complete payment due to the error '${paymentIntentResponseJson.Message}'`);
+                console.log(`Could not complete payment due to the error '${paymentIntentResponseJson.Message}'`);
+            }
+        }
+
+        function stripePaymentHandler(paymentSuccess) {            
+            post(window.paymentUrl + "/PaymentSuccess", paymentSuccess);
+        }
+
+        function post(path, params, method = 'post') {
+            var form = document.createElement('form');
+            form.method = method;
+            form.action = path;
+
+            for (const key in params) {
+                if (params.hasOwnProperty(key)) {
+                    var hiddenField = document.createElement('input');
+                    hiddenField.type = 'hidden';
+                    hiddenField.name = key;
+                    hiddenField.value = params[key];
+
+                    form.appendChild(hiddenField);
+                }
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+    function notNullOrEmpty(obj) {
+        return typeof obj !== 'undefined' && obj && (!$.isPlainObject(obj) || !$.isEmptyObject(obj));
+    }
+
+    function startSpinner() {
+        $('.overlay').fadeIn();
+    }
+
+    function stopSpinner() {
+        $('.overlay').fadeOut();
+    }
+
     </script>
 }
 

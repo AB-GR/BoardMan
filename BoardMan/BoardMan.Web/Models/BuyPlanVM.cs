@@ -19,8 +19,17 @@ namespace BoardMan.Web.Models
 		[Display(Name = "Cost")]
 		public string CostDisplay => $"{Cost:0.##} {Currency}";
 
-		public string Currency { get; set; }
+		public string Currency { get; set; }		
 
+		public Guid? UserId { get; set; }
+
+		public string PaymentKey { get; set; }
+
+		public BillingDetails BillingDetails { get; set; }
+	}
+
+	public class BillingDetails
+	{
 		[Required]
 		[Display(Name = "First Name")]
 		[MaxLength(100)]
@@ -34,13 +43,6 @@ namespace BoardMan.Web.Models
 		[Required]
 		public string UserEmail { get; set; }
 
-		public string PaymentKey { get; set; }
-
-		public BillingDetails BillingDetails { get; set; }
-	}
-
-	public class BillingDetails
-	{
 		[Required]
 		[Display(Name = "Name as on Card")]
 		[MaxLength(100)]

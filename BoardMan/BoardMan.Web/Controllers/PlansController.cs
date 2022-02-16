@@ -7,19 +7,13 @@ using BoardMan.Web.Data;
 
 namespace BoardMan.Web.Controllers
 {
-	public class PlansController : Controller
+	public class PlansController : SiteControllerBase
 	{
-		private readonly UserManager<AppUser> userManager;
-		private readonly IPlanManager planManager;
-		private readonly IConfiguration	configuration;
-		private readonly ILogger<PlansController> logger;
+		private readonly IPlanManager planManager;		
 
-		public PlansController(UserManager<AppUser> userManager, IPlanManager planManager, IConfiguration configuration, ILogger<PlansController> logger)
+		public PlansController(IPlanManager planManager, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<PlansController> logger): base(userManager, configuration, logger)
 		{
-			this.userManager = userManager;
-			this.planManager = planManager;
-			this.configuration = configuration;
-			this.logger = logger;
+			this.planManager = planManager;			
 		}
 
 		// GET: PlansController
@@ -116,7 +110,6 @@ namespace BoardMan.Web.Controllers
 			}
 
 			var currentUser = await this.userManager.GetUserAsync(User);
-
 			return View(new BuyPlanVM
 			{
 				PlanId = planId,
@@ -124,11 +117,14 @@ namespace BoardMan.Web.Controllers
 				PlanName = plan.Name,
 				Cost = plan.Cost,
 				Currency = plan.Currency,
-				PaymentKey = stripeApiKey,
-				UserEmail = currentUser.Email,
-				UserFirstName = currentUser.FirstName,
-				UserLastName = currentUser.LastName,
-				BillingDetails = new BillingDetails()
+				PaymentKey = stripeApiKey,				 
+				UserId = currentUser.Id,
+				BillingDetails = new BillingDetails
+				{
+					UserEmail = currentUser.Email,
+					UserFirstName = currentUser.FirstName,
+					UserLastName = currentUser.LastName
+				}
 			});
 		}
 	}

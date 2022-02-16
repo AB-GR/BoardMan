@@ -8,17 +8,13 @@ using System.Diagnostics;
 
 namespace BoardMan.Web.Controllers
 {
-	public class HomeController : Controller
-	{
-		private readonly ILogger<HomeController> _logger;
-		private readonly ISubscriptionManager subscriptionManager;
-		private readonly UserManager<AppUser> userManager;
+	public class HomeController : SiteControllerBase
+	{	
+		private readonly ISubscriptionManager subscriptionManager;		
 
-		public HomeController(ILogger<HomeController> logger, ISubscriptionManager subscriptionManager, UserManager<AppUser> userManager)
-		{
-			_logger = logger;
-			this.subscriptionManager = subscriptionManager;
-			this.userManager = userManager;
+		public HomeController(ISubscriptionManager subscriptionManager, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<HomeController> logger): base(userManager, configuration, logger)
+		{			
+			this.subscriptionManager = subscriptionManager;			
 		}
 
 		public async Task<IActionResult> IndexAsync()
