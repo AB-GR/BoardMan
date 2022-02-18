@@ -13,6 +13,15 @@ namespace BoardMan.Web.Data
 		public DateTime ModifiedAt { get; set; }
 	}
 
+	public enum SqlErrors
+	{		
+		UniqueIndex = 2601,
+		
+		KeyViolation = 2627,
+		
+		UserDefined = 50000
+	}
+
 	public enum PlanType
 	{
 		Monthly,

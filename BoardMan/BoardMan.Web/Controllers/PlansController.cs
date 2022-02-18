@@ -4,6 +4,7 @@ using BoardMan.Web.Infrastructure.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using BoardMan.Web.Data;
+using Microsoft.Extensions.Localization;
 
 namespace BoardMan.Web.Controllers
 {
@@ -11,8 +12,8 @@ namespace BoardMan.Web.Controllers
 	{
 		private readonly IPlanManager planManager;		
 
-		public PlansController(IPlanManager planManager, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<PlansController> logger): base(userManager, configuration, logger)
-		{
+		public PlansController(IPlanManager planManager, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<PlansController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, configuration, logger, sharedLocalizer)
+		{ 
 			this.planManager = planManager;			
 		}
 

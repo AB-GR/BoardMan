@@ -1,15 +1,18 @@
 ﻿@using BoardMan.Web.Controllers
 @using BoardMan.Web.Data
+@using BoardMan.Web.Resources
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.Localization
 @inject SignInManager<AppUser> SignInManager
+@inject IViewLocalizer Localizer
 @model SubscriptionNotificationVM
 
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = Localizer[Messages.WelcomeText];
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
+    <h1 class="display-4">@ViewData["Title"]</h1>
     @if (SignInManager.IsSignedIn(User))
     {
         if(Model.SubscriptionStatus == SubscriptionStatus.NoSubscriptionAvailable || Model.PriorPlanId == null)

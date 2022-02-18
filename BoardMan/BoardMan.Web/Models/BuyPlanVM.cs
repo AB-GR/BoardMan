@@ -32,12 +32,12 @@ namespace BoardMan.Web.Models
 	{
 		[Required]
 		[Display(Name = "First Name")]
-		[MaxLength(100)]
+		[MaxLength(50)]
 		public string UserFirstName { get; set; }
 
 		[Required]
 		[Display(Name = "Last Name")]
-		[MaxLength(100)]
+		[MaxLength(50)]
 		public string UserLastName { get; set; }
 
 		[Required]

@@ -1,6 +1,13 @@
 ﻿using BoardMan.Web.Data;
+using BoardMan.Web.Models;
+using BoardMan.Web.Resources;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace BoardMan.Web.Controllers
 {
@@ -9,17 +16,91 @@ namespace BoardMan.Web.Controllers
 		protected readonly UserManager<AppUser> userManager;
 		protected readonly IConfiguration configuration;
 		protected readonly ILogger logger;
+        protected readonly IStringLocalizer<SharedResource> sharedLocalizer;
 
-		protected SiteControllerBase(UserManager<AppUser> userManager, IConfiguration configuration, ILogger logger)
+		protected SiteControllerBase(UserManager<AppUser> userManager, IConfiguration configuration, ILogger logger, IStringLocalizer<SharedResource> sharedLocalizer)
 		{
 			this.userManager = userManager;
 			this.configuration = configuration;
 			this.logger = logger;
+			this.sharedLocalizer = sharedLocalizer;
 		}
 
-		public AppUser CurrentUser { 
-			get {
-				return null;
-			} }
+        protected ActionResult RedirectWithMessage(string actionName, string controllerName, string message)
+        {
+            ViewData["ServerSideMessage"] = message;
+            return RedirectToAction(actionName, controllerName);
+        }
+
+        #region Json methods
+
+        protected virtual ActionResult JsonResponse(object data)
+        {
+            return Content(JsonConvert.SerializeObject(data,
+                new JsonSerializerSettings
+                {
+                    Converters = new JsonConverter[] { new StringEnumConverter() },
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                }),
+                "application/json; charset=utf-8");
+        }
+
+        protected virtual async Task<ActionResult> SecureJsonActionAsync(Func<Task<ActionResult>> method)
+        {
+            try
+            {
+                return await method();
+            }
+            catch (DbUpdateException efEx)
+            {
+                logger.LogError(efEx.GetBaseException() ?? efEx, efEx.Message);
+
+                if (efEx.GetBaseException() is SqlException ex && new List<int> { (int)SqlErrors.KeyViolation, (int)SqlErrors.UniqueIndex }.Contains(ex.Number))
+                {
+                    return Json(ApiResponse.Error(Messages.CannotAddDuplicateRecord));
+                }
+
+                
+                return Json(ApiResponse.Error(Messages.UnexpectedInput));
+            }
+            //catch (CustomException ex)
+            //{
+            //    logger.LogError(ex);
+
+            //    switch (ex.Result)
+            //    {
+            //        case Results.InvalidInput:
+            //            var result = GetResult(ex.ErrorMessage);
+            //            return Json(ApiResponse.Error(result.Message), JsonRequestBehavior.AllowGet);
+            //        default:
+            //            return Json(ApiResponse.Error(Messages.UnexpectedInput), JsonRequestBehavior.AllowGet);
+            //    }
+            //}
+            catch (Exception ex)
+            {
+                logger.LogError(ex, ex.Message);
+                return Json(ApiResponse.Error(Messages.UnexpectedInput));
+            }
+        }
+
+        protected async Task<ActionResult> GetJsonAsync(Func<Task<ApiResponse>> method)
+        {
+            return await SecureJsonActionAsync(async () =>
+            {
+                var response = await method();
+                if (!response.Succeeded)
+                {
+                    logger.LogError(JsonConvert.SerializeObject(response));
+                }
+
+                return JsonResponse(response);
+            });
+        }
+
+        #endregion
+    }
+
+	public class SharedResource
+	{
 	}
 }
