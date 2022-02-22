@@ -16,3 +16,48 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/*spinner*/
+
+.overlay {
+    background: #808080;
+    color: #666666;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    z-index: 5000;
+    top: 0;
+    left: 0;
+    float: left;
+    text-align: center;
+    padding-top: 20%;
+    opacity: .80;
+}
+
+.spinner {
+    margin: 0 auto;
+    height: 4rem;
+    width: 4rem;
+    animation: rotate 0.8s infinite linear;
+    border: 0.3125rem solid rgb(13, 110, 253);
+    border-right-color: transparent;
+    border-radius: 50%;
+}
+
+.payment-text {
+    color: rgb(13, 110, 253);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/*spinner*/

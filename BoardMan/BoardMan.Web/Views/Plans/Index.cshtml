@@ -1,0 +1,16 @@
+﻿@model List<PlanVM>
+
+@{
+    ViewData["Title"] = "Plans";
+}
+
+<div>
+@foreach (var item in Model)
+{
+ <div>
+     <div>@item.Name</div>
+     <div>@item.Description</div>
+     <a asp-controller='Plans' asp-action='Buy' asp-route-planId='@item.Id' >Buy</a>
+ </div>   
+}
+</div>
