@@ -56,11 +56,11 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-    @if (ViewData["ServerSideMessage"] != null)
+    @if (TempData["ServerSideMessage"] != null)
     {
         <script type="text/javascript">
             window.onload = function () {
-                alert("@ViewData["ServerSideMessage"]");
+                alert("@TempData["ServerSideMessage"]");
             };
         </script>
     }

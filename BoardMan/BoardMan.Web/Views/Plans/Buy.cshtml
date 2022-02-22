@@ -119,10 +119,11 @@
                 planId: '@Model.PlanId',
                 currency: '@Model.Currency',
                 userId: '@Model.UserId',
-                billingDetail: {
-                    userEmail: $("#UserEmail").val(),
-                    userFirstName: $("#UserFirstName").val(),
-                    userLastName: $("#UserLastName").val(),
+                cost: '@Model.Cost',
+                billingDetails: {
+                    userEmail: $("#BillingDetails_UserEmail").val(),
+                    userFirstName: $("#BillingDetails_UserFirstName").val(),
+                    userLastName: $("#BillingDetails_UserLastName").val(),
                     nameAsOnCard: $("#BillingDetails_NameAsOnCard").val(),
                     addressLine1: $("#BillingDetails_AddressLine1").val(),
                     addressLine2: $("#BillingDetails_AddressLine2").val(),
@@ -192,14 +193,14 @@
         }
 
         function onCreatePaymentIntent(paymentIntentResponseJson) {
-            if (paymentIntentResponseJson.Result.similar("OK")) {
+            if (paymentIntentResponseJson.Succeeded === true) {
                 var paymentIntentResponse = paymentIntentResponseJson.Record;
                 if (!notNullOrEmpty(paymentIntentResponse)) {
                     //utilitiesModel.showValidationErrorDialog("Server error, payment cannot be completed.");
                     console.log("Server error, payment cannot be completed.");
                     return;
                 }
-
+                                
                 window.stripe.confirmCardPayment(paymentIntentResponse.ClientSecret,
                 {
                         payment_method: {
@@ -213,8 +214,8 @@
                                     "postal_code": $("#BillingDetails_ZipCode").val(),
                                     "state": $("#BillingDetails_State").val()
                                 },
-                                "email": $("#UserEmail").val(),
-                                "name": $("#BillingDetails_NameAsOnCreditCard").val()
+                                "email": $("#BillingDetails_UserEmail").val(),
+                                "name": $("#BillingDetails_NameAsOnCard").val()
                             }
                         }
                     }

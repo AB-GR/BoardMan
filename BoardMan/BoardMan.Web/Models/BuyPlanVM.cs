@@ -55,7 +55,7 @@ namespace BoardMan.Web.Models
 
 		[MaxLength(200)]
 		[Display(Name = "Line2")]
-		public string AddressLine2 { get; set; }
+		public string? AddressLine2 { get; set; }
 
 		[Required]
 		[MaxLength(50)]		

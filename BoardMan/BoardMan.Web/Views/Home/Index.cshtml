@@ -29,7 +29,7 @@
                     Your plan is about to expire, please renew the subscription using the same <a asp-controller="Home" asp-action="Index">plan</a> or any of these <a asp-controller="@(ControllerUtils.GetControllerName<PlansController>())" asp-action="@nameof(PlansController.Index)">plans</a>
                 </div>
             }
-            else
+            else if(Model.SubscriptionStatus == SubscriptionStatus.SubscriptionExpired)
             {
                 <div>
                     Your plan has expired, please renew the subscription using the same <a asp-controller="Home" asp-action="Index">plan</a> or any of these <a asp-controller="@(ControllerUtils.GetControllerName<PlansController>())" asp-action="@nameof(PlansController.Index)">plans</a>

@@ -4,7 +4,6 @@ using BoardMan.Web.Models;
 using GenFu;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Primitives;
 using MockQueryable.Moq;
 using Moq;
 using System;
@@ -67,7 +66,7 @@ namespace BoardMan.Tests
 			var plans = planDiscounts.Select(x => x.Plan).ToList();
 
 			var subscriptions = new List<DbSubscription>();
-			var paymentTransactions = new List<DbPaymentTrasaction>();
+			var paymentTransactions = new List<DbPaymentTransaction>();
 
 			if (requireSubscriptions)
 			{
@@ -78,10 +77,10 @@ namespace BoardMan.Tests
 					x.Id = Guid.NewGuid();
 					x.StartedAt = DateTime.UtcNow.AddDays(-10);
 					x.ExpireAt = subscriptionEndDate ?? DateTime.UtcNow;
-					x.UserId = appUser.Id;
-					x.AppUser = appUser;
+					x.OwnerId = appUser.Id;
+					x.Owner = appUser;
 					x.DeletedAt = null;
-					x.PaymentTrasaction = A.New<DbPaymentTrasaction>();
+					x.PaymentTrasaction = A.New<DbPaymentTransaction>();
 					x.PaymentTrasactionId = x.PaymentTrasaction.Id;
 					x.PaymentTrasaction.PlanDiscount = planDiscounts[i];
 					x.PaymentTrasaction.Plan = planDiscounts[i].Plan;
@@ -93,7 +92,7 @@ namespace BoardMan.Tests
 			}
 
 			Mock<DbSet<DbSubscription>> subscriptionsDbSet = subscriptions.AsQueryable().BuildMockDbSet();
-			Mock<DbSet<DbPaymentTrasaction>> paymentTranscationsDbSet = paymentTransactions.AsQueryable().BuildMockDbSet();
+			Mock<DbSet<DbPaymentTransaction>> paymentTranscationsDbSet = paymentTransactions.AsQueryable().BuildMockDbSet();
 			Mock<DbSet<DbPlan>> plansDbSet = plans.AsQueryable().BuildMockDbSet();
 			Mock<DbSet<DbPlanDiscount>> plansDiscountsDbSet = planDiscounts.AsQueryable().BuildMockDbSet();					
 			context.Setup(c => c.Plans).Returns(plansDbSet.Object);

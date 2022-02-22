@@ -97,7 +97,82 @@ namespace BoardMan.Web.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("BoardMan.Web.Data.DbPaymentTrasaction", b =>
+            modelBuilder.Entity("BoardMan.Web.Data.DbBillingDetails", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newsequentialid()");
+
+                    b.Property<string>("AddressLine1")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("AddressLine2")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NameAsOnCard")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("PaymentTransactionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserFirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserLastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ZipCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentTransactionId")
+                        .IsUnique();
+
+                    b.ToTable("BillingDetails");
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbPaymentTransaction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -108,7 +183,15 @@ namespace BoardMan.Web.Migrations
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("DiscountApplied")
@@ -119,10 +202,14 @@ namespace BoardMan.Web.Migrations
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
 
-                    b.Property<DateTime>("ModifiedAt")
+                    b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("PlanDiscountId")
+                    b.Property<string>("PaymentReference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("PlanDiscountId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PlanId")
@@ -135,11 +222,16 @@ namespace BoardMan.Web.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("TransactedById")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PlanDiscountId");
 
                     b.HasIndex("PlanId");
+
+                    b.HasIndex("TransactedById");
 
                     b.ToTable("PaymentTransactions");
                 });
@@ -155,7 +247,7 @@ namespace BoardMan.Web.Migrations
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Currency")
@@ -167,14 +259,13 @@ namespace BoardMan.Web.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<DateTime?>("ExpireAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("ModifiedAt")
+                    b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
@@ -192,50 +283,46 @@ namespace BoardMan.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("13f244b1-ed46-4b80-963e-97a431d2ae5b"),
+                            Id = new Guid("0ba39757-6810-4829-bf14-42409a1e24aa"),
                             Cost = 99m,
-                            CreatedAt = new DateTime(2022, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4226),
+                            CreatedAt = new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(753),
                             Currency = "USD",
-                            Description = "This is the standard plan monthly plan",
-                            ExpireAt = new DateTime(2023, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4229),
-                            ModifiedAt = new DateTime(2022, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4228),
-                            Name = "Standard",
+                            Description = "This is the standard monthly plan",
+                            ExpireAt = new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(757),
+                            Name = "Standard (Monhtly)",
                             PlanType = 0
                         },
                         new
                         {
-                            Id = new Guid("8793dfb0-ba6c-4f8a-ac7f-0a694b048b5d"),
+                            Id = new Guid("7cf15b9b-77d7-4d5b-a871-6e9a8f025c47"),
                             Cost = 948m,
-                            CreatedAt = new DateTime(2022, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4262),
+                            CreatedAt = new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(789),
                             Currency = "USD",
-                            Description = "This is the standard plan annual plan",
-                            ExpireAt = new DateTime(2023, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4263),
-                            ModifiedAt = new DateTime(2022, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4262),
-                            Name = "Standard",
+                            Description = "This is the standard annual plan",
+                            ExpireAt = new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(789),
+                            Name = "Standard (Annual)",
                             PlanType = 1
                         },
                         new
                         {
-                            Id = new Guid("67a528c0-019f-45f1-b2f2-c68d660efedb"),
+                            Id = new Guid("d84f3039-45c9-49ac-bf7b-8c38f4f32972"),
                             Cost = 299m,
-                            CreatedAt = new DateTime(2022, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4274),
+                            CreatedAt = new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(813),
                             Currency = "USD",
-                            Description = "This is the premium plan monthly plan",
-                            ExpireAt = new DateTime(2023, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4274),
-                            ModifiedAt = new DateTime(2022, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4274),
-                            Name = "Premium",
+                            Description = "This is the premium monthly plan",
+                            ExpireAt = new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(814),
+                            Name = "Premium (Monthly)",
                             PlanType = 0
                         },
                         new
                         {
-                            Id = new Guid("7215dea9-4b77-4c11-9712-fc0d14f2164a"),
+                            Id = new Guid("728f0b3f-1c24-44d4-ab3b-7e710fb61705"),
                             Cost = 3000m,
-                            CreatedAt = new DateTime(2022, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4284),
+                            CreatedAt = new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(915),
                             Currency = "USD",
-                            Description = "This is the premium plan annual plan",
-                            ExpireAt = new DateTime(2023, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4285),
-                            ModifiedAt = new DateTime(2022, 2, 13, 3, 32, 57, 162, DateTimeKind.Utc).AddTicks(4285),
-                            Name = "Premium",
+                            Description = "This is the premium annual plan",
+                            ExpireAt = new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(916),
+                            Name = "Premium (Annual)",
                             PlanType = 1
                         });
                 });
@@ -252,7 +339,7 @@ namespace BoardMan.Web.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -266,11 +353,10 @@ namespace BoardMan.Web.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Message")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<DateTime>("ModifiedAt")
+                    b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("PlanId")
@@ -293,7 +379,7 @@ namespace BoardMan.Web.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -302,7 +388,7 @@ namespace BoardMan.Web.Migrations
                     b.Property<DateTime>("ExpireAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("ModifiedAt")
+                    b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
@@ -310,22 +396,62 @@ namespace BoardMan.Web.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("PaymentTrasactionId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
 
                     b.HasIndex("PaymentTrasactionId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Subscriptions");
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbWorkspace", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newsequentialid()");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("SubscriptionId");
+
+                    b.ToTable("Workspaces");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.Role", b =>
@@ -464,13 +590,23 @@ namespace BoardMan.Web.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("BoardMan.Web.Data.DbPaymentTrasaction", b =>
+            modelBuilder.Entity("BoardMan.Web.Data.DbBillingDetails", b =>
+                {
+                    b.HasOne("BoardMan.Web.Data.DbPaymentTransaction", "PaymentTransaction")
+                        .WithOne("BillingDetails")
+                        .HasForeignKey("BoardMan.Web.Data.DbBillingDetails", "PaymentTransactionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("PaymentTransaction");
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbPaymentTransaction", b =>
                 {
                     b.HasOne("BoardMan.Web.Data.DbPlanDiscount", "PlanDiscount")
                         .WithMany()
                         .HasForeignKey("PlanDiscountId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("BoardMan.Web.Data.DbPlan", "Plan")
                         .WithMany()
@@ -478,9 +614,17 @@ namespace BoardMan.Web.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("BoardMan.Web.Data.AppUser", "TransactedBy")
+                        .WithMany()
+                        .HasForeignKey("TransactedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("Plan");
 
                     b.Navigation("PlanDiscount");
+
+                    b.Navigation("TransactedBy");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbPlanDiscount", b =>
@@ -496,21 +640,40 @@ namespace BoardMan.Web.Migrations
 
             modelBuilder.Entity("BoardMan.Web.Data.DbSubscription", b =>
                 {
-                    b.HasOne("BoardMan.Web.Data.DbPaymentTrasaction", "PaymentTrasaction")
+                    b.HasOne("BoardMan.Web.Data.AppUser", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BoardMan.Web.Data.DbPaymentTransaction", "PaymentTrasaction")
                         .WithMany()
                         .HasForeignKey("PaymentTrasactionId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("BoardMan.Web.Data.AppUser", "AppUser")
+                    b.Navigation("Owner");
+
+                    b.Navigation("PaymentTrasaction");
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbWorkspace", b =>
+                {
+                    b.HasOne("BoardMan.Web.Data.AppUser", "Owner")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("AppUser");
+                    b.HasOne("BoardMan.Web.Data.DbSubscription", "Subscription")
+                        .WithMany()
+                        .HasForeignKey("SubscriptionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
-                    b.Navigation("PaymentTrasaction");
+                    b.Navigation("Owner");
+
+                    b.Navigation("Subscription");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -561,6 +724,12 @@ namespace BoardMan.Web.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbPaymentTransaction", b =>
+                {
+                    b.Navigation("BillingDetails")
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

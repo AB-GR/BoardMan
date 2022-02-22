@@ -1,4 +1,5 @@
 ﻿using BoardMan.Web.Data;
+using BoardMan.Web.Infrastructure.Utils;
 using BoardMan.Web.Models;
 using BoardMan.Web.Resources;
 using Microsoft.AspNetCore.Identity;
@@ -28,7 +29,7 @@ namespace BoardMan.Web.Controllers
 
         protected ActionResult RedirectWithMessage(string actionName, string controllerName, string message)
         {
-            ViewData["ServerSideMessage"] = message;
+            TempData["ServerSideMessage"] = message;
             return RedirectToAction(actionName, controllerName);
         }
 
@@ -63,20 +64,12 @@ namespace BoardMan.Web.Controllers
                 
                 return Json(ApiResponse.Error(Messages.UnexpectedInput));
             }
-            //catch (CustomException ex)
-            //{
-            //    logger.LogError(ex);
-
-            //    switch (ex.Result)
-            //    {
-            //        case Results.InvalidInput:
-            //            var result = GetResult(ex.ErrorMessage);
-            //            return Json(ApiResponse.Error(result.Message), JsonRequestBehavior.AllowGet);
-            //        default:
-            //            return Json(ApiResponse.Error(Messages.UnexpectedInput), JsonRequestBehavior.AllowGet);
-            //    }
-            //}
-            catch (Exception ex)
+			catch (InsufficientDataToProcessException ex)
+			{
+				logger.LogError(ex, ex.Message);
+                return Json(ApiResponse.Error(ex.Message));
+            }
+			catch (Exception ex)
             {
                 logger.LogError(ex, ex.Message);
                 return Json(ApiResponse.Error(Messages.UnexpectedInput));

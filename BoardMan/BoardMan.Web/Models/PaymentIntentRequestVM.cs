@@ -11,6 +11,16 @@ namespace BoardMan.Web.Models
 
 		public BillingDetails BillingDetails { get; set; }
 
-		public int? UserId { get; set; }
+		public Guid? UserId { get; set; }
+
+		public decimal Cost { get; set; }
+
+		public string? ProductName { get; set; }
+
+		public string? BusinessName { get; set; }
+
+		public string? PlanName { get; set; }
+
+		public string? PlanDescription { get; set; }
 	}
 }

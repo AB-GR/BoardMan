@@ -5,6 +5,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Options;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -16,6 +17,9 @@ services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedA
 services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 services.AddScoped<ISubscriptionManager, SubscriptionManager>();
 services.AddScoped<IPlanManager, PlanManager>();
+services.AddScoped<IPaymentManager, PaymentManager>();
+services.AddTransient<PaymentIntentService>();
+services.AddScoped<IPaymentService, PaymentService>();
 services.AddLocalization(o => o.ResourcesPath = "Resources");
 services.AddMvc()
  .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix) 
@@ -71,4 +75,5 @@ app.MapControllerRoute(
 	pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
+StripeConfiguration.ApiKey = configuration.GetValue<string>("StripeSecretKey");
 app.Run();

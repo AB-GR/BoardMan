@@ -8,9 +8,11 @@ namespace BoardMan.Web.Data
 		[Key]
 		public Guid Id { get; set; }
 
-		public DateTime CreatedAt { get; set; }
+		public DateTime? CreatedAt { get; set; }
 
-		public DateTime ModifiedAt { get; set; }
+		public DateTime? ModifiedAt { get; set; }
+
+		public DateTime? DeletedAt { get; set; }
 	}
 
 	public enum SqlErrors
@@ -30,9 +32,32 @@ namespace BoardMan.Web.Data
 
 	public enum PaymentStatus
 	{
-		Success,
+		Processed,
 		Failed,
-		InProgress
+		CanBeProcessed,
+		Invalid,
+		PlanExpired,
+		AmountNotMatched
+	}
+
+	[Table("Workspaces")]
+	public class DbWorkspace : DbEntity
+	{
+		[MaxLength(100)]
+		public string Title { get; set; }
+
+		[MaxLength(250)]
+		public string? Description { get; set; }
+
+		[ForeignKey("Subscription")]
+		public Guid SubscriptionId { get; set; }
+
+		public DbSubscription Subscription { get; set; }
+
+		[ForeignKey("Owner")]
+		public Guid OwnerId { get; set; }
+
+		public AppUser Owner { get; set; }
 	}
 
 	[Table("Subscriptions")]
@@ -40,11 +65,9 @@ namespace BoardMan.Web.Data
 	{
 		[MaxLength(100)]
 		public string Name { get; set; }
-
-		[Required]
+				
 		public DateTime StartedAt { get; set; }
 
-		[Required]
 		public DateTime ExpireAt { get; set; }
 
 		[NotMapped]
@@ -53,15 +76,12 @@ namespace BoardMan.Web.Data
 		[ForeignKey("PaymentTrasaction")]
 		public Guid PaymentTrasactionId { get; set; }
 
-		public DbPaymentTrasaction PaymentTrasaction { get; set; }
-
+		public DbPaymentTransaction PaymentTrasaction { get; set; }
 
 		[ForeignKey("AppUser")]
-		public Guid UserId { get; set; }
+		public Guid OwnerId { get; set; }
 
-		public AppUser AppUser { get; set; }
-
-		public DateTime? DeletedAt { get; set; }
+		public AppUser Owner { get; set; }
 	}
 
 	[Table("Plans")]
@@ -71,15 +91,13 @@ namespace BoardMan.Web.Data
 		public string Name { get; set; }
 
 		[MaxLength(256)]
-		public string Description { get; set; }
-
-		[Required]
+		public string? Description { get; set; }
+				
 		public decimal Cost { get; set; }
 
 		[MaxLength(3)]
 		public string Currency { get; set; }
-
-		[Required]
+				
 		public PlanType PlanType { get; set; }
 
 		public DateTime? ExpireAt { get; set; }
@@ -87,21 +105,17 @@ namespace BoardMan.Web.Data
 		[NotMapped]
 		public bool Expired => ExpireAt.HasValue && ExpireAt <= DateTime.UtcNow;
 
-		public DateTime? DeletedAt { get; set; }
-
 	}
 
 	[Table("PlanDiscounts")]
 	public class DbPlanDiscount : DbEntity
 	{
 		[MaxLength(256)]
-		public string Message { get; set; }
-
-		[Required]
+		public string? Message { get; set; }
+				
 		[Range(0, 100)]
 		public decimal DiscountPercent { get; set; }
-
-		[Required]
+				
 		[MaxLength(10)]
 		public string Code { get; set; }
 
@@ -114,14 +128,13 @@ namespace BoardMan.Web.Data
 		public Guid PlanId { get; set; }
 
 		public DbPlan Plan { get; set; }
-
-		public DateTime? DeletedAt { get; set; }
 	}
 
 	[Table("PaymentTransactions")]
-	public class DbPaymentTrasaction : DbEntity
-	{
-		[Required]
+	public class DbPaymentTransaction : DbEntity
+	{		
+		public string PaymentReference { get; set; }
+				
 		public PaymentStatus Status { get; set; }
 
 		public string StatusReason { get; set; }
@@ -132,9 +145,9 @@ namespace BoardMan.Web.Data
 		public DbPlan Plan { get; set; }
 
 		[ForeignKey("PlanDiscount")]
-		public Guid PlanDiscountId { get; set; }
+		public Guid? PlanDiscountId { get; set; }
 
-		public DbPlanDiscount PlanDiscount { get; set; }
+		public DbPlanDiscount? PlanDiscount { get; set; }
 
 		public decimal CostBeforeDiscount { get; set; }
 
@@ -142,6 +155,53 @@ namespace BoardMan.Web.Data
 
 		[Required]
 		public decimal FinalCost { get; set; }
+
+		[MaxLength(3)]		
+		public string Currency { get; set; }
+
+		[ForeignKey("TransactedBy")]
+		public Guid TransactedById { get; set; }
+
+		public AppUser TransactedBy { get; set; }
+
+		public DbBillingDetails BillingDetails { get; set; }
 	}
 
+	[Table("BillingDetails")]
+	public class DbBillingDetails : DbEntity
+	{		
+		[MaxLength(50)]
+		public string UserFirstName { get; set; }
+				
+		[MaxLength(50)]
+		public string UserLastName { get; set; }
+				
+		public string UserEmail { get; set; }
+				
+		[MaxLength(100)]
+		public string NameAsOnCard { get; set; }
+				
+		[MaxLength(200)]
+		public string AddressLine1 { get; set; }
+
+		[MaxLength(200)]
+		public string? AddressLine2 { get; set; }
+				
+		[MaxLength(50)]
+		public string City { get; set; }
+				
+		[MaxLength(50)]
+		public string State { get; set; }
+				
+		[MaxLength(20)]
+		public string ZipCode { get; set; }
+				
+		[MaxLength(3)]
+		public string Country { get; set; }
+
+		[ForeignKey("PaymentTransaction")]
+		public Guid PaymentTransactionId { get; set; }
+
+		public DbPaymentTransaction PaymentTransaction { get; set; }
+	}
 }
