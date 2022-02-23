@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using BoardMan.Web.Data;
 using Microsoft.Extensions.Localization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BoardMan.Web.Controllers
 {
@@ -18,6 +19,7 @@ namespace BoardMan.Web.Controllers
 		}
 
 		// GET: PlansController
+		[AllowAnonymous]
 		public async Task<ActionResult> Index()
 		{
 			var plans = await planManager.GetAllPlansAsync();
@@ -119,12 +121,12 @@ namespace BoardMan.Web.Controllers
 				Cost = plan.Cost,
 				Currency = plan.Currency,
 				PaymentKey = stripeApiKey,				 
-				UserId = currentUser.Id,
+				UserId = currentUser?.Id,
 				BillingDetails = new BillingDetails
 				{
-					UserEmail = currentUser.Email,
-					UserFirstName = currentUser.FirstName,
-					UserLastName = currentUser.LastName
+					UserEmail = currentUser?.Email,
+					UserFirstName = currentUser?.FirstName,
+					UserLastName = currentUser?.LastName
 				}
 			});
 		}

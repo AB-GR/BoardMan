@@ -22,5 +22,10 @@
 			return source.TryGetValue(key, out var raw)
 							&& tryParse(raw, out value);
 		}
+
+		public static bool IsNullOrEmpty(this Guid? value)
+		{
+			return value == null || value == Guid.Empty;
+		}
 	}
 }
