@@ -22,9 +22,11 @@ namespace BoardMan.Web.Models
 
 		public string Currency { get; set; }		
 		
-		public Guid TransactedById { get; set; }
+		public Guid? TransactedById { get; set; }
 
 		public BillingDetails BillingDetails { get; set; }
+
+		public string RawData { get; set; }
 
 		public string Errors { get; set; }
 	}

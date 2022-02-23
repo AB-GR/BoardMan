@@ -41,7 +41,7 @@ namespace BoardMan.Web.Managers
 						}
 			};
 
-			options.Metadata
+			options.Metadata								
 				.AddIfNotNull(nameof(PaymentIntentRequestVM.BillingDetails.AddressLine1), request.BillingDetails.AddressLine1)
 				.AddIfNotNull(nameof(PaymentIntentRequestVM.BillingDetails.AddressLine2), request.BillingDetails.AddressLine2)
 				.AddIfNotNull(nameof(PaymentIntentRequestVM.BillingDetails.City), request.BillingDetails.City)
@@ -82,7 +82,8 @@ namespace BoardMan.Web.Managers
 				DiscountApplied = 0,
 				FinalCost = (decimal)paymentIntent.Amount / 100,
 				Currency = paymentIntent.Currency,
-				Status = paymentIntent.Status.Equals("succeeded", StringComparison.InvariantCultureIgnoreCase) ? PaymentStatus.CanBeProcessed : PaymentStatus.Failed				
+				Status = paymentIntent.Status.Equals("succeeded", StringComparison.InvariantCultureIgnoreCase) ? PaymentStatus.CanBeProcessed : PaymentStatus.Failed,
+				RawData = paymentIntent.StripeResponse.Content
 			};
 
 			paymentIntentVM.StatusReason = Enum.GetName(typeof(PaymentStatus), paymentIntentVM.Status);
@@ -106,9 +107,9 @@ namespace BoardMan.Web.Managers
 			// Billing details 
 			paymentIntentVM.BillingDetails.UserEmail = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.UserEmail), error);
 			paymentIntentVM.BillingDetails.UserFirstName = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.UserFirstName), error);
-			paymentIntentVM.BillingDetails.UserLastName = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.UserLastName), error);
+			paymentIntentVM.BillingDetails.UserLastName = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.UserLastName), error);						
 			paymentIntentVM.BillingDetails.AddressLine1 = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.AddressLine1), error);
-			paymentIntentVM.BillingDetails.AddressLine2 = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.AddressLine2), error);
+			paymentIntentVM.BillingDetails.AddressLine2 = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.AddressLine2), error, false);
 			paymentIntentVM.BillingDetails.City = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.City), error);
 			paymentIntentVM.BillingDetails.State = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.State), error);
 			//paymentIntentVM.BillingDetails.Country = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.Country), error);

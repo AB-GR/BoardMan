@@ -1,6 +1,9 @@
 ﻿@using BoardMan.Web.Controllers
+@using BoardMan.Web.Data
+@using Microsoft.AspNetCore.Identity
 @model BuyPlanVM
 @inject IConfiguration	configuration
+@inject SignInManager<AppUser> SignInManager
 
 @{
     ViewData["Title"] = "Buy";
@@ -17,6 +20,8 @@
         <hr />
         <input asp-for="PlanId" type="hidden"/>
         <input asp-for="PaymentKey" type="hidden"/>
+        <input asp-for="UserId" type="hidden"/>
+        <input asp-for="Currency" type="hidden"/>
     <div>        
         <label asp-for="PlanName"></label>
         <label class="form-control">@Model.PlanName</label>        
@@ -30,7 +35,7 @@
         <label class="form-control" id="costDisplayLbl">@Model.CostDisplay</label>
     </div>
 
-    <h2>Billing details</h2>
+    <h2>User details</h2>
     <hr />    
     <div class="form-group">
         <label asp-for="BillingDetails.UserFirstName"></label>
@@ -47,6 +52,22 @@
         <input asp-for="BillingDetails.UserEmail" class="form-control" aria-required="true" />        
         <span asp-validation-for="BillingDetails.UserEmail" class="text-danger"></span>
     </div>
+     @if (!SignInManager.IsSignedIn(User))
+     {
+         <div class="form-group">
+             <label asp-for="BillingDetails.Password"></label>   
+             <input asp-for="BillingDetails.Password" class="form-control" autocomplete="new-password" aria-required="true" />                
+             <span asp-validation-for="BillingDetails.Password" class="text-danger"></span>
+         </div>
+         <div class="form-group">
+             <label asp-for="BillingDetails.ConfirmPassword"></label>
+             <input asp-for="BillingDetails.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />                
+             <span asp-validation-for="BillingDetails.ConfirmPassword" class="text-danger"></span>
+         </div>
+     }
+
+    <h2>Billing details</h2>
+    <hr />    
     <div class="form-group">
         <label asp-for="BillingDetails.AddressLine1"></label>
         <input asp-for="BillingDetails.AddressLine1" class="form-control" aria-required="true" />        
@@ -116,14 +137,16 @@
             }
 
             var paymentIntentRequest = {
-                planId: '@Model.PlanId',
-                currency: '@Model.Currency',
-                userId: '@Model.UserId',
+                planId: $("#PlanId").val(),
+                currency: $("#Currency").val(),
+                userId: $("#UserId").val() == '' ? null : $("#UserId").val(),
                 cost: '@Model.Cost',
                 billingDetails: {
                     userEmail: $("#BillingDetails_UserEmail").val(),
                     userFirstName: $("#BillingDetails_UserFirstName").val(),
                     userLastName: $("#BillingDetails_UserLastName").val(),
+                    password: $("#BillingDetails_Password").val(),
+                    confirmPassword: $("#BillingDetails_ConfirmPassword").val(),
                     nameAsOnCard: $("#BillingDetails_NameAsOnCard").val(),
                     addressLine1: $("#BillingDetails_AddressLine1").val(),
                     addressLine2: $("#BillingDetails_AddressLine2").val(),
@@ -226,7 +249,8 @@
                         displayError.textContent = result.error.message;
                     } else {
                         stripePaymentHandler({
-                            paymentIntentId: paymentIntentResponse.PaymentIntentId
+                            paymentIntentId: paymentIntentResponse.PaymentIntentId,
+                            password: $("#BillingDetails_Password").val()
                         });
                     }
                 })

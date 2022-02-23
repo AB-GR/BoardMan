@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using BoardMan.Web.Infrastructure.Utils.Extensions;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace BoardMan.Web.Models
 {
-	public class BuyPlanVM
+	public class BuyPlanVM : IValidatableObject
 	{
 		[Required]
 		public Guid PlanId { get; set; }
@@ -26,6 +27,14 @@ namespace BoardMan.Web.Models
 		public string PaymentKey { get; set; }
 
 		public BillingDetails BillingDetails { get; set; }
+
+		public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		{
+			if(UserId.IsNullOrEmpty() && (BillingDetails == null || string.IsNullOrWhiteSpace(BillingDetails.UserEmail) || string.IsNullOrWhiteSpace(BillingDetails.UserFirstName) || string.IsNullOrWhiteSpace(BillingDetails.UserLastName) || string.IsNullOrWhiteSpace(BillingDetails.Password)))
+			{
+				yield return new ValidationResult("For buying a subscription, either login or provide the details to register a new user", new[] {nameof(UserId), nameof(BillingDetails.UserEmail), nameof(BillingDetails.UserFirstName), nameof(BillingDetails.UserLastName), nameof(BillingDetails.Password) });
+			}
+		}
 	}
 
 	public class BillingDetails
@@ -41,7 +50,20 @@ namespace BoardMan.Web.Models
 		public string UserLastName { get; set; }
 
 		[Required]
+		[EmailAddress]
+		[Display(Name = "Email")]
 		public string UserEmail { get; set; }
+
+		[Required]
+		[StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+		[DataType(DataType.Password)]
+		[Display(Name = "Password")]
+		public string Password { get; set; }
+
+		[DataType(DataType.Password)]
+		[Display(Name = "Confirm password")]
+		[Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+		public string ConfirmPassword { get; set; }
 
 		[Required]
 		[Display(Name = "Name as on Card")]

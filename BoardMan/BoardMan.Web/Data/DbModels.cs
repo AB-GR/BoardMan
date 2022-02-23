@@ -162,9 +162,11 @@ namespace BoardMan.Web.Data
 		[ForeignKey("TransactedBy")]
 		public Guid TransactedById { get; set; }
 
-		public AppUser TransactedBy { get; set; }
+		public AppUser? TransactedBy { get; set; }
 
 		public DbBillingDetails BillingDetails { get; set; }
+
+		public string RawData { get; set; }
 	}
 
 	[Table("BillingDetails")]

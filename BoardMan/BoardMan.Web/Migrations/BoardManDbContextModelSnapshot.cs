@@ -215,6 +215,10 @@ namespace BoardMan.Web.Migrations
                     b.Property<Guid>("PlanId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("RawData")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -283,45 +287,45 @@ namespace BoardMan.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("0ba39757-6810-4829-bf14-42409a1e24aa"),
+                            Id = new Guid("18ac204d-7ac0-49ef-acb6-ff5ee387025a"),
                             Cost = 99m,
-                            CreatedAt = new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(753),
+                            CreatedAt = new DateTime(2022, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1566),
                             Currency = "USD",
                             Description = "This is the standard monthly plan",
-                            ExpireAt = new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(757),
+                            ExpireAt = new DateTime(2023, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1571),
                             Name = "Standard (Monhtly)",
                             PlanType = 0
                         },
                         new
                         {
-                            Id = new Guid("7cf15b9b-77d7-4d5b-a871-6e9a8f025c47"),
+                            Id = new Guid("1d77c878-ef6e-4fc1-b00d-02d701fe401b"),
                             Cost = 948m,
-                            CreatedAt = new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(789),
+                            CreatedAt = new DateTime(2022, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1605),
                             Currency = "USD",
                             Description = "This is the standard annual plan",
-                            ExpireAt = new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(789),
+                            ExpireAt = new DateTime(2023, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1606),
                             Name = "Standard (Annual)",
                             PlanType = 1
                         },
                         new
                         {
-                            Id = new Guid("d84f3039-45c9-49ac-bf7b-8c38f4f32972"),
+                            Id = new Guid("269a2d36-006b-4dba-a4f2-bac3dbe00835"),
                             Cost = 299m,
-                            CreatedAt = new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(813),
+                            CreatedAt = new DateTime(2022, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1619),
                             Currency = "USD",
                             Description = "This is the premium monthly plan",
-                            ExpireAt = new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(814),
+                            ExpireAt = new DateTime(2023, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1620),
                             Name = "Premium (Monthly)",
                             PlanType = 0
                         },
                         new
                         {
-                            Id = new Guid("728f0b3f-1c24-44d4-ab3b-7e710fb61705"),
+                            Id = new Guid("ef3dea4f-5225-4ca4-be12-6b18c397d3ab"),
                             Cost = 3000m,
-                            CreatedAt = new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(915),
+                            CreatedAt = new DateTime(2022, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1632),
                             Currency = "USD",
                             Description = "This is the premium annual plan",
-                            ExpireAt = new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(916),
+                            ExpireAt = new DateTime(2023, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1632),
                             Name = "Premium (Annual)",
                             PlanType = 1
                         });

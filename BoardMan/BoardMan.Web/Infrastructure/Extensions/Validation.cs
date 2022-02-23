@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace BoardMan.Web.Infrastructure.Utils.Extensions
 {
@@ -11,6 +12,11 @@ namespace BoardMan.Web.Infrastructure.Utils.Extensions
 						  select modelError.ErrorMessage).ToList();
 
 			return string.Join(",", errors);
+		}
+
+		public static string ErrorsString(this IdentityResult result)
+		{
+			return string.Join(',', result.Errors.Select(x => $"Code : {x.Code}, Description : {x.Description}"));
 		}
 	}
 }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace BoardMan.Web.Migrations
 {
-    public partial class PaymentChanges1 : Migration
+    public partial class PaymentChanges : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -141,6 +141,13 @@ namespace BoardMan.Web.Migrations
                 nullable: false,
                 defaultValue: "");
 
+            migrationBuilder.AddColumn<string>(
+                name: "RawData",
+                table: "PaymentTransactions",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "");
+
             migrationBuilder.AddColumn<Guid>(
                 name: "TransactedById",
                 table: "PaymentTransactions",
@@ -211,10 +218,10 @@ namespace BoardMan.Web.Migrations
                 columns: new[] { "Id", "Cost", "CreatedAt", "Currency", "DeletedAt", "Description", "ExpireAt", "ModifiedAt", "Name", "PlanType" },
                 values: new object[,]
                 {
-                    { new Guid("0ba39757-6810-4829-bf14-42409a1e24aa"), 99m, new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(753), "USD", null, "This is the standard monthly plan", new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(757), null, "Standard (Monhtly)", 0 },
-                    { new Guid("728f0b3f-1c24-44d4-ab3b-7e710fb61705"), 3000m, new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(915), "USD", null, "This is the premium annual plan", new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(916), null, "Premium (Annual)", 1 },
-                    { new Guid("7cf15b9b-77d7-4d5b-a871-6e9a8f025c47"), 948m, new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(789), "USD", null, "This is the standard annual plan", new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(789), null, "Standard (Annual)", 1 },
-                    { new Guid("d84f3039-45c9-49ac-bf7b-8c38f4f32972"), 299m, new DateTime(2022, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(813), "USD", null, "This is the premium monthly plan", new DateTime(2023, 2, 22, 7, 31, 10, 839, DateTimeKind.Utc).AddTicks(814), null, "Premium (Monthly)", 0 }
+                    { new Guid("18ac204d-7ac0-49ef-acb6-ff5ee387025a"), 99m, new DateTime(2022, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1566), "USD", null, "This is the standard monthly plan", new DateTime(2023, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1571), null, "Standard (Monhtly)", 0 },
+                    { new Guid("1d77c878-ef6e-4fc1-b00d-02d701fe401b"), 948m, new DateTime(2022, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1605), "USD", null, "This is the standard annual plan", new DateTime(2023, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1606), null, "Standard (Annual)", 1 },
+                    { new Guid("269a2d36-006b-4dba-a4f2-bac3dbe00835"), 299m, new DateTime(2022, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1619), "USD", null, "This is the premium monthly plan", new DateTime(2023, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1620), null, "Premium (Monthly)", 0 },
+                    { new Guid("ef3dea4f-5225-4ca4-be12-6b18c397d3ab"), 3000m, new DateTime(2022, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1632), "USD", null, "This is the premium annual plan", new DateTime(2023, 2, 23, 10, 20, 0, 427, DateTimeKind.Utc).AddTicks(1632), null, "Premium (Annual)", 1 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -276,22 +283,22 @@ namespace BoardMan.Web.Migrations
             migrationBuilder.DeleteData(
                 table: "Plans",
                 keyColumn: "Id",
-                keyValue: new Guid("0ba39757-6810-4829-bf14-42409a1e24aa"));
+                keyValue: new Guid("18ac204d-7ac0-49ef-acb6-ff5ee387025a"));
 
             migrationBuilder.DeleteData(
                 table: "Plans",
                 keyColumn: "Id",
-                keyValue: new Guid("728f0b3f-1c24-44d4-ab3b-7e710fb61705"));
+                keyValue: new Guid("1d77c878-ef6e-4fc1-b00d-02d701fe401b"));
 
             migrationBuilder.DeleteData(
                 table: "Plans",
                 keyColumn: "Id",
-                keyValue: new Guid("7cf15b9b-77d7-4d5b-a871-6e9a8f025c47"));
+                keyValue: new Guid("269a2d36-006b-4dba-a4f2-bac3dbe00835"));
 
             migrationBuilder.DeleteData(
                 table: "Plans",
                 keyColumn: "Id",
-                keyValue: new Guid("d84f3039-45c9-49ac-bf7b-8c38f4f32972"));
+                keyValue: new Guid("ef3dea4f-5225-4ca4-be12-6b18c397d3ab"));
 
             migrationBuilder.DropColumn(
                 name: "Currency",
@@ -303,6 +310,10 @@ namespace BoardMan.Web.Migrations
 
             migrationBuilder.DropColumn(
                 name: "PaymentReference",
+                table: "PaymentTransactions");
+
+            migrationBuilder.DropColumn(
+                name: "RawData",
                 table: "PaymentTransactions");
 
             migrationBuilder.DropColumn(

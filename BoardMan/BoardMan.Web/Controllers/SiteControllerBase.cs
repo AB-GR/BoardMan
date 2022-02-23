@@ -33,6 +33,12 @@ namespace BoardMan.Web.Controllers
             return RedirectToAction(actionName, controllerName);
         }
 
+        protected ActionResult RedirectWithMessage(string url, string message)
+        {
+            TempData["ServerSideMessage"] = message;
+            return Redirect(url);
+        }
+
         #region Json methods
 
         protected virtual ActionResult JsonResponse(object data)
