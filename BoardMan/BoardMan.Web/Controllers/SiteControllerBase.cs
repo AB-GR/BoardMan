@@ -93,7 +93,7 @@ namespace BoardMan.Web.Controllers
                     logger.LogError(JsonConvert.SerializeObject(response));
                 }
 
-                return JsonResponse(response);
+                return Json(response);
             });
         }
 

@@ -19,17 +19,17 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
         TrackTimeStamps();
     }
 
-    public virtual DbSet<DbWorkspace> Workspaces { get; set; }
+    public virtual DbSet<DbWorkspace> Workspaces { get; set; } = null!;
 
-    public virtual DbSet<DbSubscription> Subscriptions { get; set; }
+    public virtual DbSet<DbSubscription> Subscriptions { get; set; } = null!;
 
-    public virtual DbSet<DbPlan> Plans { get; set; }
+    public virtual DbSet<DbPlan> Plans { get; set; } = null!;
 
-    public virtual DbSet<DbPlanDiscount> PlanDiscounts { get; set; }
+    public virtual DbSet<DbPlanDiscount> PlanDiscounts { get; set; } = null!;
 
-    public virtual DbSet<DbPaymentTransaction> PaymentTransactions { get; set; }
+    public virtual DbSet<DbPaymentTransaction> PaymentTransactions { get; set; } = null!;
 
-    public virtual DbSet<DbBillingDetails> BillingDetails { get; set; }
+    public virtual DbSet<DbBillingDetails> BillingDetails { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -104,9 +104,9 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
 
 public class AppUser : IdentityUser<Guid>
 {
-	public string FirstName { get; set; }
+	public string FirstName { get; set; } = null!;
 
-	public string LastName { get; set; }
+    public string LastName { get; set; } = null!;
 }
 
 public class Role : IdentityRole<Guid> { }

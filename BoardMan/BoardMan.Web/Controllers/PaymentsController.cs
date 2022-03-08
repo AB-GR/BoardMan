@@ -15,15 +15,13 @@ using System.Text.Encodings.Web;
 namespace BoardMan.Web.Controllers
 {
 	public class PaymentsController : SiteControllerBase
-	{
-		private readonly IPlanManager planManager;
+	{		
 		private readonly IPaymentManager paymentManager;
 		private readonly SignInManager<AppUser> signInManager;
 		private readonly IEmailSender emailSender;
 
-		public PaymentsController(IPlanManager planManager, IPaymentManager paymentManager, SignInManager<AppUser> signInManager, IEmailSender emailSender, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<PaymentsController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, configuration, logger, sharedLocalizer)
-		{
-			this.planManager = planManager;
+		public PaymentsController(IPaymentManager paymentManager, SignInManager<AppUser> signInManager, IEmailSender emailSender, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<PaymentsController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, configuration, logger, sharedLocalizer)
+		{			
 			this.paymentManager = paymentManager;
 			this.signInManager = signInManager;
 			this.emailSender = emailSender;	

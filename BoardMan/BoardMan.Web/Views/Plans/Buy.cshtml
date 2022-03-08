@@ -202,20 +202,19 @@
             });
         }
 
-        function onValidatePayment(validatePaymentResponseJson){
-            console.log(validatePaymentResponseJson);
-            if (validatePaymentResponseJson.Succeeded === true){
-                var validatePaymentResponse = validatePaymentResponseJson.Record;
+        function onValidatePayment(validatePaymentResponseJson){            
+            if (validatePaymentResponseJson.succeeded === true){
+                var validatePaymentResponse = validatePaymentResponseJson.record;
                 if (!notNullOrEmpty(validatePaymentResponse)) {                    
                     console.log("Server error, payment cannot be completed.");
                     return;
                 }
 
-                if(validatePaymentResponse.CanProceed === true){                    
-                    if(validatePaymentResponse.ExistingUser === true && confirm(validatePaymentResponse.Message) === false){
+                if(validatePaymentResponse.canProceed === true){                    
+                    if(validatePaymentResponse.existingUser === true && confirm(validatePaymentResponse.message) === false){
                         //cancel payment                            
                         stopSpinner();
-                        console.log(`Could not complete payment due to the user cancel action for the message: '${validatePaymentResponse.Message}'`);
+                        console.log(`Could not complete payment due to the user cancel action for the message: '${validatePaymentResponse.message}'`);
                         return;                     
                     }
 
@@ -248,12 +247,12 @@
                 }
                 else{
                     stopSpinner();
-                    console.log(`Could not complete payment due to the error '${validatePaymentResponse.Message}'`);
+                    console.log(`Could not complete payment due to the error '${validatePaymentResponse.message}'`);
                 }
             } 
             else {
                 stopSpinner();                
-                console.log(`Could not complete payment due to the error '${validatePaymentResponseJson.Message}'`);
+                console.log(`Could not complete payment due to the error '${validatePaymentResponseJson.message}'`);
             }
         }
 
@@ -272,15 +271,15 @@
         }
 
         function onCreatePaymentIntent(paymentIntentResponseJson) {
-            if (paymentIntentResponseJson.Succeeded === true) {
-                var paymentIntentResponse = paymentIntentResponseJson.Record;
+            if (paymentIntentResponseJson.succeeded === true) {
+                var paymentIntentResponse = paymentIntentResponseJson.record;
                 if (!notNullOrEmpty(paymentIntentResponse)) {
                     //utilitiesModel.showValidationErrorDialog("Server error, payment cannot be completed.");
                     console.log("Server error, payment cannot be completed.");
                     return;
                 }
                                 
-                window.stripe.confirmCardPayment(paymentIntentResponse.ClientSecret,
+                window.stripe.confirmCardPayment(paymentIntentResponse.clientSecret,
                 {
                         payment_method: {
                             card: window.card,
@@ -305,7 +304,7 @@
                         displayError.textContent = result.error.message;
                     } else {
                         stripePaymentHandler({
-                            paymentIntentId: paymentIntentResponse.PaymentIntentId,
+                            paymentIntentId: paymentIntentResponse.paymentIntentId,
                             password: $("#BillingDetails_Password").val()
                         });
                     }
@@ -317,7 +316,7 @@
             else {
                 stopSpinner();
                 //utilitiesModel.showValidationErrorDialog(`Could not complete payment due to the error '${paymentIntentResponseJson.Message}'`);
-                console.log(`Could not complete payment due to the error '${paymentIntentResponseJson.Message}'`);
+                console.log(`Could not complete payment due to the error '${paymentIntentResponseJson.message}'`);
             }
         }
 
