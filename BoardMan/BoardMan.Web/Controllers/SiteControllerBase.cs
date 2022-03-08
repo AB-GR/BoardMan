@@ -43,12 +43,13 @@ namespace BoardMan.Web.Controllers
 
         protected virtual ActionResult JsonResponse(object data)
         {
-            return Content(JsonConvert.SerializeObject(data,
+            var content = JsonConvert.SerializeObject(data,
                 new JsonSerializerSettings
                 {
                     Converters = new JsonConverter[] { new StringEnumConverter() },
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                }),
+                });
+            return Content(content,
                 "application/json; charset=utf-8");
         }
 

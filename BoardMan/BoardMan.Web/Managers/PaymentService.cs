@@ -9,9 +9,9 @@ namespace BoardMan.Web.Managers
 {
 	public interface IPaymentService
 	{
-		Task<PaymentIntentResponseVM> CreatePaymentIntentAsync(PaymentIntentRequestVM request);
+		Task<PaymentIntentResponse> CreatePaymentIntentAsync(PaymentIntentRequest request);
 
-		Task<PaymentIntentVM> GetPaymentIntentAsync(PaymentSuccessRequestVM request);
+		Task<PaymentIntentTransaction> GetPaymentIntentAsync(PaymentSuccessRequest request);
 	}
 
 	public class PaymentService : IPaymentService
@@ -23,7 +23,7 @@ namespace BoardMan.Web.Managers
 			this.service = service;
 		}
 
-		public async Task<PaymentIntentResponseVM> CreatePaymentIntentAsync(PaymentIntentRequestVM request)
+		public async Task<PaymentIntentResponse> CreatePaymentIntentAsync(PaymentIntentRequest request)
 		{
 			var options = new PaymentIntentCreateOptions
 			{
@@ -34,25 +34,25 @@ namespace BoardMan.Web.Managers
 						{
 							{nameof(request.PlanId), request.PlanId.ToString()},
 							{nameof(request.PlanName), request.PlanName},
-							{nameof(PaymentIntentRequestVM.BillingDetails.UserEmail), request.BillingDetails.UserEmail},
-							{nameof(PaymentIntentRequestVM.BillingDetails.UserFirstName), request.BillingDetails.UserFirstName},
-							{nameof(PaymentIntentRequestVM.BillingDetails.UserLastName), request.BillingDetails.UserLastName},
-							{nameof(PaymentIntentRequestVM.BillingDetails.NameAsOnCard), request.BillingDetails.NameAsOnCard}
+							{nameof(PaymentIntentRequest.BillingDetails.UserEmail), request.BillingDetails.UserEmail},
+							{nameof(PaymentIntentRequest.BillingDetails.UserFirstName), request.BillingDetails.UserFirstName},
+							{nameof(PaymentIntentRequest.BillingDetails.UserLastName), request.BillingDetails.UserLastName},
+							{nameof(PaymentIntentRequest.BillingDetails.NameAsOnCard), request.BillingDetails.NameAsOnCard}
 						}
 			};
 
 			options.Metadata								
-				.AddIfNotNull(nameof(PaymentIntentRequestVM.BillingDetails.AddressLine1), request.BillingDetails.AddressLine1)
-				.AddIfNotNull(nameof(PaymentIntentRequestVM.BillingDetails.AddressLine2), request.BillingDetails.AddressLine2)
-				.AddIfNotNull(nameof(PaymentIntentRequestVM.BillingDetails.City), request.BillingDetails.City)
-				.AddIfNotNull(nameof(PaymentIntentRequestVM.BillingDetails.State), request.BillingDetails.State)
-				.AddIfNotNull(nameof(PaymentIntentRequestVM.BillingDetails.Country), request.BillingDetails.Country)
-				.AddIfNotNull(nameof(PaymentIntentRequestVM.BillingDetails.ZipCode), request.BillingDetails.ZipCode)
-				.AddIfNotNull(nameof(PaymentIntentRequestVM.UserId), request.UserId?.ToString());
+				.AddIfNotNull(nameof(PaymentIntentRequest.BillingDetails.AddressLine1), request.BillingDetails.AddressLine1)
+				.AddIfNotNull(nameof(PaymentIntentRequest.BillingDetails.AddressLine2), request.BillingDetails.AddressLine2)
+				.AddIfNotNull(nameof(PaymentIntentRequest.BillingDetails.City), request.BillingDetails.City)
+				.AddIfNotNull(nameof(PaymentIntentRequest.BillingDetails.State), request.BillingDetails.State)
+				.AddIfNotNull(nameof(PaymentIntentRequest.BillingDetails.Country), request.BillingDetails.Country)
+				.AddIfNotNull(nameof(PaymentIntentRequest.BillingDetails.ZipCode), request.BillingDetails.ZipCode)
+				.AddIfNotNull(nameof(PaymentIntentRequest.UserId), request.UserId?.ToString());
 
 			var paymentIntent = await this.service.CreateAsync(options);
 
-			return new PaymentIntentResponseVM
+			return new PaymentIntentResponse
 			{
 				PaymentIntentId = paymentIntent.Id,
 				ClientSecret = paymentIntent.ClientSecret,
@@ -64,7 +64,7 @@ namespace BoardMan.Web.Managers
 			};
 		}
 
-		public async Task<PaymentIntentVM> GetPaymentIntentAsync(PaymentSuccessRequestVM request)
+		public async Task<PaymentIntentTransaction> GetPaymentIntentAsync(PaymentSuccessRequest request)
 		{
 			var paymentIntent = await this.service.GetAsync(request.PaymentIntentId,
 				new PaymentIntentGetOptions { Expand = new List<string> { "payment_method" } }).ConfigureAwait(false);
@@ -75,7 +75,7 @@ namespace BoardMan.Web.Managers
 			}
 
 			var error = new StringBuilder();
-			var paymentIntentVM = new PaymentIntentVM
+			var paymentIntentVM = new PaymentIntentTransaction
 			{
 				PaymentReference = paymentIntent.Id,
 				CostBeforeDiscount = (decimal)paymentIntent.Amount / 100,
@@ -88,7 +88,7 @@ namespace BoardMan.Web.Managers
 
 			paymentIntentVM.StatusReason = Enum.GetName(typeof(PaymentStatus), paymentIntentVM.Status);
 
-			if (paymentIntent.Metadata.TryParseValue(nameof(PaymentIntentRequestVM.PlanId), Guid.TryParse, out Guid planId))
+			if (paymentIntent.Metadata.TryParseValue(nameof(PaymentIntentRequest.PlanId), Guid.TryParse, out Guid planId))
 			{
 				paymentIntentVM.PlanId = planId;
 			}
@@ -97,7 +97,7 @@ namespace BoardMan.Web.Managers
 				error.AppendLine("Plan is missing.");
 			}
 
-			if (paymentIntent.Metadata.TryParseValue(nameof(PaymentIntentRequestVM.UserId), Guid.TryParse, out Guid userId))
+			if (paymentIntent.Metadata.TryParseValue(nameof(PaymentIntentRequest.UserId), Guid.TryParse, out Guid userId))
 			{
 				paymentIntentVM.TransactedById = userId;
 			}
@@ -105,16 +105,16 @@ namespace BoardMan.Web.Managers
 			paymentIntentVM.BillingDetails = new BillingDetails();
 
 			// Billing details 
-			paymentIntentVM.BillingDetails.UserEmail = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.UserEmail), error);
-			paymentIntentVM.BillingDetails.UserFirstName = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.UserFirstName), error);
-			paymentIntentVM.BillingDetails.UserLastName = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.UserLastName), error);						
-			paymentIntentVM.BillingDetails.AddressLine1 = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.AddressLine1), error);
-			paymentIntentVM.BillingDetails.AddressLine2 = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.AddressLine2), error, false);
-			paymentIntentVM.BillingDetails.City = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.City), error);
-			paymentIntentVM.BillingDetails.State = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.State), error);
+			paymentIntentVM.BillingDetails.UserEmail = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequest.BillingDetails.UserEmail), error);
+			paymentIntentVM.BillingDetails.UserFirstName = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequest.BillingDetails.UserFirstName), error);
+			paymentIntentVM.BillingDetails.UserLastName = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequest.BillingDetails.UserLastName), error);						
+			paymentIntentVM.BillingDetails.AddressLine1 = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequest.BillingDetails.AddressLine1), error);
+			paymentIntentVM.BillingDetails.AddressLine2 = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequest.BillingDetails.AddressLine2), error, false);
+			paymentIntentVM.BillingDetails.City = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequest.BillingDetails.City), error);
+			paymentIntentVM.BillingDetails.State = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequest.BillingDetails.State), error);
 			//paymentIntentVM.BillingDetails.Country = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.Country), error);
-			paymentIntentVM.BillingDetails.ZipCode = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.ZipCode), error);
-			paymentIntentVM.BillingDetails.NameAsOnCard = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequestVM.BillingDetails.NameAsOnCard), error);
+			paymentIntentVM.BillingDetails.ZipCode = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequest.BillingDetails.ZipCode), error);
+			paymentIntentVM.BillingDetails.NameAsOnCard = GetBillingDetailsProperty(paymentIntent, nameof(PaymentIntentRequest.BillingDetails.NameAsOnCard), error);
 
 			paymentIntentVM.Errors = error.ToString();
 			return paymentIntentVM;

@@ -2,7 +2,7 @@
 
 namespace BoardMan.Web.Models
 {
-	public class PaymentIntentRequestVM
+	public class PaymentIntentRequest
 	{		
 		public Guid PlanId { get; set; }
 

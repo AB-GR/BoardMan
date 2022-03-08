@@ -1,6 +1,6 @@
 ﻿namespace BoardMan.Web.Models
 {
-    public class SubscriptionNotificationVM
+    public class SubscriptionNotification
     {
         public SubscriptionStatus SubscriptionStatus { get; set; }
 

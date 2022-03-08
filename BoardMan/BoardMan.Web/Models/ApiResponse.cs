@@ -22,6 +22,7 @@
 		public ErrorApiResponse(string message)
 		{
 			this.Message = message;
+			this.Succeeded = false;
 		}
 	}
 

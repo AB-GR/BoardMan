@@ -8,8 +8,8 @@ namespace BoardMan.Web
     {
         public WebProfile()
         {
-            CreateMap<DbPlan, PlanVM>();
-            CreateMap<PaymentIntentVM, DbPaymentTransaction>()
+            CreateMap<DbPlan, Plan>();
+            CreateMap<PaymentIntentTransaction, DbPaymentTransaction>()
                 .ForMember(x => x.Plan, x => x.Ignore())
                 .ForMember(x => x.PlanDiscount, x => x.Ignore())
                 .ForMember(x => x.TransactedBy, x => x.Ignore())

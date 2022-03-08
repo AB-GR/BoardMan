@@ -2,7 +2,7 @@
 
 namespace BoardMan.Web.Models
 {
-	public class PaymentIntentVM
+	public class PaymentIntentTransaction
 	{
 		public string PaymentReference { get; set; }
 

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BoardMan.Web.Models
 {
-	public class PlanVM
+	public class Plan
 	{
 		public Guid Id { get; set; }
 

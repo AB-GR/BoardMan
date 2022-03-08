@@ -3,19 +3,21 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BoardMan.Web.Models
 {
-	public class PaymentResultVM
+	public class PaymentResult
 	{
 		public PaymentStatus PaymentStatus { get; set; }
 
-		public UserResultVM NewUser { get; set; }
+		public UserResult UserDetails { get; set; }
 	}
 
-	public class UserResultVM
+	public class UserResult
 	{
 		public AppUser User { get; set; }
 
 		public IdentityResult CreateResult { get; set; }
 
-		public bool Created => User != null;
+		public bool UserCreated => User != null;
+
+		public bool UserIsLoggedIn { get; set; }
 	}
 }

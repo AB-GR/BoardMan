@@ -30,7 +30,22 @@ namespace BoardMan.Web.Controllers
 		}
 
 		[HttpPost, AllowAnonymous]
-		public async Task<ActionResult> CreatePaymentIntent([FromBody] PaymentIntentRequestVM request)
+		public async Task<ActionResult> ValidatePayment([FromBody] ValidatePaymentRequest request)
+		{
+			return await GetJsonAsync(async () =>
+			{
+				if (ModelState.IsValid)
+				{
+					var validationResult = await this.paymentManager.ValidatePaymentAsync(request);
+					return ApiResponse.Single(validationResult);
+				}
+
+				return ApiResponse.Error(ModelState.Errors());
+			});
+		}
+
+		[HttpPost, AllowAnonymous]
+		public async Task<ActionResult> CreatePaymentIntent([FromBody] PaymentIntentRequest request)
 		{
 			return await GetJsonAsync(async () =>
 			{
@@ -45,7 +60,7 @@ namespace BoardMan.Web.Controllers
 		}
 
 		[HttpPost, AllowAnonymous]
-		public async Task<ActionResult> PaymentSuccess(PaymentSuccessRequestVM request)
+		public async Task<ActionResult> PaymentSuccess(PaymentSuccessRequest request)
 		{
 			if (!ModelState.IsValid)
 				return RedirectWithMessage("Index",	"Home", "Missing payment identifier.");
@@ -57,11 +72,11 @@ namespace BoardMan.Web.Controllers
 				var paymentResult = await this.paymentManager.ProcessPaymentAsync(request);
 				if (paymentResult.PaymentStatus == PaymentStatus.Processed)
 				{
-					if(paymentResult.NewUser.Created)
+					if(paymentResult.UserDetails.UserCreated)
 					{
 						logger.LogInformation("User created a new account with password.");
 
-						var user = paymentResult.NewUser.User;
+						var user = paymentResult.UserDetails.User;
 						var userId = await userManager.GetUserIdAsync(user);
 						var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
 						code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -90,7 +105,7 @@ namespace BoardMan.Web.Controllers
 						}
 					}
 
-					return RedirectWithMessage("Index", "Home", "Payment success.");
+					return RedirectWithMessage("Index", "Home", $"Payment success. {(paymentResult.UserDetails.UserIsLoggedIn ? "new subscription has been created" : "Login and verify the new subscription" )}");
 				}
 
 				// ask to login if done anonymously

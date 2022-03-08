@@ -1,7 +1,7 @@
 ﻿@using BoardMan.Web.Controllers
 @using BoardMan.Web.Data
 @using Microsoft.AspNetCore.Identity
-@model BuyPlanVM
+@model BuyPlan
 @inject IConfiguration	configuration
 @inject SignInManager<AppUser> SignInManager
 
@@ -21,7 +21,9 @@
         <input asp-for="PlanId" type="hidden"/>
         <input asp-for="PaymentKey" type="hidden"/>
         <input asp-for="UserId" type="hidden"/>
+        <input asp-for="Cost" type="hidden"/>
         <input asp-for="Currency" type="hidden"/>
+
     <div>        
         <label asp-for="PlanName"></label>
         <label class="form-control">@Model.PlanName</label>        
@@ -136,30 +138,15 @@
                 return;
             }
 
-            var paymentIntentRequest = {
-                planId: $("#PlanId").val(),
-                currency: $("#Currency").val(),
+           var validatePaymentRequest = {
                 userId: $("#UserId").val() == '' ? null : $("#UserId").val(),
-                cost: '@Model.Cost',
-                billingDetails: {
-                    userEmail: $("#BillingDetails_UserEmail").val(),
-                    userFirstName: $("#BillingDetails_UserFirstName").val(),
-                    userLastName: $("#BillingDetails_UserLastName").val(),
-                    password: $("#BillingDetails_Password").val(),
-                    confirmPassword: $("#BillingDetails_ConfirmPassword").val(),
-                    nameAsOnCard: $("#BillingDetails_NameAsOnCard").val(),
-                    addressLine1: $("#BillingDetails_AddressLine1").val(),
-                    addressLine2: $("#BillingDetails_AddressLine2").val(),
-                    city: $("#BillingDetails_City").val(),
-                    state: $("#BillingDetails_State").val(),
-                    zipCode: $("#BillingDetails_ZipCode").val(),
-                    country: $("select[id='BillingDetails_Country']").val()
-                }
-            };
+                userEmail: $("#BillingDetails_UserEmail").val(),
+                planId: $("#PlanId").val()
+           };
 
             startSpinner();
-            createPaymentIntent(paymentIntentRequest)
-            .then(onCreatePaymentIntent)
+            validatePayment(validatePaymentRequest)
+            .then(onValidatePayment)
             .catch(function(error) {
                 console.log(error);
             });
@@ -198,6 +185,75 @@
                 window.card.mount("#card-element");
             } catch (error) {
                 console.log(error);
+            }
+        }
+
+        function validatePayment(validatePaymentRequest){
+            return fetch(window.paymentUrl + `/ValidatePayment`,
+            {
+                method: "post",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(validatePaymentRequest)
+            })
+            .then(function (response) {
+                return response.json();
+            });
+        }
+
+        function onValidatePayment(validatePaymentResponseJson){
+            console.log(validatePaymentResponseJson);
+            if (validatePaymentResponseJson.Succeeded === true){
+                var validatePaymentResponse = validatePaymentResponseJson.Record;
+                if (!notNullOrEmpty(validatePaymentResponse)) {                    
+                    console.log("Server error, payment cannot be completed.");
+                    return;
+                }
+
+                if(validatePaymentResponse.CanProceed === true){                    
+                    if(validatePaymentResponse.ExistingUser === true && confirm(validatePaymentResponse.Message) === false){
+                        //cancel payment                            
+                        stopSpinner();
+                        console.log(`Could not complete payment due to the user cancel action for the message: '${validatePaymentResponse.Message}'`);
+                        return;                     
+                    }
+
+                    var paymentIntentRequest = {
+                                planId: $("#PlanId").val(),
+                                currency: $("#Currency").val(),
+                                userId: $("#UserId").val() == '' ? null : $("#UserId").val(),
+                                cost: $("#Cost").val(),
+                                billingDetails: {
+                                    userEmail: $("#BillingDetails_UserEmail").val(),
+                                    userFirstName: $("#BillingDetails_UserFirstName").val(),
+                                    userLastName: $("#BillingDetails_UserLastName").val(),
+                                    password: $("#BillingDetails_Password").val(),
+                                    confirmPassword: $("#BillingDetails_ConfirmPassword").val(),
+                                    nameAsOnCard: $("#BillingDetails_NameAsOnCard").val(),
+                                    addressLine1: $("#BillingDetails_AddressLine1").val(),
+                                    addressLine2: $("#BillingDetails_AddressLine2").val(),
+                                    city: $("#BillingDetails_City").val(),
+                                    state: $("#BillingDetails_State").val(),
+                                    zipCode: $("#BillingDetails_ZipCode").val(),
+                                    country: $("select[id='BillingDetails_Country']").val()
+                                }
+                            };
+
+                     createPaymentIntent(paymentIntentRequest)
+                     .then(onCreatePaymentIntent)
+                     .catch(function(error) {
+                         console.log(error);
+                     });
+                }
+                else{
+                    stopSpinner();
+                    console.log(`Could not complete payment due to the error '${validatePaymentResponse.Message}'`);
+                }
+            } 
+            else {
+                stopSpinner();                
+                console.log(`Could not complete payment due to the error '${validatePaymentResponseJson.Message}'`);
             }
         }
 
