@@ -55,9 +55,9 @@ namespace BoardMan.Web.Models
 		[Display(Name = "Email")]
 		public string UserEmail { get; set; }
 
-		public bool? IsLoggedInUser { get; set; }
+		public bool? IsAnonymousUser { get; set; }
 
-		[RequiredIfTrue(nameof(IsLoggedInUser), ErrorMessage = "Password field is required.")]
+		[RequiredIfTrue(nameof(IsAnonymousUser), ErrorMessage = "The Password field is required.")]
 		[StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
 		[DataType(DataType.Password)]
 		[Display(Name = "Password")]

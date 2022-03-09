@@ -127,7 +127,7 @@ namespace BoardMan.Web.Controllers
 					UserEmail = currentUser?.Email,
 					UserFirstName = currentUser?.FirstName,
 					UserLastName = currentUser?.LastName,
-					IsLoggedInUser = currentUser != null
+					IsAnonymousUser = currentUser == null
 				}
 			});
 		}

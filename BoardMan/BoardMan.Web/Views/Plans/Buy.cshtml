@@ -23,6 +23,7 @@
         <input asp-for="UserId" type="hidden"/>
         <input asp-for="Cost" type="hidden"/>
         <input asp-for="Currency" type="hidden"/>
+        <input asp-for="BillingDetails.IsAnonymousUser" type="hidden"/>
 
     <div>        
         <label asp-for="PlanName"></label>
@@ -220,23 +221,8 @@
 
                     var paymentIntentRequest = {
                                 planId: $("#PlanId").val(),
-                                currency: $("#Currency").val(),
-                                userId: $("#UserId").val() == '' ? null : $("#UserId").val(),
-                                cost: $("#Cost").val(),
-                                billingDetails: {
-                                    userEmail: $("#BillingDetails_UserEmail").val(),
-                                    userFirstName: $("#BillingDetails_UserFirstName").val(),
-                                    userLastName: $("#BillingDetails_UserLastName").val(),
-                                    password: $("#BillingDetails_Password").val(),
-                                    confirmPassword: $("#BillingDetails_ConfirmPassword").val(),
-                                    nameAsOnCard: $("#BillingDetails_NameAsOnCard").val(),
-                                    addressLine1: $("#BillingDetails_AddressLine1").val(),
-                                    addressLine2: $("#BillingDetails_AddressLine2").val(),
-                                    city: $("#BillingDetails_City").val(),
-                                    state: $("#BillingDetails_State").val(),
-                                    zipCode: $("#BillingDetails_ZipCode").val(),
-                                    country: $("select[id='BillingDetails_Country']").val()
-                                }
+                                currency: $("#Currency").val(),                                
+                                cost: $("#Cost").val()
                             };
 
                      createPaymentIntent(paymentIntentRequest)
@@ -273,8 +259,7 @@
         function onCreatePaymentIntent(paymentIntentResponseJson) {
             if (paymentIntentResponseJson.succeeded === true) {
                 var paymentIntentResponse = paymentIntentResponseJson.record;
-                if (!notNullOrEmpty(paymentIntentResponse)) {
-                    //utilitiesModel.showValidationErrorDialog("Server error, payment cannot be completed.");
+                if (!notNullOrEmpty(paymentIntentResponse)) {                    
                     console.log("Server error, payment cannot be completed.");
                     return;
                 }
@@ -304,8 +289,23 @@
                         displayError.textContent = result.error.message;
                     } else {
                         stripePaymentHandler({
-                            paymentIntentId: paymentIntentResponse.paymentIntentId,
-                            password: $("#BillingDetails_Password").val()
+                            paymentIntentId: paymentIntentResponse.paymentIntentId,                            
+                            userId: $("#UserId").val() == '' ? null : $("#UserId").val(),
+                                billingDetails: {
+                                    userEmail: $("#BillingDetails_UserEmail").val(),
+                                    userFirstName: $("#BillingDetails_UserFirstName").val(),
+                                    userLastName: $("#BillingDetails_UserLastName").val(),
+                                    password: $("#BillingDetails_Password").val(),
+                                    confirmPassword: $("#BillingDetails_ConfirmPassword").val(),
+                                    nameAsOnCard: $("#BillingDetails_NameAsOnCard").val(),
+                                    addressLine1: $("#BillingDetails_AddressLine1").val(),
+                                    addressLine2: $("#BillingDetails_AddressLine2").val(),
+                                    city: $("#BillingDetails_City").val(),
+                                    state: $("#BillingDetails_State").val(),
+                                    zipCode: $("#BillingDetails_ZipCode").val(),
+                                    country: $("select[id='BillingDetails_Country']").val(),
+                                    isLoggedInUser: $("#BillingDetails_IsLoggedInUser").val()
+                                }
                         });
                     }
                 })
@@ -320,29 +320,56 @@
             }
         }
 
-        function stripePaymentHandler(paymentSuccess) {            
-            post(window.paymentUrl + "/PaymentSuccess", paymentSuccess);
+        function stripePaymentHandler(paymentSuccess) { 
+            postToUrl(window.paymentUrl + "/PaymentSuccess", paymentSuccess);
         }
 
-        function post(path, params, method = 'post') {
-            var form = document.createElement('form');
-            form.method = method;
-            form.action = path;
+        function postToUrl(path, data, options) {
+            if (options === undefined) {
+                options = {};
+            }
 
-            for (const key in params) {
-                if (params.hasOwnProperty(key)) {
-                    var hiddenField = document.createElement('input');
-                    hiddenField.type = 'hidden';
-                    hiddenField.name = key;
-                    hiddenField.value = params[key];
+            var method = options.method || "post"; // Set method to post by default if not specified.
 
-                    form.appendChild(hiddenField);
+            var form = document.createElement("form");
+            form.setAttribute("method", method);
+            form.setAttribute("action", path);
+
+            function constructElements(item, parentString) {
+                for (var key in item) {
+                    if (item.hasOwnProperty(key) && item[key] != null) {
+                        if (Object.prototype.toString.call(item[key]) === '[object Array]') {
+                            for (var i = 0; i < item[key].length; i++) {
+                                constructElements(item[key][i], parentString + key + "[" + i + "].");
+                            }
+                        } else if (Object.prototype.toString.call(item[key]) === '[object Object]') {
+                            constructElements(item[key], parentString + key + ".");
+                        } else {
+                            var hiddenField = document.createElement("input");
+                            hiddenField.setAttribute("type", "hidden");
+                            hiddenField.setAttribute("name", parentString + key);
+                            hiddenField.setAttribute("value", item[key]);
+                            form.appendChild(hiddenField);
+                        }
+                    }
                 }
+            }
+
+            //if the parent 'data' object is an array we need to treat it a little differently
+            if (Object.prototype.toString.call(data) === '[object Array]') {
+                if (options.arrayName === undefined) console.warn("Posting array-type to url will doubtfully work without an arrayName defined in options.");
+                //loop through each array item at the parent level
+                for (var i = 0; i < data.length; i++) {
+                    constructElements(data[i], (options.arrayName || "") + "[" + i + "].");
+                }
+            } else {
+                //otherwise treat it normally
+                constructElements(data, "");
             }
 
             document.body.appendChild(form);
             form.submit();
-        }
+        };
 
     function notNullOrEmpty(obj) {
         return typeof obj !== 'undefined' && obj && (!$.isPlainObject(obj) || !$.isEmptyObject(obj));

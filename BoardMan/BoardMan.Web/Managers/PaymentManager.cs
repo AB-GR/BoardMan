@@ -56,7 +56,8 @@ namespace BoardMan.Web.Managers
 		{
 			var result = new PaymentResult { UserDetails = new UserResult() };
 			var paymentIntentVM = await this.paymentService.GetPaymentIntentAsync(request).ConfigureAwait(false);
-			paymentIntentVM.BillingDetails.Password = request.Password;
+			paymentIntentVM.BillingDetails = request.BillingDetails;
+			paymentIntentVM.TransactedById = request.UserId;
 
 			using (ValueLock.Get(paymentIntentVM.PaymentReference).Lock())
 			{

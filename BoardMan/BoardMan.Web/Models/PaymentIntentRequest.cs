@@ -6,10 +6,9 @@ namespace BoardMan.Web.Models
 	{		
 		public Guid PlanId { get; set; }
 
-		[Required]
 		public string Currency { get; set; }
 
-		public BillingDetails BillingDetails { get; set; }
+		public BillingDetails? BillingDetails { get; set; }
 
 		public Guid? UserId { get; set; }
 
