@@ -2,7 +2,7 @@
 
 namespace BoardMan.Web.Models
 {
-	public class PaymentIntentTransaction
+	public class PaymentTransaction
 	{
 		public string PaymentReference { get; set; }
 
@@ -29,5 +29,9 @@ namespace BoardMan.Web.Models
 		public string RawData { get; set; }
 
 		public string Errors { get; set; }
+
+		public string? TransactedBy { get; set; }
+
+		public DateTime? CreatedAt { get; set; }
 	}
 }

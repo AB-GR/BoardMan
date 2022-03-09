@@ -149,8 +149,7 @@ namespace BoardMan.Web.Managers
 
 			return response;
 		}
-
-		private async Task<UserResult> CreateNewUserAsync(PaymentIntentTransaction paymentIntentVM)
+		private async Task<UserResult> CreateNewUserAsync(PaymentTransaction paymentIntentVM)
 		{
 			var user = new AppUser
 			{
@@ -169,7 +168,7 @@ namespace BoardMan.Web.Managers
 			};
 		}
 
-		private async Task<DbPaymentTransaction> PopulateTransactionAsync(PaymentIntentTransaction paymentIntent)
+		private async Task<DbPaymentTransaction> PopulateTransactionAsync(PaymentTransaction paymentIntent)
 		{
 			var transaction = this.mapper.Map<DbPaymentTransaction>(paymentIntent);
 			var error = new StringBuilder(paymentIntent.Errors);

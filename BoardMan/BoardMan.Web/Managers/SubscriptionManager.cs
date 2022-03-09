@@ -1,4 +1,5 @@
-﻿using BoardMan.Web.Data;
+﻿using AutoMapper;
+using BoardMan.Web.Data;
 using BoardMan.Web.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,17 +8,21 @@ namespace BoardMan.Web.Managers
     public interface ISubscriptionManager
     {
         Task<SubscriptionNotification> GetSubscriptionNotificationAsync(Guid userId);
+
+        Task<List<Subscription>> GetSubscriptionsAsync(Guid userId);
     }
 
     public class SubscriptionManager : ISubscriptionManager
     {
         private readonly BoardManDbContext _dbContext;
 		private readonly IConfiguration configuration;
+		private readonly IMapper mapper;
 
-		public SubscriptionManager(BoardManDbContext dbContext, IConfiguration configuration)
+		public SubscriptionManager(BoardManDbContext dbContext, IConfiguration configuration, IMapper mapper)
         {
             _dbContext = dbContext;
 			this.configuration = configuration;
+			this.mapper = mapper;
 		}
 
         public async Task<SubscriptionNotification> GetSubscriptionNotificationAsync(Guid userId)
@@ -41,5 +46,15 @@ namespace BoardMan.Web.Managers
                                 latestSubscription.PaymentTrasaction.PlanId : null
             }; ;
         }
-    }
+
+		public async Task<List<Subscription>> GetSubscriptionsAsync(Guid userId)
+		{
+            var dbSubscriptions = await _dbContext.Subscriptions
+                .Where(x => x.OwnerId == userId && x.DeletedAt == null)
+                .Include(x => x.PaymentTrasaction.Plan)
+                .OrderByDescending(x => x.ExpireAt).ToListAsync();
+
+            return this.mapper.Map<List<Subscription>>(dbSubscriptions);
+        }
+	}
 }
