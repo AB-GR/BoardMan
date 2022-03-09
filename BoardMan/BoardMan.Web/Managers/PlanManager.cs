@@ -7,9 +7,9 @@ namespace BoardMan.Web.Managers
 {
 	public interface IPlanManager
 	{
-		Task<List<PlanVM>> GetAllPlansAsync(bool includeExpired = false);
+		Task<List<Plan>> GetAllPlansAsync(bool includeExpired = false);
 
-		Task<PlanVM> GetPlanAsync(Guid id);
+		Task<Plan> GetPlanAsync(Guid id);
 	}
 
 	public class PlanManager : IPlanManager
@@ -23,16 +23,16 @@ namespace BoardMan.Web.Managers
 			this.mapper = mapper;
 		}
 
-		public async Task<List<PlanVM>> GetAllPlansAsync(bool includeExpired = false)
+		public async Task<List<Plan>> GetAllPlansAsync(bool includeExpired = false)
 		{
 			var dbPlans = await _dbContext.Plans.ToListAsync().ConfigureAwait(false);
-			return mapper.Map<List<PlanVM>>(dbPlans.Where(p => p.Expired == includeExpired));
+			return mapper.Map<List<Plan>>(dbPlans.Where(p => p.Expired == includeExpired));
 		}
 
-		public async Task<PlanVM> GetPlanAsync(Guid planId)
+		public async Task<Plan> GetPlanAsync(Guid planId)
 		{
 			var dbPlan = await _dbContext.Plans.FindAsync(planId).ConfigureAwait(false);
-			return mapper.Map<PlanVM>(dbPlan);
+			return mapper.Map<Plan>(dbPlan);
 		}
 	}
 }

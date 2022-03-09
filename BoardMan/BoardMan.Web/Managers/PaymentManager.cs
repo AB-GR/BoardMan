@@ -11,9 +11,11 @@ namespace BoardMan.Web.Managers
 {
 	public interface IPaymentManager
 	{
-		Task<PaymentIntentResponseVM> CreatePaymentIntentAsync(PaymentIntentRequestVM request);
+		Task<ValidatePaymentResponse> ValidatePaymentAsync(ValidatePaymentRequest request);
 
-		Task<PaymentResultVM> ProcessPaymentAsync(PaymentSuccessRequestVM request);
+		Task<PaymentIntentResponse> CreatePaymentIntentAsync(PaymentIntentRequest request);
+
+		Task<PaymentResult> ProcessPaymentAsync(PaymentSuccessRequest request);
 	}
 
 	public class PaymentManager : IPaymentManager
@@ -35,7 +37,7 @@ namespace BoardMan.Web.Managers
 			this.userManager = userManager;
 		}
 
-		public async Task<PaymentIntentResponseVM> CreatePaymentIntentAsync(PaymentIntentRequestVM request)
+		public async Task<PaymentIntentResponse> CreatePaymentIntentAsync(PaymentIntentRequest request)
 		{			
 			request.ProductName = "Boardman";
 			request.BusinessName = "ABTech";
@@ -50,11 +52,12 @@ namespace BoardMan.Web.Managers
 			return await this.paymentService.CreatePaymentIntentAsync(request).ConfigureAwait(false);
 		}
 
-		public async Task<PaymentResultVM> ProcessPaymentAsync(PaymentSuccessRequestVM request)
+		public async Task<PaymentResult> ProcessPaymentAsync(PaymentSuccessRequest request)
 		{
-			var result = new PaymentResultVM();
+			var result = new PaymentResult { UserDetails = new UserResult() };
 			var paymentIntentVM = await this.paymentService.GetPaymentIntentAsync(request).ConfigureAwait(false);
-			paymentIntentVM.BillingDetails.Password = request.Password;
+			paymentIntentVM.BillingDetails = request.BillingDetails;
+			paymentIntentVM.TransactedById = request.UserId;
 
 			using (ValueLock.Get(paymentIntentVM.PaymentReference).Lock())
 			{
@@ -65,19 +68,32 @@ namespace BoardMan.Web.Managers
 				{
 					transaction = await PopulateTransactionAsync(paymentIntentVM).ConfigureAwait(false);					
 					if(paymentIntentVM.TransactedById.IsNullOrEmpty())
-					{						
-						result.NewUser = await CreateNewUserAsync(paymentIntentVM).ConfigureAwait(false);
-						if (result.NewUser.CreateResult.Succeeded)
+					{
+						var user = await this.userManager.FindByEmailAsync(paymentIntentVM.BillingDetails.UserEmail).ConfigureAwait(false);
+						if(user != null)
 						{
-							transaction.TransactedById = result.NewUser.User.Id;
-							transaction.TransactedBy = result.NewUser.User;
+							transaction.TransactedById = user.Id;
+							transaction.TransactedBy = user;							
 						}
 						else
 						{
-							transaction.Status = PaymentStatus.Invalid;
-							transaction.StatusReason = "New user could not be created";
-							logger.LogWarning($"For payment reference {paymentIntentVM.PaymentReference} a new user could not be created because of this error: {result.NewUser.CreateResult.ErrorsString()}");
-						}
+							result.UserDetails = await CreateNewUserAsync(paymentIntentVM).ConfigureAwait(false);
+							if (result.UserDetails.CreateResult.Succeeded)
+							{
+								transaction.TransactedById = result.UserDetails.User.Id;
+								transaction.TransactedBy = result.UserDetails.User;
+							}
+							else
+							{
+								transaction.Status = PaymentStatus.Invalid;
+								transaction.StatusReason = "New user could not be created";
+								logger.LogWarning($"For payment reference {paymentIntentVM.PaymentReference} a new user could not be created because of this error: {result.UserDetails.CreateResult.ErrorsString()}");
+							}
+						}						
+					}
+					else
+					{
+						result.UserDetails.UserIsLoggedIn = true;
 					}
 
 					await ProcessTransactionAsync(transaction).ConfigureAwait(false);
@@ -88,7 +104,53 @@ namespace BoardMan.Web.Managers
 			}
 		}
 
-		private async Task<UserResultVM> CreateNewUserAsync(PaymentIntentVM paymentIntentVM)
+		public async Task<ValidatePaymentResponse> ValidatePaymentAsync(ValidatePaymentRequest request)
+		{
+			var response = new ValidatePaymentResponse
+			{
+				CanProceed = true,
+				ExistingUser = false
+			};
+			
+			// Check for a valid user
+			AppUser user;
+			if(!request.UserId.IsNullOrEmpty())
+			{
+				user = await this.userManager.FindByIdAsync(request.UserId.GetValueOrDefault().ToString()).ConfigureAwait(false);
+			}
+			else if(!string.IsNullOrWhiteSpace(request.UserEmail))
+			{
+				user = await this.userManager.FindByEmailAsync(request.UserEmail).ConfigureAwait(false);
+				if(user != null)
+				{
+					response.ExistingUser = true;
+					response.Message = $"User with email address {user?.Email} already exists, do you wish to continue payment with the existing account ?";
+				}				
+			}
+			else
+			{
+				throw new InsufficientDataToProcessException("User identifier not provided");
+			}
+
+			var plan = await dbContext.Plans.FindAsync(request.PlanId).ConfigureAwait(false);
+			if (plan == null)
+			{
+				throw new InsufficientDataToProcessException("Plan does not exist");
+			}
+
+			if (user != null)
+			{
+				if (await dbContext.Subscriptions.AnyAsync(x => x.OwnerId == user.Id && x.ExpireAt > DateTime.UtcNow && x.PaymentTrasaction.PlanId == plan.Id).ConfigureAwait(false))
+				{
+					response.CanProceed = false;
+					response.Message = $"User with email address {user.Email} has already purchased the plan";
+				}
+			}
+
+			return response;
+		}
+
+		private async Task<UserResult> CreateNewUserAsync(PaymentIntentTransaction paymentIntentVM)
 		{
 			var user = new AppUser
 			{
@@ -100,14 +162,14 @@ namespace BoardMan.Web.Managers
 
 			var result = await userManager.CreateAsync(user, paymentIntentVM.BillingDetails.Password).ConfigureAwait(false);
 
-			return new UserResultVM
+			return new UserResult
 			{
 				User = user,
 				CreateResult = result
 			};
 		}
 
-		private async Task<DbPaymentTransaction> PopulateTransactionAsync(PaymentIntentVM paymentIntent)
+		private async Task<DbPaymentTransaction> PopulateTransactionAsync(PaymentIntentTransaction paymentIntent)
 		{
 			var transaction = this.mapper.Map<DbPaymentTransaction>(paymentIntent);
 			var error = new StringBuilder(paymentIntent.Errors);

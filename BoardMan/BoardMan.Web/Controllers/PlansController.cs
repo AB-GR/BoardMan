@@ -113,7 +113,7 @@ namespace BoardMan.Web.Controllers
 			}
 
 			var currentUser = await this.userManager.GetUserAsync(User);
-			return View(new BuyPlanVM
+			return View(new BuyPlan
 			{
 				PlanId = planId,
 				PlanDescription = plan.Description,
@@ -126,7 +126,8 @@ namespace BoardMan.Web.Controllers
 				{
 					UserEmail = currentUser?.Email,
 					UserFirstName = currentUser?.FirstName,
-					UserLastName = currentUser?.LastName
+					UserLastName = currentUser?.LastName,
+					IsAnonymousUser = currentUser == null
 				}
 			});
 		}

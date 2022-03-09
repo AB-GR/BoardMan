@@ -152,8 +152,7 @@ namespace BoardMan.Web.Data
 		public decimal CostBeforeDiscount { get; set; }
 
 		public decimal DiscountApplied { get; set; }
-
-		[Required]
+				
 		public decimal FinalCost { get; set; }
 
 		[MaxLength(3)]		

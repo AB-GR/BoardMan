@@ -6,7 +6,7 @@ namespace BoardMan.Web.Managers
 {
     public interface ISubscriptionManager
     {
-        Task<SubscriptionNotificationVM> GetSubscriptionNotificationAsync(Guid userId);
+        Task<SubscriptionNotification> GetSubscriptionNotificationAsync(Guid userId);
     }
 
     public class SubscriptionManager : ISubscriptionManager
@@ -20,14 +20,14 @@ namespace BoardMan.Web.Managers
 			this.configuration = configuration;
 		}
 
-        public async Task<SubscriptionNotificationVM> GetSubscriptionNotificationAsync(Guid userId)
+        public async Task<SubscriptionNotification> GetSubscriptionNotificationAsync(Guid userId)
         {
             var latestSubscription = await _dbContext.Subscriptions
                 .Where(x => x.OwnerId == userId && x.DeletedAt == null)
                 .Include(x => x.PaymentTrasaction.Plan)
                 .OrderByDescending(x => x.ExpireAt).FirstOrDefaultAsync();			
 
-			return new SubscriptionNotificationVM
+			return new SubscriptionNotification
             {
                 SubscriptionStatus = latestSubscription == null ? 
                 SubscriptionStatus.NoSubscriptionAvailable :

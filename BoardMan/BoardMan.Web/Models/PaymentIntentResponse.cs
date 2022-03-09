@@ -1,6 +1,6 @@
 ﻿namespace BoardMan.Web.Models
 {
-	public class PaymentIntentResponseVM
+	public class PaymentIntentResponse
 	{
 		public string PaymentIntentId { get; set; }
 

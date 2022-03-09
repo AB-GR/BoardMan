@@ -1,12 +1,12 @@
 ﻿using BoardMan.Web.Infrastructure.Utils.Extensions;
+using BoardMan.Web.Infrastructure.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace BoardMan.Web.Models
 {
-	public class BuyPlanVM : IValidatableObject
-	{
-		[Required]
+	public class BuyPlan : IValidatableObject
+	{		
 		public Guid PlanId { get; set; }
 
 		[Display(Name = "Plan")]
@@ -38,39 +38,36 @@ namespace BoardMan.Web.Models
 	}
 
 	public class BillingDetails
-	{
-		[Required]
+	{		
 		[Display(Name = "First Name")]
 		[MaxLength(50)]
 		public string UserFirstName { get; set; }
-
-		[Required]
+				
 		[Display(Name = "Last Name")]
 		[MaxLength(50)]
 		public string UserLastName { get; set; }
-
-		[Required]
+				
 		[EmailAddress]
 		[Display(Name = "Email")]
 		public string UserEmail { get; set; }
 
-		[Required]
+		public bool? IsAnonymousUser { get; set; }
+
+		[RequiredIfTrue(nameof(IsAnonymousUser), ErrorMessage = "The Password field is required.")]
 		[StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
 		[DataType(DataType.Password)]
 		[Display(Name = "Password")]
-		public string Password { get; set; }
+		public string? Password { get; set; }
 
 		[DataType(DataType.Password)]
 		[Display(Name = "Confirm password")]
 		[Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-		public string ConfirmPassword { get; set; }
-
-		[Required]
+		public string? ConfirmPassword { get; set; }
+				
 		[Display(Name = "Name as on Card")]
 		[MaxLength(100)]
 		public string NameAsOnCard { get; set; }
-
-		[Required]
+				
 		[MaxLength(200)]
 		[Display(Name = "Line1")]
 		public string AddressLine1 { get; set; }
@@ -78,20 +75,16 @@ namespace BoardMan.Web.Models
 		[MaxLength(200)]
 		[Display(Name = "Line2")]
 		public string? AddressLine2 { get; set; }
-
-		[Required]
+				
 		[MaxLength(50)]		
 		public string City { get; set; }
-
-		[Required]
+				
 		[MaxLength(50)]
 		public string State { get; set; }
-
-		[Required]
+				
 		[MaxLength(20)]
 		public string ZipCode { get; set; }
-
-		[Required]
+				
 		[MaxLength(3)]
 		public string Country => "US";
 
