@@ -169,7 +169,7 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("PaymentTransactionId")
                         .IsUnique();
 
-                    b.ToTable("BillingDetails");
+                    b.ToTable("BillingDetails", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbPaymentTransaction", b =>
@@ -237,7 +237,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("TransactedById");
 
-                    b.ToTable("PaymentTransactions");
+                    b.ToTable("PaymentTransactions", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbPlan", b =>
@@ -282,7 +282,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Plans");
+                    b.ToTable("Plans", (string)null);
 
                     b.HasData(
                         new
@@ -373,7 +373,7 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("Code", "PlanId")
                         .IsUnique();
 
-                    b.ToTable("PlanDiscounts");
+                    b.ToTable("PlanDiscounts", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbSubscription", b =>
@@ -415,7 +415,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("PaymentTrasactionId");
 
-                    b.ToTable("Subscriptions");
+                    b.ToTable("Subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbWorkspace", b =>
@@ -455,7 +455,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("SubscriptionId");
 
-                    b.ToTable("Workspaces");
+                    b.ToTable("Workspaces", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.Role", b =>

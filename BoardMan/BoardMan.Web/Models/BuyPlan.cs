@@ -6,8 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace BoardMan.Web.Models
 {
 	public class BuyPlan : IValidatableObject
-	{
-		[Required]
+	{		
 		public Guid PlanId { get; set; }
 
 		[Display(Name = "Plan")]
@@ -39,18 +38,15 @@ namespace BoardMan.Web.Models
 	}
 
 	public class BillingDetails
-	{
-		[Required]
+	{		
 		[Display(Name = "First Name")]
 		[MaxLength(50)]
 		public string UserFirstName { get; set; }
-
-		[Required]
+				
 		[Display(Name = "Last Name")]
 		[MaxLength(50)]
 		public string UserLastName { get; set; }
-
-		[Required]
+				
 		[EmailAddress]
 		[Display(Name = "Email")]
 		public string UserEmail { get; set; }
@@ -67,13 +63,11 @@ namespace BoardMan.Web.Models
 		[Display(Name = "Confirm password")]
 		[Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
 		public string? ConfirmPassword { get; set; }
-
-		[Required]
+				
 		[Display(Name = "Name as on Card")]
 		[MaxLength(100)]
 		public string NameAsOnCard { get; set; }
-
-		[Required]
+				
 		[MaxLength(200)]
 		[Display(Name = "Line1")]
 		public string AddressLine1 { get; set; }
@@ -81,20 +75,16 @@ namespace BoardMan.Web.Models
 		[MaxLength(200)]
 		[Display(Name = "Line2")]
 		public string? AddressLine2 { get; set; }
-
-		[Required]
+				
 		[MaxLength(50)]		
 		public string City { get; set; }
-
-		[Required]
+				
 		[MaxLength(50)]
 		public string State { get; set; }
-
-		[Required]
+				
 		[MaxLength(20)]
 		public string ZipCode { get; set; }
-
-		[Required]
+				
 		[MaxLength(3)]
 		public string Country => "US";
 

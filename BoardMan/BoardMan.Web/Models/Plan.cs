@@ -5,21 +5,19 @@ namespace BoardMan.Web.Models
 {
 	public class Plan
 	{
-		public Guid Id { get; set; }
+		public Guid? Id { get; set; }
 
 		[MaxLength(100)]
 		public string Name { get; set; }
 
 		[MaxLength(256)]
-		public string Description { get; set; }
-
-		[Required]
+		public string? Description { get; set; }
+				
 		public decimal Cost { get; set; }
 
 		[MaxLength(3)]
 		public string Currency { get; set; }
-
-		[Required]
+				
 		public PlanType PlanType { get; set; }
 
 		public DateTime? ExpireAt { get; set; }
@@ -28,8 +26,8 @@ namespace BoardMan.Web.Models
 
 		public DateTime? DeletedAt { get; set; }
 
-		public DateTime CreatedAt { get; set; }
+		public DateTime? CreatedAt { get; set; }
 
-		public DateTime ModifiedAt { get; set; }
+		public DateTime? ModifiedAt { get; set; }
 	}
 }
