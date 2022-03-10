@@ -1,8 +1,10 @@
 ﻿using BoardMan.Web.Data;
+using BoardMan.Web.Infrastructure.Converters;
 using BoardMan.Web.Infrastructure.Utils;
 using BoardMan.Web.Models;
 using BoardMan.Web.Resources;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -43,10 +45,13 @@ namespace BoardMan.Web.Controllers
 
         protected virtual ActionResult JsonResponse(object data)
         {
+            // Retrieves the requested culture
+            var requestFeature = Request.HttpContext.Features.Get<IRequestCultureFeature>();            
+
             var content = JsonConvert.SerializeObject(data,
                 new JsonSerializerSettings
                 {
-                    Converters = new JsonConverter[] { new StringEnumConverter() },
+                    Converters = new JsonConverter[] { new FormattedDateTimeZoneConverter(requestFeature.RequestCulture.Culture), new StringEnumConverter() },
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 });
             return Content(content,

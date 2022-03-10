@@ -11,7 +11,7 @@ namespace BoardMan.Web.Managers
 	{
 		Task<PaymentIntentResponse> CreatePaymentIntentAsync(PaymentIntentRequest request);
 
-		Task<PaymentIntentTransaction> GetPaymentIntentAsync(PaymentSuccessRequest request);
+		Task<PaymentTransaction> GetPaymentIntentAsync(PaymentSuccessRequest request);
 	}
 
 	public class PaymentService : IPaymentService
@@ -51,7 +51,7 @@ namespace BoardMan.Web.Managers
 			};
 		}
 
-		public async Task<PaymentIntentTransaction> GetPaymentIntentAsync(PaymentSuccessRequest request)
+		public async Task<PaymentTransaction> GetPaymentIntentAsync(PaymentSuccessRequest request)
 		{
 			var paymentIntent = await this.service.GetAsync(request.PaymentIntentId,
 				new PaymentIntentGetOptions { Expand = new List<string> { "payment_method" } }).ConfigureAwait(false);
@@ -62,7 +62,7 @@ namespace BoardMan.Web.Managers
 			}
 
 			var error = new StringBuilder();
-			var paymentIntentVM = new PaymentIntentTransaction
+			var paymentIntentVM = new PaymentTransaction
 			{
 				PaymentReference = paymentIntent.Id,
 				CostBeforeDiscount = (decimal)paymentIntent.Amount / 100,

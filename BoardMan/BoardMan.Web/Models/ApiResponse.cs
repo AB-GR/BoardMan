@@ -2,6 +2,8 @@
 {
 	public class ApiResponse
 	{
+		public string Result => this.Succeeded ? "OK" : "ERROR";
+
 		public bool Succeeded { get; protected set; }
 
 		public string Message { get; protected set; }
