@@ -256,6 +256,7 @@ namespace BoardMan.Web.Managers
 						dbContext.Workspaces.Add(workspace);
 
 						transaction.Status = PaymentStatus.Processed;
+						transaction.StatusReason = Enum.GetName(typeof(PaymentStatus), PaymentStatus.Processed);
 					}
 
 					await dbContext.SaveChangesAsync().ConfigureAwait(false);

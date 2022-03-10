@@ -10,6 +10,8 @@ namespace BoardMan.Web.Managers
         Task<SubscriptionNotification> GetSubscriptionNotificationAsync(Guid userId);
 
         Task<List<Subscription>> GetSubscriptionsAsync(Guid userId);
+
+        Task<List<PaymentTransaction>> GetPaymentTransactions(Guid subscriptionId);
     }
 
     public class SubscriptionManager : ISubscriptionManager
@@ -25,11 +27,24 @@ namespace BoardMan.Web.Managers
 			this.mapper = mapper;
 		}
 
-        public async Task<SubscriptionNotification> GetSubscriptionNotificationAsync(Guid userId)
+		public async Task<List<PaymentTransaction>> GetPaymentTransactions(Guid subscriptionId)
+		{
+            var dbPaymentTransactions = await _dbContext.Subscriptions
+                .Where(x => x.Id == subscriptionId && x.DeletedAt == null)
+                .Include(x => x.PaymentTrasaction.Plan)
+                .Include(x => x.PaymentTrasaction.TransactedBy)
+                .OrderByDescending(x => x.ExpireAt)
+                .Select(x => x.PaymentTrasaction).ToListAsync();
+
+            return this.mapper.Map<List<PaymentTransaction>>(dbPaymentTransactions);
+        }
+
+		public async Task<SubscriptionNotification> GetSubscriptionNotificationAsync(Guid userId)
         {
             var latestSubscription = await _dbContext.Subscriptions
                 .Where(x => x.OwnerId == userId && x.DeletedAt == null)
                 .Include(x => x.PaymentTrasaction.Plan)
+                .Include(x => x.PaymentTrasaction.TransactedBy)
                 .OrderByDescending(x => x.ExpireAt).FirstOrDefaultAsync();			
 
 			return new SubscriptionNotification

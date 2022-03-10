@@ -27,5 +27,11 @@ namespace BoardMan.Web.Controllers
 		{
 			return JsonResponse(ApiResponse.List(await this.subscriptionManager.GetSubscriptionsAsync(this.userManager.GetGuidUserId(User))));			
 		}
+
+		[HttpPost]
+		public async Task<ActionResult> GetPaymentTransactions(Guid subscriptionId)
+		{
+			return JsonResponse(ApiResponse.List(await this.subscriptionManager.GetPaymentTransactions(subscriptionId)));
+		}
 	}
 }

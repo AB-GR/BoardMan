@@ -1,4 +1,6 @@
 ﻿using BoardMan.Web.Data;
+using BoardMan.Web.Infrastructure.Converters;
+using Newtonsoft.Json;
 
 namespace BoardMan.Web.Models
 {
@@ -32,6 +34,7 @@ namespace BoardMan.Web.Models
 
 		public string? TransactedBy { get; set; }
 
+		[JsonConverter(typeof(FormattedDateTimeZonePropertyConverter), DateTimeFormats.DateFormat)]
 		public DateTime? CreatedAt { get; set; }
 	}
 }

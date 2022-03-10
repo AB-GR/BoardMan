@@ -13,8 +13,9 @@ namespace BoardMan.Web
             CreateMap<DbSubscription, Subscription>()                
                 .ForMember(x => x.PlanName, x => x.MapFrom(d => d.PaymentTrasaction.Plan.Name));
             
-            CreateMap<DbPaymentTransaction, PaymentTransaction>();
-            
+            CreateMap<DbPaymentTransaction, PaymentTransaction>()
+                .ForMember(x => x.TransactedBy, x => x.MapFrom(d => d.TransactedBy.UserName));
+
             CreateMap<PaymentTransaction, DbPaymentTransaction>()
                 .ForMember(x => x.Plan, x => x.Ignore())
                 .ForMember(x => x.PlanDiscount, x => x.Ignore())
