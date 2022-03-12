@@ -35,6 +35,19 @@ namespace BoardMan.Web
                 .ForMember(x => x.CreatedAt, x => x.Ignore())
                 .ForMember(x => x.ModifiedAt, x => x.Ignore())
                 .ForMember(x => x.DeletedAt, x => x.Ignore());
+
+            CreateMap<DbWorkspace, Workspace>()
+                .ForMember(x => x.HasSubscription, x => x.MapFrom((src, dest) => src.Subscription != null))
+                .ForMember(x => x.SubscriptionName, x => x.MapFrom(src => src.Subscription != null ? src.Subscription.Name : string.Empty));
+
+            CreateMap<DbBoard, Board>();
+            CreateMap<Board, DbBoard>();
+
+            CreateMap<DbList, List>();
+            CreateMap<List, DbList>();
+
+            CreateMap<DbTask, Task>();
+            CreateMap<Task, DbTask>();
         }
     }
 

@@ -77,6 +77,8 @@ namespace BoardMan.Web.Data
 		public Guid OwnerId { get; set; }
 
 		public AppUser Owner { get; set; } = null!;
+
+		public List<DbBoard> Boards { get; set; } = null!;
 	}
 
 	[Table("WorkspaceMembers")]
@@ -166,9 +168,9 @@ namespace BoardMan.Web.Data
 		public DbList List { get; set; } = null!;
 
 		[ForeignKey("AssignedTo")]
-		public Guid AssignedToId { get; set; }
+		public Guid? AssignedToId { get; set; }
 
-		public AppUser AssignedTo { get; set; } = null!;
+		public AppUser? AssignedTo { get; set; } = null!;
 	}
 
 	[Table("TaskComments")]

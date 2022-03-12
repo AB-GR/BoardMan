@@ -45,21 +45,24 @@ namespace BoardMan.Web.Managers
                 .Where(x => x.OwnerId == userId && x.DeletedAt == null)
                 .Include(x => x.PaymentTrasaction.Plan)
                 .Include(x => x.PaymentTrasaction.TransactedBy)
-                .OrderByDescending(x => x.ExpireAt).FirstOrDefaultAsync();			
+                .OrderByDescending(x => x.ExpireAt).FirstOrDefaultAsync();
 
-			return new SubscriptionNotification
+            var priorPlanId = latestSubscription != null && !latestSubscription.PaymentTrasaction.Plan.Expired ?
+                                latestSubscription.PaymentTrasaction.PlanId : (Guid?)null;
+
+            var result = new SubscriptionNotification
             {
-                SubscriptionStatus = latestSubscription == null ? 
-                SubscriptionStatus.NoSubscriptionAvailable :
-                    !latestSubscription.Expired ? 
-                        latestSubscription.ExpireAt.Subtract(DateTime.UtcNow).Days <= this.configuration.GetValue("SubscriptionAboutToExpireDays", 7) ? 
-                            SubscriptionStatus.SubscriptionAboutToExpire 
-                                : SubscriptionStatus.SubscriptionValid
-                    : SubscriptionStatus.SubscriptionExpired,
+                SubscriptionStatus = latestSubscription == null ?
+                SubscriptionStatus.NotAvailable :
+                    !latestSubscription.Expired ?
+                        latestSubscription.ExpireAt.Subtract(DateTime.UtcNow).Days <= this.configuration.GetValue("SubscriptionAboutToExpireDays", 7) ?
+                            priorPlanId == null ? SubscriptionStatus.AboutToExpirePriorPlanInvalid : SubscriptionStatus.AboutToExpire
+                                : SubscriptionStatus.Valid
+                    : priorPlanId == null ? SubscriptionStatus.ExpiredPriorPlanInvalid : SubscriptionStatus.Expired,
+                PriorPlanId = priorPlanId
+            };
 
-                PriorPlanId = latestSubscription != null && !latestSubscription.PaymentTrasaction.Plan.Expired ? 
-                                latestSubscription.PaymentTrasaction.PlanId : null
-            }; ;
+            return result;
         }
 
 		public async Task<List<Subscription>> GetSubscriptionsAsync(Guid userId)
