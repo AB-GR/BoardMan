@@ -18,6 +18,7 @@ services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 services.AddScoped<ISubscriptionManager, SubscriptionManager>();
 services.AddScoped<IPlanManager, PlanManager>();
 services.AddScoped<IPaymentManager, PaymentManager>();
+services.AddScoped<IWorkspaceManager, WorkspaceManager>();
 services.AddTransient<PaymentIntentService>();
 services.AddScoped<IPaymentService, PaymentService>();
 services.AddLocalization(o => o.ResourcesPath = "Resources");

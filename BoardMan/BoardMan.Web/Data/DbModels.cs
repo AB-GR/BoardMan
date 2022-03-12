@@ -40,24 +40,255 @@ namespace BoardMan.Web.Data
 		AmountNotMatched
 	}
 
+	public enum AttachmentType
+	{
+		Document,
+		Audio,
+		Video
+	}
+
+	public enum EntityType
+	{
+		Workspace,
+		Board,
+		Task
+	}
+
+	public enum UserAction
+	{
+		None
+	}
+
 	[Table("Workspaces")]
 	public class DbWorkspace : DbEntity
 	{
 		[MaxLength(100)]
-		public string Title { get; set; }
+		public string Title { get; set; } = null!;
 
 		[MaxLength(250)]
 		public string? Description { get; set; }
 
 		[ForeignKey("Subscription")]
-		public Guid SubscriptionId { get; set; }
+		public Guid? SubscriptionId { get; set; }
 
-		public DbSubscription Subscription { get; set; }
+		public DbSubscription? Subscription { get; set; } = null!;
 
 		[ForeignKey("Owner")]
 		public Guid OwnerId { get; set; }
 
-		public AppUser Owner { get; set; }
+		public AppUser Owner { get; set; } = null!;
+	}
+
+	[Table("WorkspaceMembers")]
+	public class DbWorkspaceMember : DbEntity
+	{
+
+		[ForeignKey("Workspace")]
+		public Guid WorkspaceId { get; set; }
+
+		public DbWorkspace Workspace { get; set; } = null!;
+
+		[ForeignKey("Member")]
+		public Guid MemberId { get; set; }
+
+		public AppUser Member { get; set; } = null!;
+	}
+
+	[Table("Boards")]
+	public class DbBoard : DbEntity
+	{
+		[MaxLength(100)]
+		public string Title { get; set; } = null!;
+
+		[MaxLength(250)]
+		public string? Description { get; set; }
+
+		[ForeignKey("Workspace")]
+		public Guid WorkspaceId { get; set; }
+
+		public DbWorkspace Workspace { get; set; } = null!;
+
+		[ForeignKey("Owner")]
+		public Guid OwnerId { get; set; }
+
+		public AppUser Owner { get; set; } = null!;
+	}
+
+	[Table("BoardMembers")]
+	public class DbBoardMember : DbEntity
+	{
+
+		[ForeignKey("Board")]
+		public Guid BoardId { get; set; }
+
+		public DbBoard Board { get; set; } = null!;
+
+		[ForeignKey("Member")]
+		public Guid MemberId { get; set; }
+
+		public AppUser Member { get; set; } = null!;
+	}
+
+
+	[Table("Lists")]
+	public class DbList : DbEntity
+	{
+		[MaxLength(100)]
+		public string Title { get; set; } = null!;
+
+		[MaxLength(250)]
+		public string? Description { get; set; }
+
+		[ForeignKey("Board")]
+		public Guid BoardId { get; set; }
+
+		public DbBoard Board { get; set; } = null!;
+	}
+
+	[Table("Tasks")]
+	public class DbTask : DbEntity
+	{
+		[MaxLength(100)]
+		public string Title { get; set; } = null!;
+
+		[MaxLength(250)]
+		public string? Description { get; set; }
+
+		public DateTime? EndDate { get; set; }
+
+		public DateTime? ActualEndDate { get; set; }
+
+		public bool? IsCompleted { get; set; }
+
+		[ForeignKey("List")]
+		public Guid ListId { get; set; }
+
+		public DbList List { get; set; } = null!;
+
+		[ForeignKey("AssignedTo")]
+		public Guid AssignedToId { get; set; }
+
+		public AppUser AssignedTo { get; set; } = null!;
+	}
+
+	[Table("TaskComments")]
+	public class DbTaskComment : DbEntity
+	{
+		[ForeignKey("Task")]
+		public Guid TaskId { get; set; }
+
+		public DbTask Task { get; set; } = null!;
+
+		[MaxLength(250)]
+		public string Comment { get; set; } = null!;
+
+		[ForeignKey("CommentedBy")]
+		public Guid CommentedById { get; set; }
+
+		public AppUser CommentedBy { get; set; } = null!;
+	}
+
+	[Table("TaskChecklists")]
+	public class DbTaskChecklist : DbEntity
+	{
+		[MaxLength(250)]
+		public string Description { get; set; } = null!;
+
+		public bool? IsComplete { get; set; }
+
+		public int? Priority { get; set; }
+
+		[ForeignKey("Task")]
+		public Guid TaskId { get; set; }
+
+		public DbTask Task { get; set; } = null!;
+
+		[ForeignKey("CommentedBy")]
+		public Guid CommentedById { get; set; }
+
+		public AppUser CommentedBy { get; set; } = null!;
+	}
+
+	[Table("TaskAttachments")]
+	public class DbTaskAttachment : DbEntity
+	{
+		[MaxLength(50)]
+		public string FileName { get; set; } = null!;
+
+		[MaxLength(500)]
+		public string FileUri { get; set; } = null!;
+
+		[MaxLength(25)]
+		public AttachmentType Type { get; set; }
+
+		[ForeignKey("Task")]
+		public Guid TaskId { get; set; }
+
+		public DbTask Task { get; set; } = null!;
+
+		[ForeignKey("UploadedBy")]
+		public Guid UploadedById { get; set; }
+
+		public AppUser UploadedBy { get; set; } = null!;
+	}
+
+	[Table("TaskWatchers")]
+	public class DbTaskWatcher : DbEntity
+	{
+		[ForeignKey("Task")]
+		public Guid TaskId { get; set; }
+
+		public DbTask Task { get; set; } = null!;
+
+		[ForeignKey("WatchedBy")]
+		public Guid WatchedById { get; set; }
+
+		public AppUser WatchedBy { get; set; } = null!;
+	}
+
+	[Table("TaskLabels")]
+	public class DbTaskLabel : DbEntity
+	{
+		[MaxLength(30)]
+		public string Label { get; set; } = null!;
+
+		[ForeignKey("Task")]
+		public Guid TaskId { get; set; }
+
+		public DbTask Task { get; set; } = null!;
+	}
+
+	[Table("ActivityTrackings")]
+	public class DbActivityTracking : DbEntity
+	{
+		public string EntityUrn { get; set; } = null!;
+
+		public string PropertyName { get; set; } = null!;
+
+		public string? OldValue { get; set; }
+
+		public string NewValue { get; set; } = null!;
+
+		public UserAction Action { get; set; }
+
+		[ForeignKey("DoneBy")]
+		public Guid DoneById { get; set; }
+
+		public AppUser DoneBy { get; set; } = null!;
+	}
+
+	[Table("EmailInvites")]
+	public class DbEmailInvite : DbEntity
+	{
+		public string EntityUrn { get; set; } = null!;
+
+		public string EmailAddress { get; set; } = null!;
+
+		public string Token { get; set; } = null!;
+
+		public DateTime ExpireAt { get; set; }
+
+		public bool? Accepted { get; set; }
 	}
 
 	[Table("Subscriptions")]
@@ -159,7 +390,7 @@ namespace BoardMan.Web.Data
 		public string Currency { get; set; }
 
 		[ForeignKey("TransactedBy")]
-		public Guid TransactedById { get; set; }
+		public Guid? TransactedById { get; set; }
 
 		public AppUser? TransactedBy { get; set; }
 
