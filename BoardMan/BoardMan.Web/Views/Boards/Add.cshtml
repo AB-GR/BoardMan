@@ -1,0 +1,36 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model Board
+@{
+    ViewData["Title"] = "Add Board";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div >
+        <form id="addBoardForm" method="post">
+            <input asp-for="WorkspaceId" type="hidden"/>
+
+            <h2>Create a new Board.</h2>
+            <hr />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-floating">
+                <input asp-for="Title" class="form-control" aria-required="true" />
+                <label asp-for="Title"></label>
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-floating">
+                <input asp-for="Description" class="form-control" aria-required="true" />
+                <label asp-for="Description"></label>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <button id="addBoardSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Submit</button>
+        </form>
+    </div>    
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

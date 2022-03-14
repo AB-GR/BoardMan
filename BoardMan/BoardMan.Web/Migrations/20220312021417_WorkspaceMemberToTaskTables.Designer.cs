@@ -4,6 +4,7 @@ using BoardMan.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoardMan.Web.Migrations
 {
     [DbContext(typeof(BoardManDbContext))]
-    partial class BoardManDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220312021417_WorkspaceMemberToTaskTables")]
+    partial class WorkspaceMemberToTaskTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -476,45 +478,45 @@ namespace BoardMan.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("810c551a-9151-47fc-b79e-7c91a4290a0a"),
+                            Id = new Guid("e562ee32-2b39-44d4-af8e-d474d3a83a34"),
                             Cost = 99m,
-                            CreatedAt = new DateTime(2022, 3, 14, 5, 44, 1, 600, DateTimeKind.Utc).AddTicks(3657),
+                            CreatedAt = new DateTime(2022, 3, 12, 2, 14, 16, 361, DateTimeKind.Utc).AddTicks(8530),
                             Currency = "USD",
                             Description = "This is the standard monthly plan",
-                            ExpireAt = new DateTime(2023, 3, 14, 5, 44, 1, 600, DateTimeKind.Utc).AddTicks(3662),
+                            ExpireAt = new DateTime(2023, 3, 12, 2, 14, 16, 361, DateTimeKind.Utc).AddTicks(8535),
                             Name = "Standard (Monhtly)",
                             PlanType = 0
                         },
                         new
                         {
-                            Id = new Guid("a5ba2b23-7344-445f-9717-d4642eb5e853"),
+                            Id = new Guid("ae483435-f2d1-4d44-a825-84026c865bbb"),
                             Cost = 948m,
-                            CreatedAt = new DateTime(2022, 3, 14, 5, 44, 1, 600, DateTimeKind.Utc).AddTicks(3715),
+                            CreatedAt = new DateTime(2022, 3, 12, 2, 14, 16, 361, DateTimeKind.Utc).AddTicks(8579),
                             Currency = "USD",
                             Description = "This is the standard annual plan",
-                            ExpireAt = new DateTime(2023, 3, 14, 5, 44, 1, 600, DateTimeKind.Utc).AddTicks(3716),
+                            ExpireAt = new DateTime(2023, 3, 12, 2, 14, 16, 361, DateTimeKind.Utc).AddTicks(8579),
                             Name = "Standard (Annual)",
                             PlanType = 1
                         },
                         new
                         {
-                            Id = new Guid("a0ad89a3-17c1-4e12-ada3-0e6c00ee045c"),
+                            Id = new Guid("e7db08a2-c9f7-4fb4-ab53-9644c81b0a2a"),
                             Cost = 299m,
-                            CreatedAt = new DateTime(2022, 3, 14, 5, 44, 1, 600, DateTimeKind.Utc).AddTicks(3736),
+                            CreatedAt = new DateTime(2022, 3, 12, 2, 14, 16, 361, DateTimeKind.Utc).AddTicks(8610),
                             Currency = "USD",
                             Description = "This is the premium monthly plan",
-                            ExpireAt = new DateTime(2023, 3, 14, 5, 44, 1, 600, DateTimeKind.Utc).AddTicks(3738),
+                            ExpireAt = new DateTime(2023, 3, 12, 2, 14, 16, 361, DateTimeKind.Utc).AddTicks(8610),
                             Name = "Premium (Monthly)",
                             PlanType = 0
                         },
                         new
                         {
-                            Id = new Guid("9699bbb2-2ebc-4003-bb47-b231a6b8b263"),
+                            Id = new Guid("ff007ea9-52c6-4e57-a7c6-011452fa4775"),
                             Cost = 3000m,
-                            CreatedAt = new DateTime(2022, 3, 14, 5, 44, 1, 600, DateTimeKind.Utc).AddTicks(3759),
+                            CreatedAt = new DateTime(2022, 3, 12, 2, 14, 16, 361, DateTimeKind.Utc).AddTicks(8704),
                             Currency = "USD",
                             Description = "This is the premium annual plan",
-                            ExpireAt = new DateTime(2023, 3, 14, 5, 44, 1, 600, DateTimeKind.Utc).AddTicks(3759),
+                            ExpireAt = new DateTime(2023, 3, 12, 2, 14, 16, 361, DateTimeKind.Utc).AddTicks(8705),
                             Name = "Premium (Annual)",
                             PlanType = 1
                         });
@@ -617,7 +619,7 @@ namespace BoardMan.Web.Migrations
                     b.Property<DateTime?>("ActualEndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("AssignedToId")
+                    b.Property<Guid>("AssignedToId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -708,11 +710,11 @@ namespace BoardMan.Web.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
+                    b.Property<Guid>("CommentedById")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<Guid>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -736,7 +738,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CommentedById");
 
                     b.HasIndex("TaskId");
 
@@ -1079,7 +1081,7 @@ namespace BoardMan.Web.Migrations
                         .IsRequired();
 
                     b.HasOne("BoardMan.Web.Data.DbWorkspace", "Workspace")
-                        .WithMany("Boards")
+                        .WithMany()
                         .HasForeignKey("WorkspaceId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -1179,7 +1181,8 @@ namespace BoardMan.Web.Migrations
                     b.HasOne("BoardMan.Web.Data.AppUser", "AssignedTo")
                         .WithMany()
                         .HasForeignKey("AssignedToId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("BoardMan.Web.Data.DbList", "List")
                         .WithMany()
@@ -1213,9 +1216,9 @@ namespace BoardMan.Web.Migrations
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskChecklist", b =>
                 {
-                    b.HasOne("BoardMan.Web.Data.AppUser", "CreatedBy")
+                    b.HasOne("BoardMan.Web.Data.AppUser", "CommentedBy")
                         .WithMany()
-                        .HasForeignKey("CreatedById")
+                        .HasForeignKey("CommentedById")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -1225,7 +1228,7 @@ namespace BoardMan.Web.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("CreatedBy");
+                    b.Navigation("CommentedBy");
 
                     b.Navigation("Task");
                 });
@@ -1371,11 +1374,6 @@ namespace BoardMan.Web.Migrations
                 {
                     b.Navigation("BillingDetails")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("BoardMan.Web.Data.DbWorkspace", b =>
-                {
-                    b.Navigation("Boards");
                 });
 #pragma warning restore 612, 618
         }

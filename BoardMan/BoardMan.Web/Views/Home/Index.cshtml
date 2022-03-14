@@ -15,27 +15,31 @@
     <h1 class="display-4">@ViewData["Title"]</h1>
     @if (SignInManager.IsSignedIn(User))
     {
-        if(Model.SubscriptionStatus == SubscriptionStatus.NoSubscriptionAvailable || Model.PriorPlanId == null)
-        {
-            <div class="lead">
-                You havent subscribed yet, please subscribe using any of these <a asp-controller="@(ControllerUtils.GetControllerName<PlansController>())" asp-action="@nameof(PlansController.Index)">plans</a>
-            </div>
-        }
-        else
-        {
-            if(Model.SubscriptionStatus == SubscriptionStatus.SubscriptionAboutToExpire)
-            {
+        switch(Model.SubscriptionStatus){
+            case SubscriptionStatus.NotAvailable:
+            case SubscriptionStatus.AboutToExpirePriorPlanInvalid:
+            case SubscriptionStatus.ExpiredPriorPlanInvalid:
+                <div class="lead">
+                    You havent subscribed yet, please subscribe using any of these <a asp-controller="@(ControllerUtils.GetControllerName<PlansController>())" asp-action="@nameof(PlansController.Index)">plans</a>
+                </div>
+                break;
+            case SubscriptionStatus.AboutToExpire:            
                 <div>
                     Your plan is about to expire, please renew the subscription using the same <a asp-controller="Home" asp-action="Index">plan</a> or any of these <a asp-controller="@(ControllerUtils.GetControllerName<PlansController>())" asp-action="@nameof(PlansController.Index)">plans</a>
                 </div>
-            }
-            else if(Model.SubscriptionStatus == SubscriptionStatus.SubscriptionExpired)
-            {
+                break;
+            case SubscriptionStatus.Expired:
                 <div>
                     Your plan has expired, please renew the subscription using the same <a asp-controller="Home" asp-action="Index">plan</a> or any of these <a asp-controller="@(ControllerUtils.GetControllerName<PlansController>())" asp-action="@nameof(PlansController.Index)">plans</a>
                 </div>
-            }
+                break;
         }
 
+        if(Model.SubscriptionStatus == SubscriptionStatus.Valid)
+        {
+            <div class="lead">
+                Please checkout your <a asp-controller="Workspaces" asp-action="Index">workspace</a>
+            </div>
+        }
     }
-</div>
+</>

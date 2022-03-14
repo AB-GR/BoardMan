@@ -1,0 +1,66 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model AllWorkspaces
+
+<h3>@Model.Primary.Title</h3>
+<p>@Model.Primary.Description</p>
+<h3>Boards</h3>
+@if (Model.Primary.Boards.Count > 0)
+{
+    foreach(var pBoard in Model.Primary.Boards)
+    {
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title"> <a asp-controller="Boards" asp-action="Get" asp-route-boardId="@pBoard.Id">@pBoard.Title</a></h5>
+                <p class="card-text">@pBoard.Description</p>                
+                <a asp-controller="Boards" asp-action="Delete" asp-route-boardId="@pBoard.Id" class="btn btn-primary">Remove</a>
+            </div>
+        </div>
+        <br/>
+    }
+}
+else
+{
+    <p>No Boards to display!</p>
+}
+
+<a asp-controller="Boards" asp-action="Add" asp-route-workspaceId="@Model.Primary.Id" class="btn btn-primary" >Add a board</a>
+
+<br/>
+<br/>
+<h2>Member Workspaces</h2>
+@if (Model.Others.Count > 0)
+{
+    @foreach(var ws in Model.Others){        
+        <h3>ws.Title</h3>
+        <p>ws.Description</p>
+        <h3>Boards</h3>
+        @if (ws.Boards.Count > 0)
+        {
+            foreach(var otherBoard in ws.Boards)
+            {
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title"><a href="#">@otherBoard.Title</a></h5>
+                        <p class="card-text">@otherBoard.Description</p>
+                    </div>
+                </div>
+                <br/>
+            }
+        }
+        else
+        {
+            <p>No Boards to display!</p>
+        }
+
+        <br/>
+        <br/>
+    }   
+}
+else
+{
+    <p>You are not part of any other workspaces!</p>
+}

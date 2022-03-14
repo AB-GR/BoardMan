@@ -26,8 +26,9 @@ namespace BoardMan.Web.Managers
 		private readonly IPaymentService paymentService;
 		private readonly IMapper mapper;
 		private readonly UserManager<AppUser> userManager;
+		private readonly IWorkspaceManager workspaceManager;
 
-		public PaymentManager(IPlanManager planManager, IPaymentService paymentService, BoardManDbContext dbContext, ILogger<PaymentManager> logger, IMapper mapper, UserManager<AppUser> userManager)
+		public PaymentManager(IPlanManager planManager, IPaymentService paymentService, BoardManDbContext dbContext, ILogger<PaymentManager> logger, IMapper mapper, UserManager<AppUser> userManager, IWorkspaceManager workspaceManager)
 		{
 			this.planManager = planManager;
 			this.paymentService = paymentService;
@@ -35,6 +36,7 @@ namespace BoardMan.Web.Managers
 			this.logger = logger;
 			this.mapper = mapper;
 			this.userManager = userManager;
+			this.workspaceManager = workspaceManager;
 		}
 
 		public async Task<PaymentIntentResponse> CreatePaymentIntentAsync(PaymentIntentRequest request)
@@ -149,6 +151,7 @@ namespace BoardMan.Web.Managers
 
 			return response;
 		}
+		
 		private async Task<UserResult> CreateNewUserAsync(PaymentTransaction paymentIntentVM)
 		{
 			var user = new AppUser
@@ -219,7 +222,8 @@ namespace BoardMan.Web.Managers
 			try
 			{
 				dbContext.PaymentTransactions.Add(transaction);
-				await dbContext.SaveChangesAsync().ConfigureAwait(false);
+				await dbContext.SaveChangesAsync().ConfigureAwait(false);				
+				DbSubscription? subscription = null;
 
 				if (transaction.Status == PaymentStatus.CanBeProcessed)
 				{
@@ -236,7 +240,7 @@ namespace BoardMan.Web.Managers
 					if (transaction.Status == PaymentStatus.CanBeProcessed)
 					{
 						// Create new subscription & new workspace
-						var subscripton = new DbSubscription
+						subscription = new DbSubscription
 						{
 							Name = $"Susbscription for the plan {transaction.Plan.Name}",
 							Owner = transaction.TransactedBy,
@@ -244,22 +248,16 @@ namespace BoardMan.Web.Managers
 							StartedAt = DateTime.UtcNow,
 							ExpireAt =  transaction.Plan.PlanType == PlanType.Monthly ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddDays(365)
 						};
-						dbContext.Subscriptions.Add(subscripton);
-
-						var workspace = new DbWorkspace
-						{							
-							Title = "New Workspace",
-							Description = "A workspace to add boards, new members and assign roles.",
-							Subscription = subscripton,							
-							Owner = transaction.TransactedBy
-						};
-						dbContext.Workspaces.Add(workspace);
-
+						dbContext.Subscriptions.Add(subscription);
 						transaction.Status = PaymentStatus.Processed;
 						transaction.StatusReason = Enum.GetName(typeof(PaymentStatus), PaymentStatus.Processed);
 					}
 
 					await dbContext.SaveChangesAsync().ConfigureAwait(false);
+					if(transaction.Status == PaymentStatus.Processed)
+					{
+						await workspaceManager.CreateOrUpdateWorskpaceAsync(transaction.TransactedById.GetValueOrDefault(), subscription?.Id);
+					}
 				}
 			}
 			catch (Exception ex)

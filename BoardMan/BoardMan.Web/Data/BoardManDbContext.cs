@@ -21,6 +21,30 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
 
     public virtual DbSet<DbWorkspace> Workspaces { get; set; } = null!;
 
+    public virtual DbSet<DbWorkspaceMember> WorkspaceMembers { get; set; } = null!;
+
+    public virtual DbSet<DbBoard> Boards { get; set; } = null!;
+
+    public virtual DbSet<DbBoardMember> BoardMembers { get; set; } = null!;
+
+    public virtual DbSet<DbList> Lists { get; set; } = null!;
+
+    public virtual DbSet<DbTask> Tasks { get; set; } = null!;
+
+    public virtual DbSet<DbTaskComment> TaskComments { get; set; } = null!;
+
+    public virtual DbSet<DbTaskChecklist> TaskChecklists { get; set; } = null!;
+
+    public virtual DbSet<DbTaskAttachment> TaskAttachments { get; set; } = null!;
+
+    public virtual DbSet<DbTaskWatcher> TaskWatchers { get; set; } = null!;
+
+    public virtual DbSet<DbTaskLabel> TaskLabels { get; set; } = null!;
+
+    public virtual DbSet<DbActivityTracking> ActivityTrackings { get; set; } = null!;
+
+    public virtual DbSet<DbEmailInvite> EmailInvites { get; set; } = null!;
+
     public virtual DbSet<DbSubscription> Subscriptions { get; set; } = null!;
 
     public virtual DbSet<DbPlan> Plans { get; set; } = null!;

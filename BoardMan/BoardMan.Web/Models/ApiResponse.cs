@@ -16,6 +16,8 @@
 
 		public static ApiResponse List(IEnumerable<object> records) => List(records, records.Count());
 
+		public static ApiResponse ListOptions(IEnumerable<object> options) => new SuccessOptionsApiResponse(options);
+
 		public static ApiResponse List(IEnumerable<object> records, int totalRecordsCount) => new SuccessListApiResponse(records, totalRecordsCount);
 	}
 
@@ -61,6 +63,16 @@
 		{
 			this.Records = records;
 			this.TotalRecordCount = totalRecordCount;
+		}
+	}
+
+	public class SuccessOptionsApiResponse : SuccessApiResponse
+	{
+		public IEnumerable<object> Options { get; }
+
+		public SuccessOptionsApiResponse(IEnumerable<object> options)
+		{
+			this.Options = options;
 		}
 	}
 }

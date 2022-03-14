@@ -1,3 +1,4 @@
+using AutoMapper;
 using BoardMan.Web.Data;
 using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
@@ -25,14 +26,14 @@ namespace BoardMan.Tests
 			DateTime? subscriptionEndDate, DateTime? planEndDate, SubscriptionStatus expected, bool isPlanIdNull)
 		{
 			// arrange
-			var dbContext = InitializeData(requireSubscriptions, subscriptionEndDate, planEndDate);
+			var dbContext = InitializeData(requireSubscriptions, subscriptionEndDate, planEndDate);			
 			var inMemorySettings = new Dictionary<string, string> {
 				{"SubscriptionAboutToExpireDays", "7"}				
 			};
 
 			IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings).Build();
 
-			var subManager = new SubscriptionManager(dbContext.Object, configuration);
+			var subManager = new SubscriptionManager(dbContext.Object, configuration, new Mock<IMapper>().Object);
 
 			// act
 			var subNotificationVm = await subManager.GetSubscriptionNotificationAsync(validUser ? appUser.Id : Guid.NewGuid());
@@ -45,11 +46,11 @@ namespace BoardMan.Tests
 		public static IEnumerable<object[]> Data =>
 		new List<object[]>
 		{
-			new object[] { false, false, null, null, SubscriptionStatus.NoSubscriptionAvailable, true },
-			new object[] { true, false, null, null, SubscriptionStatus.NoSubscriptionAvailable, true },
-			new object[] { true, true, DateTime.UtcNow.AddDays(5), null, SubscriptionStatus.SubscriptionAboutToExpire, false },
-			new object[] { true, true, DateTime.UtcNow.AddDays(8).AddMinutes(1), null, SubscriptionStatus.SubscriptionValid, false },
-			new object[] { true, true, DateTime.UtcNow.AddDays(5), DateTime.UtcNow.AddDays(-1), SubscriptionStatus.SubscriptionAboutToExpire, true }
+			new object[] { false, false, null, null, SubscriptionStatus.NotAvailable, true },
+			new object[] { true, false, null, null, SubscriptionStatus.NotAvailable, true },
+			new object[] { true, true, DateTime.UtcNow.AddDays(5), null, SubscriptionStatus.AboutToExpire, false },
+			new object[] { true, true, DateTime.UtcNow.AddDays(8).AddMinutes(1), null, SubscriptionStatus.Valid, false },
+			new object[] { true, true, DateTime.UtcNow.AddDays(5), DateTime.UtcNow.AddDays(-1), SubscriptionStatus.AboutToExpire, true }
 		};
 
 		private Mock<BoardManDbContext> InitializeData(bool requireSubscriptions = true, DateTime? subscriptionEndDate = null, DateTime? planEndDate = null)
