@@ -29,15 +29,16 @@
     <script type="text/javascript">
         $(function () {
         $('#listsTable').jtable({
+                title: "Lists",
                 sorting: false,
 				multiSorting: false,
 				columnSelectable: false,				
 				AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
 				actions: {
 					listAction: '/Lists/GetListsByBoardId?boardId=@Model.Id',
-                    deleteAction: '/Lists/DeleteList',
+                    createAction: '/Lists/CreateList',
                     updateAction: '/Lists/UpdateList',
-                    createAction: '/Lists/CreateList'
+                    deleteAction: '/Lists/DeleteList'
 				},
 				fields: {
                     BoardId: {
@@ -55,7 +56,126 @@
 					},
 					Description: {
 						title: 'Description'
-					}                     
+					},
+                    Tasks: {
+                        tableId: 'tasksTable',
+                        title: 'Tasks',
+                        width: '5%',
+                        sorting: false,
+                        edit: false,
+                        create: false,
+                        display: function (listData) {
+                            var $img = $('<img src="/lib/jtable.2.4.0/themes/basic/close.png" title="Manage Tasks" />');
+                            $img.click(function () {
+                                $('#listsTable').jtable('openChildTable', $img.closest('tr'), {
+                                    title: "Tasks",
+                                    sorting: false,
+				                    multiSorting: false,
+				                    columnSelectable: false,				
+				                    AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+				                    actions: {
+					                    listAction: '/Tasks/GetTasksByListId?listId=' + listData.record.Id,
+                                        createAction: '/Tasks/CreateTask',
+                                        updateAction: '/Tasks/UpdateTask',
+                                        deleteAction: '/Tasks/DeleteTask'
+				                    },
+                                    fields: {
+                                        ListId: {
+                                            title: 'List',
+                                            list: false,
+                                            options: '/Boards/ListOtherLists?boardId=@Model.Id&listId=' + listData.record.Id
+                                        },
+                                        Id: {
+                                            key: true,
+                                            create: false,
+                                            edit: false,
+                                            list: false
+                                        },
+					                    Title: {
+						                    title: 'Title'
+					                    },
+					                    Description: {
+						                    title: 'Description'
+					                    },
+                                        EndDate: {
+                                            title: 'End Date',                                            
+                                        },
+                                        ActualEndDate: {
+                                            title: 'Actual End Date'
+                                        },
+                                        IsCompleted: {
+                                            title: 'Is Completed',
+                                            display: function (data) {
+                                                return `<input type="checkbox" id="isCompleted" name="isCompleted" ${data.record.IsCompleted === true ? 'checked' : ''}>`;
+                                            }
+                                        },
+                                        AssignedToId:{
+                                            title: "Assigned To",
+                                            options: '/Boards/ListBoardMembers?boardId=@Model.Id'
+                                        },
+                                        Comments:
+                                        {                                            
+                                            title: 'Comments',
+                                            width: '5%',
+                                            sorting: false,
+                                            edit: false,
+                                            create: false,
+                                            display: function (tasksData) {
+                                                console.log(tasksData);
+                                                var $img = $('<img src="/lib/jtable.2.4.0/themes/basic/close.png" title="Manage Comments" />');
+                                                $img.click(function () {
+                                                    $img.closest('.jtable-child-table-container').jtable('openChildTable', $img.closest('tr'), {
+                                                        title: "Comments",
+                                                        sorting: false,
+				                                        multiSorting: false,
+				                                        columnSelectable: false,				
+				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+				                                        actions: {
+					                                        listAction: '/Tasks/GetTaskComments?taskId=' + tasksData.record.Id,
+                                                            createAction: '/Tasks/CreateTaskComment',
+                                                            updateAction: '/Tasks/UpdateTaskComment',
+                                                            deleteAction: '/Tasks/DeleteTaskComment'
+				                                        },
+                                                        fields: {
+                                                            TaskId: {
+                                                                type: 'hidden',
+                                                                defaultValue: tasksData.record.Id
+                                                            },
+                                                            Id: {
+                                                                key: true,
+                                                                create: false,
+                                                                edit: false,
+                                                                list: false
+                                                            },
+					                                        Comment: {
+						                                        title: 'Comment'
+					                                        },
+                                                            CommentedByName:{
+                                                                title: "Commented By",
+                                                                create: false,
+                                                                edit: false
+                                                            },
+                                                            CommentedById: {
+                                                                type: 'hidden'
+                                                            }
+                                                        }
+                                                    }, function (data) { //opened handler
+                                                        data.childTable.jtable('load');
+                                                    });
+                                                });
+                            
+                                                return $img;
+                                            }
+                                        }
+                                    }
+                                }, function (data) { //opened handler
+                                    data.childTable.jtable('load');
+                                });
+                            });
+                            
+                            return $img;
+                        }
+                    }
 				}				
             }).jtable('load');
         });

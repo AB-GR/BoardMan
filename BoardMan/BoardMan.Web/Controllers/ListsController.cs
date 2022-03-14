@@ -48,11 +48,11 @@ namespace BoardMan.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> DeleteList(Guid listId)
+        public async Task<ActionResult> DeleteList(Guid id)
         {
             if (ModelState.IsValid)
             {
-                await this.listManager.DeleteListAsync(listId);
+                await this.listManager.DeleteListAsync(id);
                 return JsonResponse(ApiResponse.Success());
             }
 

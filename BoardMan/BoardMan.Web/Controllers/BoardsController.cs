@@ -46,5 +46,17 @@ namespace BoardMan.Web.Controllers
 			await this.boardManager.DeleteBoardAsync(boardId);
 			return this.RedirectToAction("Index", "Workspaces");
 		}
+
+		[HttpPost]
+		public async Task<ActionResult> ListBoardMembers(Guid boardId)
+		{
+			return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListBoardMembersAsync(boardId, this.userManager.GetGuidUserId(User))));
+		}
+
+		[HttpPost]
+		public async Task<ActionResult> ListOtherLists(Guid boardId, Guid listId)
+		{
+			return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListOtherListsAsync(boardId, listId)));
+		}
 	}
 }

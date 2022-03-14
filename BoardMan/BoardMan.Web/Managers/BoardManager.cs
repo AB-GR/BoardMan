@@ -13,6 +13,10 @@ namespace BoardMan.Web.Managers
 		Task CreateBoardAsync(Board board, Guid ownerId);
 
 		Task DeleteBoardAsync(Guid boardId);
+
+		Task<List<ComboOption>> ListBoardMembersAsync(Guid boardId, Guid currentUserId);
+
+		Task<IEnumerable<ComboOption>> ListOtherListsAsync(Guid boardId, Guid currentListId);
 	}
 
 	public class BoardManager : IBoardManager
@@ -55,6 +59,21 @@ namespace BoardMan.Web.Managers
 			}
 
 			return this.mapper.Map<Board>(dbBoard);
+		}
+
+		// ToDo should only load those members who atleast have readwrite access
+		public async Task<List<ComboOption>> ListBoardMembersAsync(Guid boardId, Guid currentUserId)
+		{
+			var members = await this.dbContext.BoardMembers.Where(x => x.BoardId == boardId && x.MemberId != currentUserId).Select(x => new ComboOption { Value = x.Member.Id, DisplayText = x.Member.UserName }).ToListAsync();
+			members.Insert(0, new ComboOption { Value = Guid.Empty, DisplayText = "Select a user" });
+			return members;
+		}
+
+		public async Task<IEnumerable<ComboOption>> ListOtherListsAsync(Guid boardId, Guid currentListId)
+		{
+			var otherLists = await this.dbContext.Lists.Where(x => x.BoardId == boardId && x.Id != currentListId && x.DeletedAt == null).Select(x => new ComboOption { Value = x.Id, DisplayText = x.Title }).ToListAsync();
+			otherLists.Insert(0, new ComboOption { Value = Guid.Empty, DisplayText = "Select another list" });
+			return otherLists;
 		}
 	}
 }

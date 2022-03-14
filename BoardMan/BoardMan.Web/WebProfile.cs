@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BoardMan.Web.Data;
+using BoardMan.Web.Infrastructure.Utils.Extensions;
 using BoardMan.Web.Models;
 
 namespace BoardMan.Web
@@ -46,8 +47,14 @@ namespace BoardMan.Web
             CreateMap<DbList, List>();
             CreateMap<List, DbList>();
 
-            CreateMap<DbTask, Task>();
-            CreateMap<Task, DbTask>();
+            CreateMap<DbTask, BoardTask>();
+            CreateMap<BoardTask, DbTask>()
+                .ForMember(x => x.AssignedToId, x => x.MapFrom(src => src.AssignedToId.IsNullOrEmpty() ? null : src.AssignedToId));
+
+            CreateMap<DbTaskComment, TaskComment>()
+                .ForMember(x => x.CommentedByName, x => x.MapFrom(src => src.CommentedBy.UserName));
+
+            CreateMap<TaskComment, DbTaskComment>();
         }
     }
 

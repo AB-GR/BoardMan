@@ -21,6 +21,7 @@ services.AddScoped<IPaymentManager, PaymentManager>();
 services.AddScoped<IWorkspaceManager, WorkspaceManager>();
 services.AddScoped<IBoardManager, BoardManager>();
 services.AddScoped<IListManager, ListManager>();
+services.AddScoped<ITaskManager, TaskManager>();
 services.AddTransient<PaymentIntentService>();
 services.AddScoped<IPaymentService, PaymentService>();
 services.AddLocalization(o => o.ResourcesPath = "Resources");

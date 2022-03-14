@@ -14,7 +14,7 @@ namespace BoardMan.Web.Managers
 
 		Task<List> UpdateListAsync(List list);
 
-		System.Threading.Tasks.Task DeleteListAsync(Guid listId);
+		Task DeleteListAsync(Guid listId);
 	}
 
 	public class ListManager : IListManager
@@ -41,7 +41,7 @@ namespace BoardMan.Web.Managers
 			var dbList = await this.dbContext.Lists.FirstOrDefaultAsync(x => x.Id == list.Id);
 			if(dbList == null)
 			{
-				throw new EntityNotFoundException($"Board with Id {list.Id} not found");
+				throw new EntityNotFoundException($"List with Id {list.Id} not found");
 			}
 
 			this.mapper.Map(list, dbList);			
@@ -55,12 +55,12 @@ namespace BoardMan.Web.Managers
 			return this.mapper.Map<List<List>>(dbLists);	
 		}
 
-		public async System.Threading.Tasks.Task DeleteListAsync(Guid listId)
+		public async Task DeleteListAsync(Guid listId)
 		{
 			var dbList = await this.dbContext.Lists.FirstOrDefaultAsync(x => x.Id == listId);
 			if (dbList == null)
 			{
-				throw new EntityNotFoundException($"Board with Id {listId} not found");
+				throw new EntityNotFoundException($"List with Id {listId} not found");
 			}
 
 			dbList.DeletedAt = DateTime.UtcNow;

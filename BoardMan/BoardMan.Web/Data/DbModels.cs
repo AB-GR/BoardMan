@@ -206,9 +206,9 @@ namespace BoardMan.Web.Data
 		public DbTask Task { get; set; } = null!;
 
 		[ForeignKey("CommentedBy")]
-		public Guid CommentedById { get; set; }
+		public Guid CreatedById { get; set; }
 
-		public AppUser CommentedBy { get; set; } = null!;
+		public AppUser CreatedBy { get; set; } = null!;
 	}
 
 	[Table("TaskAttachments")]

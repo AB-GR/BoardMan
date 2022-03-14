@@ -18,6 +18,8 @@ namespace BoardMan.Web.Models
 
 		public bool? IsCompleted { get; set; }
 
+		public Guid? AssignedToId { get; set; }
+
 		public Guid ListId { get; set; }
 	}
 }
