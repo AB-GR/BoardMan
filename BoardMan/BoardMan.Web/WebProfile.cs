@@ -57,6 +57,9 @@ namespace BoardMan.Web
 
             CreateMap<DbTaskLabel, TaskLabel>();
             CreateMap<TaskLabel, DbTaskLabel>();
+
+            CreateMap<DbTaskChecklist, TaskChecklist>();
+            CreateMap<TaskChecklist, DbTaskChecklist>();
         }
     }
 

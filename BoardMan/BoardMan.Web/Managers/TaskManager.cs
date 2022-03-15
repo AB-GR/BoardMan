@@ -31,6 +31,14 @@ namespace BoardMan.Web.Managers
 		Task<TaskLabel> UpdateTaskLabelAsync(TaskLabel taskLabel);
 
 		Task DeleteTaskLabelAsync(Guid id);
+
+		Task<List<TaskChecklist>> GetTaskChecklistsAsync(Guid taskId);
+
+		Task<TaskChecklist> CreateTaskChecklistAsync(TaskChecklist taskChecklist);
+
+		Task<TaskChecklist> UpdateTaskChecklistAsync(TaskChecklist taskChecklist);
+
+		Task DeleteTaskChecklistAsync(Guid id);
 	}
 
 	public class TaskManager : ITaskManager
@@ -159,6 +167,45 @@ namespace BoardMan.Web.Managers
 			}
 
 			dbTaskLabel.DeletedAt = DateTime.UtcNow;
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+		}
+
+		public async Task<List<TaskChecklist>> GetTaskChecklistsAsync(Guid taskId)
+		{
+			var dbTaskChecklist = await this.dbContext.TaskChecklists.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			return this.mapper.Map<List<TaskChecklist>>(dbTaskChecklist);
+		}
+
+		public async Task<TaskChecklist> CreateTaskChecklistAsync(TaskChecklist taskChecklist)
+		{
+			var dbTaskChecklist = this.mapper.Map<DbTaskChecklist>(taskChecklist);
+			this.dbContext.TaskChecklists.Add(dbTaskChecklist);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskChecklist>(dbTaskChecklist);
+		}
+
+		public async Task<TaskChecklist> UpdateTaskChecklistAsync(TaskChecklist taskChecklist)
+		{
+			var dbTaskChecklist = await this.dbContext.TaskChecklists.FirstOrDefaultAsync(x => x.Id == taskChecklist.Id);
+			if (dbTaskChecklist == null)
+			{
+				throw new EntityNotFoundException($"TaskChecklist with Id {taskChecklist.Id} not found");
+			}
+
+			this.mapper.Map(taskChecklist, dbTaskChecklist);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskChecklist>(dbTaskChecklist);
+		}
+
+		public async Task DeleteTaskChecklistAsync(Guid id)
+		{
+			var dbTaskChecklist = await this.dbContext.TaskChecklists.FirstOrDefaultAsync(x => x.Id == id);
+			if (dbTaskChecklist == null)
+			{
+				throw new EntityNotFoundException($"TaskChecklist with Id {id} not found");
+			}
+
+			dbTaskChecklist.DeletedAt = DateTime.UtcNow;
 			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
 		}
 	}

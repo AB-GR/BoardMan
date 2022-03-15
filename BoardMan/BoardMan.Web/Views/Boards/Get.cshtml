@@ -211,6 +211,63 @@
                             
                                                 return $img;
                                             }
+                                        },
+                                        Checklists:
+                                        {                                            
+                                            title: 'Checklists',
+                                            width: '5%',
+                                            sorting: false,
+                                            edit: false,
+                                            create: false,
+                                            display: function (checklistData) {                                                
+                                                var $img = $('<img src="/lib/jtable.2.4.0/themes/basic/close.png" title="Manage Checklists" />');
+                                                $img.click(function () {
+                                                    $img.closest('.jtable-child-table-container').jtable('openChildTable', $img.closest('tr'), {
+                                                        title: "Checklists",
+                                                        sorting: false,
+				                                        multiSorting: false,
+				                                        columnSelectable: false,				
+				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+				                                        actions: {
+					                                        listAction: '/Tasks/GetTaskChecklists?taskId=' + checklistData.record.Id,
+                                                            createAction: '/Tasks/CreateTaskChecklist',
+                                                            updateAction: '/Tasks/UpdateTaskChecklist',
+                                                            deleteAction: '/Tasks/DeleteTaskChecklist'
+				                                        },
+                                                        fields: {
+                                                            TaskId: {
+                                                                type: 'hidden',
+                                                                defaultValue: checklistData.record.Id
+                                                            },
+                                                            Id: {
+                                                                key: true,
+                                                                create: false,
+                                                                edit: false,
+                                                                list: false
+                                                            },
+					                                        Description: {
+						                                        title: 'Description'
+					                                        },
+					                                        IsComplete: {
+						                                        title: 'Done',
+                                                                display: function (data) {
+                                                                    return `<input type="checkbox" id="isComplete" name="isComplete" ${data.record.IsComplete === true ? 'checked' : ''}>`;
+                                                                }
+					                                        },
+					                                        Priority: {
+						                                        title: 'Priority'
+					                                        },
+                                                            CreatedById: {
+                                                                type: 'hidden'
+                                                            }
+                                                        }
+                                                    }, function (data) { //opened handler
+                                                        data.childTable.jtable('load');
+                                                    });
+                                                });
+                            
+                                                return $img;
+                                            }
                                         }
                                     }
                                 }, function (data) { //opened handler

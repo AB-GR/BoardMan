@@ -110,11 +110,11 @@ namespace BoardMan.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> CreateTaskLabel(TaskLabel TaskLabel)
+        public async Task<ActionResult> CreateTaskLabel(TaskLabel taskLabel)
         {
             if (ModelState.IsValid)
             {
-                var record = await this.taskManager.CreateTaskLabelAsync(TaskLabel);
+                var record = await this.taskManager.CreateTaskLabelAsync(taskLabel);
                 return JsonResponse(ApiResponse.Single(record));
             }
 
@@ -122,11 +122,11 @@ namespace BoardMan.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> UpdateTaskLabel(TaskLabel TaskLabel)
+        public async Task<ActionResult> UpdateTaskLabel(TaskLabel taskLabel)
         {
             if (ModelState.IsValid)
             {
-                var record = await this.taskManager.UpdateTaskLabelAsync(TaskLabel);
+                var record = await this.taskManager.UpdateTaskLabelAsync(taskLabel);
                 return JsonResponse(ApiResponse.Single(record));
             }
 
@@ -139,6 +139,49 @@ namespace BoardMan.Web.Controllers
             if (ModelState.IsValid)
             {
                 await this.taskManager.DeleteTaskLabelAsync(id);
+                return JsonResponse(ApiResponse.Success());
+            }
+
+            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> GetTaskChecklists(Guid taskId)
+        {
+            return JsonResponse(ApiResponse.List(await this.taskManager.GetTaskChecklistsAsync(taskId)));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> CreateTaskChecklist(TaskChecklist taskChecklist)
+        {
+            if (ModelState.IsValid)
+            {
+                taskChecklist.CreatedById = this.userManager.GetGuidUserId(User);
+                var record = await this.taskManager.CreateTaskChecklistAsync(taskChecklist);
+                return JsonResponse(ApiResponse.Single(record));
+            }
+
+            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> UpdateTaskChecklist(TaskChecklist taskChecklist)
+        {
+            if (ModelState.IsValid)
+            {
+                var record = await this.taskManager.UpdateTaskChecklistAsync(taskChecklist);
+                return JsonResponse(ApiResponse.Single(record));
+            }
+
+            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> DeleteTaskChecklist(Guid id)
+        {
+            if (ModelState.IsValid)
+            {
+                await this.taskManager.DeleteTaskChecklistAsync(id);
                 return JsonResponse(ApiResponse.Success());
             }
 
