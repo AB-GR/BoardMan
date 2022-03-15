@@ -64,7 +64,7 @@ namespace BoardMan.Web.Managers
 		// ToDo should only load those members who atleast have readwrite access
 		public async Task<List<ComboOption>> ListBoardMembersAsync(Guid boardId, Guid currentUserId)
 		{
-			var members = await this.dbContext.BoardMembers.Where(x => x.BoardId == boardId && x.MemberId != currentUserId).Select(x => new ComboOption { Value = x.Member.Id, DisplayText = x.Member.UserName }).ToListAsync();
+			var members = await this.dbContext.BoardMembers.Where(x => x.BoardId == boardId && x.MemberId != currentUserId).Select(x => new ComboOption { Value = x.Member.Id, DisplayText = x.Member.UserName }).ToListAsync();			
 			members.Insert(0, new ComboOption { Value = Guid.Empty, DisplayText = "Select a user" });
 			return members;
 		}

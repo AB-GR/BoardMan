@@ -268,6 +268,50 @@
                             
                                                 return $img;
                                             }
+                                        },
+                                        Watchers:
+                                        {                                            
+                                            title: 'Watchers',
+                                            width: '5%',
+                                            sorting: false,
+                                            edit: false,
+                                            create: false,
+                                            display: function (taskWatcherData) {                                                
+                                                var $img = $('<img src="/lib/jtable.2.4.0/themes/basic/close.png" title="Manage Watchers" />');
+                                                $img.click(function () {
+                                                    $img.closest('.jtable-child-table-container').jtable('openChildTable', $img.closest('tr'), {
+                                                        title: "Watchers",
+                                                        sorting: false,
+				                                        multiSorting: false,
+				                                        columnSelectable: false,				
+				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+				                                        actions: {
+					                                        listAction: '/Tasks/GetTaskWatchers?taskId=' + taskWatcherData.record.Id,
+                                                            createAction: '/Tasks/CreateTaskWatcher',                                                            
+                                                            deleteAction: '/Tasks/DeleteTaskWatcher'
+				                                        },
+                                                        fields: {
+                                                            TaskId: {
+                                                                type: 'hidden',
+                                                                defaultValue: taskWatcherData.record.Id
+                                                            },
+                                                            Id: {
+                                                                key: true,
+                                                                create: false,                                                                
+                                                                list: false
+                                                            },
+                                                            WatchedById:{
+                                                                title: "Watched By",
+                                                                options: '/Boards/ListBoardMembers?boardId=@Model.Id'
+                                                            }
+                                                        }
+                                                    }, function (data) { //opened handler
+                                                        data.childTable.jtable('load');
+                                                    });
+                                                });
+                            
+                                                return $img;
+                                            }
                                         }
                                     }
                                 }, function (data) { //opened handler

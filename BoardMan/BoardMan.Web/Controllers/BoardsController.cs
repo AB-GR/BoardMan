@@ -48,7 +48,7 @@ namespace BoardMan.Web.Controllers
 		}
 
 		[HttpPost]
-		public async Task<ActionResult> ListBoardMembers(Guid boardId)
+		public async Task<ActionResult> ListBoardMembers(Guid boardId, Guid? taskId)
 		{
 			return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListBoardMembersAsync(boardId, this.userManager.GetGuidUserId(User))));
 		}

@@ -39,6 +39,13 @@ namespace BoardMan.Web.Managers
 		Task<TaskChecklist> UpdateTaskChecklistAsync(TaskChecklist taskChecklist);
 
 		Task DeleteTaskChecklistAsync(Guid id);
+
+
+		Task<List<TaskWatcher>> GetTaskWatchersAsync(Guid taskId);
+
+		Task<TaskWatcher> CreateTaskWatcherAsync(TaskWatcher taskWatcher);
+
+		Task DeleteTaskWatcherAsync(Guid id);
 	}
 
 	public class TaskManager : ITaskManager
@@ -206,6 +213,32 @@ namespace BoardMan.Web.Managers
 			}
 
 			dbTaskChecklist.DeletedAt = DateTime.UtcNow;
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+		}
+
+		public async Task<List<TaskWatcher>> GetTaskWatchersAsync(Guid taskId)
+		{
+			var dbTaskWatcher = await this.dbContext.TaskWatchers.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			return this.mapper.Map<List<TaskWatcher>>(dbTaskWatcher);
+		}
+
+		public async Task<TaskWatcher> CreateTaskWatcherAsync(TaskWatcher taskWatcher)
+		{
+			var dbTaskWatcher = this.mapper.Map<DbTaskWatcher>(taskWatcher);
+			this.dbContext.TaskWatchers.Add(dbTaskWatcher);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskWatcher>(dbTaskWatcher);
+		}
+
+		public async Task DeleteTaskWatcherAsync(Guid id)
+		{
+			var dbTaskWatcher = await this.dbContext.TaskWatchers.FirstOrDefaultAsync(x => x.Id == id);
+			if (dbTaskWatcher == null)
+			{
+				throw new EntityNotFoundException($"TaskWatcher with Id {id} not found");
+			}
+
+			dbTaskWatcher.DeletedAt = DateTime.UtcNow;
 			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
 		}
 	}

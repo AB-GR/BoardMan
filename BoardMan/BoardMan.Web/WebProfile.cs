@@ -60,6 +60,9 @@ namespace BoardMan.Web
 
             CreateMap<DbTaskChecklist, TaskChecklist>();
             CreateMap<TaskChecklist, DbTaskChecklist>();
+
+            CreateMap<DbTaskWatcher, TaskWatcher>();
+            CreateMap<TaskWatcher, DbTaskWatcher>();
         }
     }
 

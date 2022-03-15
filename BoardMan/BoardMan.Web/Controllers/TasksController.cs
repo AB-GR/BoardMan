@@ -187,5 +187,36 @@ namespace BoardMan.Web.Controllers
 
             return JsonResponse(ApiResponse.Error(ModelState.Errors()));
         }
+
+
+        [HttpPost]
+        public async Task<ActionResult> GetTaskWatchers(Guid taskId)
+        {
+            return JsonResponse(ApiResponse.List(await this.taskManager.GetTaskWatchersAsync(taskId)));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> CreateTaskWatcher(TaskWatcher taskWatcher)
+        {
+            if (ModelState.IsValid)
+            {                
+                var record = await this.taskManager.CreateTaskWatcherAsync(taskWatcher);
+                return JsonResponse(ApiResponse.Single(record));
+            }
+
+            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> DeleteTaskWatcher(Guid id)
+        {
+            if (ModelState.IsValid)
+            {
+                await this.taskManager.DeleteTaskWatcherAsync(id);
+                return JsonResponse(ApiResponse.Success());
+            }
+
+            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+        }
     }
 }
