@@ -23,6 +23,14 @@ namespace BoardMan.Web.Managers
 		Task<TaskComment> UpdateTaskCommentAsync(TaskComment taskComment);
 		
 		Task DeleteTaskCommentAsync(Guid id);
+
+		Task<List<TaskLabel>> GetTaskLabelsAsync(Guid taskId);
+
+		Task<TaskLabel> CreateTaskLabelAsync(TaskLabel taskLabel);
+
+		Task<TaskLabel> UpdateTaskLabelAsync(TaskLabel taskLabel);
+
+		Task DeleteTaskLabelAsync(Guid id);
 	}
 
 	public class TaskManager : ITaskManager
@@ -112,6 +120,45 @@ namespace BoardMan.Web.Managers
 			}
 
 			dbTaskComment.DeletedAt = DateTime.UtcNow;
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+		}
+
+		public async Task<List<TaskLabel>> GetTaskLabelsAsync(Guid taskId)
+		{
+			var dbTaskLabels = await this.dbContext.TaskLabels.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			return this.mapper.Map<List<TaskLabel>>(dbTaskLabels);
+		}
+
+		public async Task<TaskLabel> CreateTaskLabelAsync(TaskLabel taskLabel)
+		{
+			var dbTaskLabel = this.mapper.Map<DbTaskLabel>(taskLabel);
+			this.dbContext.TaskLabels.Add(dbTaskLabel);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskLabel>(dbTaskLabel);
+		}
+
+		public async Task<TaskLabel> UpdateTaskLabelAsync(TaskLabel taskLabel)
+		{
+			var dbTaskLabel = await this.dbContext.TaskLabels.FirstOrDefaultAsync(x => x.Id == taskLabel.Id);
+			if (dbTaskLabel == null)
+			{
+				throw new EntityNotFoundException($"TaskLabel with Id {taskLabel.Id} not found");
+			}
+
+			this.mapper.Map(taskLabel, dbTaskLabel);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskLabel>(dbTaskLabel);
+		}
+
+		public async Task DeleteTaskLabelAsync(Guid id)
+		{
+			var dbTaskLabel = await this.dbContext.TaskLabels.FirstOrDefaultAsync(x => x.Id == id);
+			if (dbTaskLabel == null)
+			{
+				throw new EntityNotFoundException($"TaskLabel with Id {id} not found");
+			}
+
+			dbTaskLabel.DeletedAt = DateTime.UtcNow;
 			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
 		}
 	}

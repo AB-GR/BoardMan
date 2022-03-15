@@ -53,8 +53,10 @@ namespace BoardMan.Web
 
             CreateMap<DbTaskComment, TaskComment>()
                 .ForMember(x => x.CommentedByName, x => x.MapFrom(src => src.CommentedBy.UserName));
-
             CreateMap<TaskComment, DbTaskComment>();
+
+            CreateMap<DbTaskLabel, TaskLabel>();
+            CreateMap<TaskLabel, DbTaskLabel>();
         }
     }
 

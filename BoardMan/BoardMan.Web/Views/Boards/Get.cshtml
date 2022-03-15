@@ -166,6 +166,51 @@
                             
                                                 return $img;
                                             }
+                                        },
+                                        Labels:
+                                        {                                            
+                                            title: 'Labels',
+                                            width: '5%',
+                                            sorting: false,
+                                            edit: false,
+                                            create: false,
+                                            display: function (labelData) {                                                
+                                                var $img = $('<img src="/lib/jtable.2.4.0/themes/basic/close.png" title="Manage Labels" />');
+                                                $img.click(function () {
+                                                    $img.closest('.jtable-child-table-container').jtable('openChildTable', $img.closest('tr'), {
+                                                        title: "Labels",
+                                                        sorting: false,
+				                                        multiSorting: false,
+				                                        columnSelectable: false,				
+				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+				                                        actions: {
+					                                        listAction: '/Tasks/GetTaskLabels?taskId=' + labelData.record.Id,
+                                                            createAction: '/Tasks/CreateTaskLabel',
+                                                            updateAction: '/Tasks/UpdateTaskLabel',
+                                                            deleteAction: '/Tasks/DeleteTaskLabel'
+				                                        },
+                                                        fields: {
+                                                            TaskId: {
+                                                                type: 'hidden',
+                                                                defaultValue: labelData.record.Id
+                                                            },
+                                                            Id: {
+                                                                key: true,
+                                                                create: false,
+                                                                edit: false,
+                                                                list: false
+                                                            },
+					                                        Label: {
+						                                        title: 'Label'
+					                                        }
+                                                        }
+                                                    }, function (data) { //opened handler
+                                                        data.childTable.jtable('load');
+                                                    });
+                                                });
+                            
+                                                return $img;
+                                            }
                                         }
                                     }
                                 }, function (data) { //opened handler

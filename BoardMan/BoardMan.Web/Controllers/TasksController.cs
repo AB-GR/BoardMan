@@ -102,5 +102,47 @@ namespace BoardMan.Web.Controllers
 
             return JsonResponse(ApiResponse.Error(ModelState.Errors()));
         }
+
+        [HttpPost]
+        public async Task<ActionResult> GetTaskLabels(Guid taskId)
+        {
+            return JsonResponse(ApiResponse.List(await this.taskManager.GetTaskLabelsAsync(taskId)));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> CreateTaskLabel(TaskLabel TaskLabel)
+        {
+            if (ModelState.IsValid)
+            {
+                var record = await this.taskManager.CreateTaskLabelAsync(TaskLabel);
+                return JsonResponse(ApiResponse.Single(record));
+            }
+
+            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> UpdateTaskLabel(TaskLabel TaskLabel)
+        {
+            if (ModelState.IsValid)
+            {
+                var record = await this.taskManager.UpdateTaskLabelAsync(TaskLabel);
+                return JsonResponse(ApiResponse.Single(record));
+            }
+
+            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> DeleteTaskLabel(Guid id)
+        {
+            if (ModelState.IsValid)
+            {
+                await this.taskManager.DeleteTaskLabelAsync(id);
+                return JsonResponse(ApiResponse.Success());
+            }
+
+            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+        }
     }
 }
