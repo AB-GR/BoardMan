@@ -23,6 +23,37 @@ namespace BoardMan.Web.Managers
 		Task<TaskComment> UpdateTaskCommentAsync(TaskComment taskComment);
 		
 		Task DeleteTaskCommentAsync(Guid id);
+
+		Task<List<TaskLabel>> GetTaskLabelsAsync(Guid taskId);
+
+		Task<TaskLabel> CreateTaskLabelAsync(TaskLabel taskLabel);
+
+		Task<TaskLabel> UpdateTaskLabelAsync(TaskLabel taskLabel);
+
+		Task DeleteTaskLabelAsync(Guid id);
+
+		Task<List<TaskChecklist>> GetTaskChecklistsAsync(Guid taskId);
+
+		Task<TaskChecklist> CreateTaskChecklistAsync(TaskChecklist taskChecklist);
+
+		Task<TaskChecklist> UpdateTaskChecklistAsync(TaskChecklist taskChecklist);
+
+		Task DeleteTaskChecklistAsync(Guid id);
+
+
+		Task<List<TaskWatcher>> GetTaskWatchersAsync(Guid taskId);
+
+		Task<TaskWatcher> CreateTaskWatcherAsync(TaskWatcher taskWatcher);
+
+		Task DeleteTaskWatcherAsync(Guid id);
+
+		Task<List<TaskAttachment>> GetTaskAttachmentsAsync(Guid taskId);
+
+		Task<TaskAttachment> GetTaskAttachmentAsync(Guid taskAttachmentId);
+
+		Task<TaskAttachment> CreateTaskAttachmentAsync(TaskAttachment taskAttachment);
+
+		Task DeleteTaskAttachmentAsync(Guid id);
 	}
 
 	public class TaskManager : ITaskManager
@@ -112,6 +143,151 @@ namespace BoardMan.Web.Managers
 			}
 
 			dbTaskComment.DeletedAt = DateTime.UtcNow;
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+		}
+
+
+		public async Task<List<TaskLabel>> GetTaskLabelsAsync(Guid taskId)
+		{
+			var dbTaskLabels = await this.dbContext.TaskLabels.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			return this.mapper.Map<List<TaskLabel>>(dbTaskLabels);
+		}
+
+		public async Task<TaskLabel> CreateTaskLabelAsync(TaskLabel taskLabel)
+		{
+			var dbTaskLabel = this.mapper.Map<DbTaskLabel>(taskLabel);
+			this.dbContext.TaskLabels.Add(dbTaskLabel);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskLabel>(dbTaskLabel);
+		}
+
+		public async Task<TaskLabel> UpdateTaskLabelAsync(TaskLabel taskLabel)
+		{
+			var dbTaskLabel = await this.dbContext.TaskLabels.FirstOrDefaultAsync(x => x.Id == taskLabel.Id);
+			if (dbTaskLabel == null)
+			{
+				throw new EntityNotFoundException($"TaskLabel with Id {taskLabel.Id} not found");
+			}
+
+			this.mapper.Map(taskLabel, dbTaskLabel);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskLabel>(dbTaskLabel);
+		}
+
+		public async Task DeleteTaskLabelAsync(Guid id)
+		{
+			var dbTaskLabel = await this.dbContext.TaskLabels.FirstOrDefaultAsync(x => x.Id == id);
+			if (dbTaskLabel == null)
+			{
+				throw new EntityNotFoundException($"TaskLabel with Id {id} not found");
+			}
+
+			dbTaskLabel.DeletedAt = DateTime.UtcNow;
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+		}
+		
+
+		public async Task<List<TaskChecklist>> GetTaskChecklistsAsync(Guid taskId)
+		{
+			var dbTaskChecklist = await this.dbContext.TaskChecklists.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			return this.mapper.Map<List<TaskChecklist>>(dbTaskChecklist);
+		}
+
+		public async Task<TaskChecklist> CreateTaskChecklistAsync(TaskChecklist taskChecklist)
+		{
+			var dbTaskChecklist = this.mapper.Map<DbTaskChecklist>(taskChecklist);
+			this.dbContext.TaskChecklists.Add(dbTaskChecklist);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskChecklist>(dbTaskChecklist);
+		}
+
+		public async Task<TaskChecklist> UpdateTaskChecklistAsync(TaskChecklist taskChecklist)
+		{
+			var dbTaskChecklist = await this.dbContext.TaskChecklists.FirstOrDefaultAsync(x => x.Id == taskChecklist.Id);
+			if (dbTaskChecklist == null)
+			{
+				throw new EntityNotFoundException($"TaskChecklist with Id {taskChecklist.Id} not found");
+			}
+
+			this.mapper.Map(taskChecklist, dbTaskChecklist);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskChecklist>(dbTaskChecklist);
+		}
+
+		public async Task DeleteTaskChecklistAsync(Guid id)
+		{
+			var dbTaskChecklist = await this.dbContext.TaskChecklists.FirstOrDefaultAsync(x => x.Id == id);
+			if (dbTaskChecklist == null)
+			{
+				throw new EntityNotFoundException($"TaskChecklist with Id {id} not found");
+			}
+
+			dbTaskChecklist.DeletedAt = DateTime.UtcNow;
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+		}
+
+
+		public async Task<List<TaskWatcher>> GetTaskWatchersAsync(Guid taskId)
+		{
+			var dbTaskWatcher = await this.dbContext.TaskWatchers.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			return this.mapper.Map<List<TaskWatcher>>(dbTaskWatcher);
+		}
+
+		public async Task<TaskWatcher> CreateTaskWatcherAsync(TaskWatcher taskWatcher)
+		{
+			var dbTaskWatcher = this.mapper.Map<DbTaskWatcher>(taskWatcher);
+			this.dbContext.TaskWatchers.Add(dbTaskWatcher);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskWatcher>(dbTaskWatcher);
+		}
+
+		public async Task DeleteTaskWatcherAsync(Guid id)
+		{
+			var dbTaskWatcher = await this.dbContext.TaskWatchers.FirstOrDefaultAsync(x => x.Id == id);
+			if (dbTaskWatcher == null)
+			{
+				throw new EntityNotFoundException($"TaskWatcher with Id {id} not found");
+			}
+
+			dbTaskWatcher.DeletedAt = DateTime.UtcNow;
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+		}
+
+
+		public async Task<List<TaskAttachment>> GetTaskAttachmentsAsync(Guid taskId)
+		{
+			var dbTaskAttachments = await this.dbContext.TaskAttachments.Include(x => x.UploadedBy).Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			return this.mapper.Map<List<TaskAttachment>>(dbTaskAttachments);
+		}
+
+		public async Task<TaskAttachment> GetTaskAttachmentAsync(Guid taskAttachmentId)
+		{
+			var dbTaskAttachment = await this.dbContext.TaskAttachments.FirstOrDefaultAsync(x => x.Id == taskAttachmentId);
+			if (dbTaskAttachment == null)
+			{
+				throw new EntityNotFoundException($"TaskAttachment with Id {taskAttachmentId} not found");
+			}
+
+			return this.mapper.Map<TaskAttachment>(dbTaskAttachment);
+		}
+
+		public async Task<TaskAttachment> CreateTaskAttachmentAsync(TaskAttachment taskAttachment)
+		{
+			var dbTaskAttachment = this.mapper.Map<DbTaskAttachment>(taskAttachment);
+			this.dbContext.TaskAttachments.Add(dbTaskAttachment);
+			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
+			return this.mapper.Map<TaskAttachment>(dbTaskAttachment);
+		}
+
+		public async Task DeleteTaskAttachmentAsync(Guid id)
+		{
+			var dbTaskAttachment = await this.dbContext.TaskAttachments.FirstOrDefaultAsync(x => x.Id == id);
+			if (dbTaskAttachment == null)
+			{
+				throw new EntityNotFoundException($"TaskAttachment with Id {id} not found");
+			}
+
+			dbTaskAttachment.DeletedAt = DateTime.UtcNow;
 			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
 		}
 	}

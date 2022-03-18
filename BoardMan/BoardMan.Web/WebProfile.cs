@@ -53,8 +53,23 @@ namespace BoardMan.Web
 
             CreateMap<DbTaskComment, TaskComment>()
                 .ForMember(x => x.CommentedByName, x => x.MapFrom(src => src.CommentedBy.UserName));
-
             CreateMap<TaskComment, DbTaskComment>();
+
+            CreateMap<DbTaskLabel, TaskLabel>();
+            CreateMap<TaskLabel, DbTaskLabel>();
+
+            CreateMap<DbTaskChecklist, TaskChecklist>();
+            CreateMap<TaskChecklist, DbTaskChecklist>();
+
+            CreateMap<DbTaskWatcher, TaskWatcher>();
+            CreateMap<TaskWatcher, DbTaskWatcher>();
+
+            CreateMap<DbTaskAttachment, TaskAttachment>()
+                .ForMember(x => x.File, x => x.Ignore())
+                .ForMember(x => x.UploadedByName, x => x.MapFrom(src => src.UploadedBy.UserName));
+            CreateMap<TaskAttachment, DbTaskAttachment>()
+                .ForMember(x => x.CreatedAt, x => x.Ignore())
+                .ForMember(x => x.Size, x => x.MapFrom(src => src.File.Length));
         }
     }
 

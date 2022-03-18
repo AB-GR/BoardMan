@@ -15,6 +15,19 @@
 
 <div id="listsTable"></div>
 
+<div class="modal fade" id="filePreviewModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+         <img name="previewImage" id="previewImage" style="height:80%;width:80%" src=""/>
+      </div>
+    </div>
+  </div>
+</div>
 @section Css
 {
 	<link href="@Url.Content("~/lib/jquery-ui-1.13.1/jquery-ui.css")" rel="stylesheet" type="text/css" />
@@ -27,6 +40,36 @@
     <script src="~/lib/jtable.2.4.0/jquery.jtable.js"></script> 
 
     <script type="text/javascript">
+
+        $(document).on("click", ".open-FilePreviewModal", function () {
+             var imgSource = $(this).data('src');
+             $(".modal-body #previewImage").attr("src", imgSource);             
+        });
+
+        // Read a page's GET URL variables and return them as an associative array.
+        function getVars(url)
+        {
+            var formData = new FormData();
+            var split;
+            $.each(url.split("&"), function(key, value) {
+                split = value.split("=");
+                formData.append(split[0], decodeURIComponent(split[1].replace(/\+/g, " ")));
+            });
+
+            return formData;
+        }
+
+        // Variable to store your files
+        var files;
+
+        $( document ).delegate('#input-image','change', prepareUpload);
+
+        // Grab the files and set them to our variable
+        function prepareUpload(event)
+        {
+            files = event.target.files;            
+        }
+
         $(function () {
         $('#listsTable').jtable({
                 title: "Lists",
@@ -120,8 +163,7 @@
                                             sorting: false,
                                             edit: false,
                                             create: false,
-                                            display: function (tasksData) {
-                                                console.log(tasksData);
+                                            display: function (tasksData) {                                                
                                                 var $img = $('<img src="/lib/jtable.2.4.0/themes/basic/close.png" title="Manage Comments" />');
                                                 $img.click(function () {
                                                     $img.closest('.jtable-child-table-container').jtable('openChildTable', $img.closest('tr'), {
@@ -157,6 +199,259 @@
                                                             },
                                                             CommentedById: {
                                                                 type: 'hidden'
+                                                            }
+                                                        }
+                                                    }, function (data) { //opened handler
+                                                        data.childTable.jtable('load');
+                                                    });
+                                                });
+                            
+                                                return $img;
+                                            }
+                                        },
+                                        Labels:
+                                        {                                            
+                                            title: 'Labels',
+                                            width: '5%',
+                                            sorting: false,
+                                            edit: false,
+                                            create: false,
+                                            display: function (labelData) {                                                
+                                                var $img = $('<img src="/lib/jtable.2.4.0/themes/basic/close.png" title="Manage Labels" />');
+                                                $img.click(function () {
+                                                    $img.closest('.jtable-child-table-container').jtable('openChildTable', $img.closest('tr'), {
+                                                        title: "Labels",
+                                                        sorting: false,
+				                                        multiSorting: false,
+				                                        columnSelectable: false,				
+				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+				                                        actions: {
+					                                        listAction: '/Tasks/GetTaskLabels?taskId=' + labelData.record.Id,
+                                                            createAction: '/Tasks/CreateTaskLabel',
+                                                            updateAction: '/Tasks/UpdateTaskLabel',
+                                                            deleteAction: '/Tasks/DeleteTaskLabel'
+				                                        },
+                                                        fields: {
+                                                            TaskId: {
+                                                                type: 'hidden',
+                                                                defaultValue: labelData.record.Id
+                                                            },
+                                                            Id: {
+                                                                key: true,
+                                                                create: false,
+                                                                edit: false,
+                                                                list: false
+                                                            },
+					                                        Label: {
+						                                        title: 'Label'
+					                                        }
+                                                        }
+                                                    }, function (data) { //opened handler
+                                                        data.childTable.jtable('load');
+                                                    });
+                                                });
+                            
+                                                return $img;
+                                            }
+                                        },
+                                        Checklists:
+                                        {                                            
+                                            title: 'Checklists',
+                                            width: '5%',
+                                            sorting: false,
+                                            edit: false,
+                                            create: false,
+                                            display: function (checklistData) {                                                
+                                                var $img = $('<img src="/lib/jtable.2.4.0/themes/basic/close.png" title="Manage Checklists" />');
+                                                $img.click(function () {
+                                                    $img.closest('.jtable-child-table-container').jtable('openChildTable', $img.closest('tr'), {
+                                                        title: "Checklists",
+                                                        sorting: false,
+				                                        multiSorting: false,
+				                                        columnSelectable: false,				
+				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+				                                        actions: {
+					                                        listAction: '/Tasks/GetTaskChecklists?taskId=' + checklistData.record.Id,
+                                                            createAction: '/Tasks/CreateTaskChecklist',
+                                                            updateAction: '/Tasks/UpdateTaskChecklist',
+                                                            deleteAction: '/Tasks/DeleteTaskChecklist'
+				                                        },
+                                                        fields: {
+                                                            TaskId: {
+                                                                type: 'hidden',
+                                                                defaultValue: checklistData.record.Id
+                                                            },
+                                                            Id: {
+                                                                key: true,
+                                                                create: false,
+                                                                edit: false,
+                                                                list: false
+                                                            },
+					                                        Description: {
+						                                        title: 'Description'
+					                                        },
+					                                        IsComplete: {
+						                                        title: 'Done',
+                                                                display: function (data) {
+                                                                    return `<input type="checkbox" id="isComplete" name="isComplete" ${data.record.IsComplete === true ? 'checked' : ''}>`;
+                                                                }
+					                                        },
+					                                        Priority: {
+						                                        title: 'Priority'
+					                                        },
+                                                            CreatedById: {
+                                                                type: 'hidden'
+                                                            }
+                                                        }
+                                                    }, function (data) { //opened handler
+                                                        data.childTable.jtable('load');
+                                                    });
+                                                });
+                            
+                                                return $img;
+                                            }
+                                        },
+                                        Watchers:
+                                        {                                            
+                                            title: 'Watchers',
+                                            width: '5%',
+                                            sorting: false,
+                                            edit: false,
+                                            create: false,
+                                            display: function (taskWatcherData) {                                                
+                                                var $img = $('<img src="/lib/jtable.2.4.0/themes/basic/close.png" title="Manage Watchers" />');
+                                                $img.click(function () {
+                                                    $img.closest('.jtable-child-table-container').jtable('openChildTable', $img.closest('tr'), {
+                                                        title: "Watchers",
+                                                        sorting: false,
+				                                        multiSorting: false,
+				                                        columnSelectable: false,				
+				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+				                                        actions: {
+					                                        listAction: '/Tasks/GetTaskWatchers?taskId=' + taskWatcherData.record.Id,
+                                                            createAction: '/Tasks/CreateTaskWatcher',                                                            
+                                                            deleteAction: '/Tasks/DeleteTaskWatcher'
+				                                        },
+                                                        fields: {
+                                                            TaskId: {
+                                                                type: 'hidden',
+                                                                defaultValue: taskWatcherData.record.Id
+                                                            },
+                                                            Id: {
+                                                                key: true,
+                                                                create: false,                                                                
+                                                                list: false
+                                                            },
+                                                            WatchedById:{
+                                                                title: "Watched By",
+                                                                options: '/Boards/ListBoardMembers?boardId=@Model.Id'
+                                                            }
+                                                        }
+                                                    }, function (data) { //opened handler
+                                                        data.childTable.jtable('load');
+                                                    });
+                                                });
+                            
+                                                return $img;
+                                            }
+                                        },                                        
+                                        Attachments:
+                                        {                                            
+                                            title: 'Attachments',
+                                            width: '5%',
+                                            sorting: false,
+                                            edit: false,
+                                            create: false,
+                                            display: function (taskAttachmentData) {                                                
+                                                var $img = $('<img src="/lib/jtable.2.4.0/themes/basic/close.png" title="Manage Attachments" />');
+                                                $img.click(function () {
+                                                    $img.closest('.jtable-child-table-container').jtable('openChildTable', $img.closest('tr'), {
+                                                        title: "Attachments",
+                                                        sorting: false,
+				                                        multiSorting: false,
+				                                        columnSelectable: false,				
+				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+				                                        actions: {
+					                                        listAction: '/Tasks/GetTaskAttachments?taskId=' + taskAttachmentData.record.Id,
+                                                            createAction: function (postData) {
+                                                                var formData = getVars(postData);
+
+                                                                if($('#input-image').val() !== "")
+                                                                {
+                                                                    formData.append("File", $('#input-image').get(0).files[0]);
+                                                                }
+                                                                
+                                                                return $.Deferred(function ($dfd) {                                                                    
+                                                                    $.ajax({
+                                                                        url: '/Tasks/CreateTaskAttachment',
+                                                                        type: 'POST',
+                                                                        dataType: 'json',
+                                                                        data: formData,
+                                                                        processData: false, // Don't process the files
+                                                                        contentType: false, // Set content type to false as jQuery will tell the server its a query string request
+                                                                        success: function (data) {
+                                                                            $dfd.resolve(data);
+                                                                            $img.closest('.jtable-child-table-container').jtable('load');
+                                                                        },
+                                                                        error: function () {
+                                                                            $dfd.reject();                                                                           
+                                                                        }
+                                                                    });
+                                                                });
+                                                            },                                                            
+                                                            deleteAction: '/Tasks/DeleteTaskAttachment'
+				                                        },
+                                                        fields: {
+                                                            TaskId: {
+                                                                type: 'hidden',
+                                                                defaultValue: taskAttachmentData.record.Id
+                                                            },
+                                                            Id: {
+                                                                key: true,
+                                                                create: false,                                                                
+                                                                list: false
+                                                            },
+                                                            TrustedFileName: {
+                                                                title: "File Name",
+                                                                 create: false
+                                                            },
+                                                            Note: {
+                                                                title: "Note"
+                                                            },
+                                                            UploadedByName: {
+                                                                title: "Uploaded By",                        
+                                                                list: true,
+                                                                create: false
+                                                            },
+                                                            CreatedAt: {
+                                                                title: "Uploaded Date",                        
+                                                                list: true,
+                                                                create: false
+                                                            },
+                                                            Image: {
+                                                                title: 'Select File',
+                                                                list: false,
+                                                                create: true,
+                                                                input: function(data) {
+                                                                    html = '<input type ="file" id="input-image" name="File" accept="image/*, .txt" />';
+                                                                    return html;
+                                                                }
+                                                            },
+                                                            Download: {
+                                                                title: 'Download',
+                                                                create: false,
+                                                                display: function(data){
+                                                                    var $img = `<a target="_blank" href="/Tasks/DownloadTaskAttachment?id=${data.record.Id}">Download</a>`;
+                                                                    return $img;
+                                                                }
+                                                            },
+                                                            Preview: {
+                                                                title: 'Preview',
+                                                                create: false,
+                                                                display: function(data){
+                                                                    var $img = `<a data-bs-toggle="modal" data-bs-target="#filePreviewModal" data-src="${data.record.FileUri}" class="open-FilePreviewModal">Preview</a>`;
+                                                                    return $img;
+                                                                }
                                                             }
                                                         }
                                                     }, function (data) { //opened handler
