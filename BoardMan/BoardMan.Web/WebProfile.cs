@@ -63,6 +63,13 @@ namespace BoardMan.Web
 
             CreateMap<DbTaskWatcher, TaskWatcher>();
             CreateMap<TaskWatcher, DbTaskWatcher>();
+
+            CreateMap<DbTaskAttachment, TaskAttachment>()
+                .ForMember(x => x.File, x => x.Ignore())
+                .ForMember(x => x.UploadedByName, x => x.MapFrom(src => src.UploadedBy.UserName));
+            CreateMap<TaskAttachment, DbTaskAttachment>()
+                .ForMember(x => x.CreatedAt, x => x.Ignore())
+                .ForMember(x => x.Size, x => x.MapFrom(src => src.File.Length));
         }
     }
 

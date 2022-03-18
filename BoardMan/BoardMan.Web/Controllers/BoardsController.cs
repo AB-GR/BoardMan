@@ -50,13 +50,13 @@ namespace BoardMan.Web.Controllers
 		[HttpPost]
 		public async Task<ActionResult> ListBoardMembers(Guid boardId, Guid? taskId)
 		{
-			return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListBoardMembersAsync(boardId, this.userManager.GetGuidUserId(User))));
+			return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListBoardMembersForDisplayAsync(boardId, this.userManager.GetGuidUserId(User))));
 		}
 
 		[HttpPost]
 		public async Task<ActionResult> ListOtherLists(Guid boardId, Guid listId)
 		{
-			return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListOtherListsAsync(boardId, listId)));
+			return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListOtherListsForDisplayAsync(boardId, listId)));
 		}
 	}
 }

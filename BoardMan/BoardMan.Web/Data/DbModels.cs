@@ -59,6 +59,16 @@ namespace BoardMan.Web.Data
 		None
 	}
 
+	public enum MemberStatus
+	{
+		Confirmed,
+		InviteSent,
+		InviteRejected, 
+		InviteAccepted,
+		InviteExpired,
+		ExistingUser
+	}
+
 	[Table("Workspaces")]
 	public class DbWorkspace : DbEntity
 	{
@@ -84,6 +94,7 @@ namespace BoardMan.Web.Data
 	[Table("WorkspaceMembers")]
 	public class DbWorkspaceMember : DbEntity
 	{
+		//  Include role as well
 
 		[ForeignKey("Workspace")]
 		public Guid WorkspaceId { get; set; }
@@ -119,6 +130,7 @@ namespace BoardMan.Web.Data
 	[Table("BoardMembers")]
 	public class DbBoardMember : DbEntity
 	{
+		//  Include role as well
 
 		[ForeignKey("Board")]
 		public Guid BoardId { get; set; }
@@ -215,13 +227,13 @@ namespace BoardMan.Web.Data
 	public class DbTaskAttachment : DbEntity
 	{
 		[MaxLength(50)]
-		public string FileName { get; set; } = null!;
+		public string TrustedFileName { get; set; } = null!;
 
-		[MaxLength(500)]
 		public string FileUri { get; set; } = null!;
 
-		[MaxLength(25)]
-		public AttachmentType Type { get; set; }
+		public string? Note { get; set; }
+
+		public long Size { get; set; }
 
 		[ForeignKey("Task")]
 		public Guid TaskId { get; set; }
@@ -282,6 +294,8 @@ namespace BoardMan.Web.Data
 	[Table("EmailInvites")]
 	public class DbEmailInvite : DbEntity
 	{
+		//  Include prospective role as well
+
 		public string EntityUrn { get; set; } = null!;
 
 		public string EmailAddress { get; set; } = null!;
