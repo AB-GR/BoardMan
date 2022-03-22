@@ -117,7 +117,7 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
         builder.Entity<DbBoardMember>().Navigation(e => e.Member).AutoInclude();
 
         builder.Entity<DbWorkspaceMember>().Navigation(e => e.AddedBy).AutoInclude();
-        builder.Entity<DbWorkspaceMember>().Navigation(e => e.Member).AutoInclude();
+        builder.Entity<DbWorkspaceMember>().Navigation(e => e.Member).AutoInclude();        
     }
 
     private void TrackTimeStamps()
