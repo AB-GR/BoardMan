@@ -1,4 +1,5 @@
-﻿@*
+﻿@using BoardMan.Web.Infrastructure.Extensions
+@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
@@ -63,4 +64,144 @@ else
 else
 {
     <p>You are not part of any other workspaces!</p>
+}
+
+<h2>Members</h2>
+<div id="membersTable"></div>
+
+@section Css
+{
+	<link href="@Url.Content("~/lib/jquery-ui-1.13.1/jquery-ui.css")" rel="stylesheet" type="text/css" />
+    <br />
+    <br />
+	<link href="@Url.Content("~/lib/jtable.2.4.0/themes/metro/blue/jtable.css")" rel="stylesheet" type="text/css" />
+}
+
+@section scripts
+{
+    <script src="~/lib/jquery-ui-1.13.1/jquery-ui.js"></script>
+    <script src="~/lib/jtable.2.4.0/jquery.jtable.js"></script> 
+
+    <script type="text/javascript">
+        
+        listProspectiveUsers()
+        .then(onListProspectiveUsers)
+        .catch(function(error) {
+            console.log(error);
+        });
+        
+        function listProspectiveUsers(){
+            return fetch('/Workspaces/ListProspectiveUsers?workspaceId=@Model.Primary.Id',
+            {
+                method: "get"
+            })
+            .then(function (response) {
+                return response.json();
+            });
+        }
+        
+        function onListProspectiveUsers(listProspectiveUsersResponseJson){
+            if (listProspectiveUsersResponseJson.succeeded === true){
+                var listProspectiveUsersResponse = listProspectiveUsersResponseJson.records;
+                if (!notNullOrEmpty(listProspectiveUsersResponse)) {
+                    console.log("Server error, a call to ListMembers failed.");
+                    return;
+                }
+                
+                var users = listProspectiveUsersResponseJson.records;
+
+                    $('#membersTable').jtable({
+		                title: "Members",
+                        sorting: false,
+		                multiSorting: false,
+		                columnSelectable: false,				
+		                AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+		                actions: {
+		                    listAction: '/Workspaces/GetWorkspaceMembers?workspaceId=@Model.Primary.Id',
+                            createAction: '/Workspaces/CreateWorkspaceMember',
+                            updateAction: '/Workspaces/UpdateWorkspaceMember',
+                            deleteAction: '/Workspaces/DeleteWorkspaceMember'
+		                },
+		                fields: {
+                            WorkspaceId: {
+                                type: 'hidden',
+                                defaultValue: '@Model.Primary.Id'
+                            },
+                            MemberId: {
+                                type: 'hidden'
+                            },
+                            Id: {
+                                key: true,
+                                create: false,
+                                edit: false,
+                                list: false
+                            },
+		                    MemberName: {
+			                    title: 'Name',
+                                create: false,
+                                 edit: false
+		                    },
+		                    MemberEmail: {
+			                    title: 'Email',
+                                input: function (data) {
+                                    if (data.record) {
+                                        return '<input type="text" name="MemberEmail" style="width:200px" value="' + data.record.MemberEmail + '" readonly />';
+                                    } else {
+                                        return '<input type="text" name="MemberEmail" style="width:200px" />';
+                                    }
+                                }
+		                    },
+                            RoleId:{
+                                title: "Role",
+                                options: '/Roles/ListRoles'
+                            },
+                            Status: {
+                                title: "Status",
+                                create: false,
+                                edit: false
+                            },
+                            AddedByName: {
+			                    title: 'Added By',
+                                create: false,
+                                edit: false
+		                    },
+                            AddedById: {
+			                     type: 'hidden'
+		                    },
+		                    CreatedAt: {
+			                    title: 'Added At',
+                                create: false,
+                                edit: false
+		                    }
+		                },
+                        formCreated: function(event, data){
+                             data.form.find('[name=MemberEmail]').autocomplete({
+                                minLength: 0,
+                                source: users,                        
+                                focus: function( event, ui ) {
+                                    $("#Edit-MemberEmail").val( ui.item.label);
+                                    return false;
+                                },
+                                select: function( event, ui ) {
+                                    $("#Edit-MemberEmail").val(ui.item.label);
+                                    $("#Edit-MemberId").val(ui.item.value); 
+                                    return false;
+                                }                        
+                             })
+                             .autocomplete("instance")._renderItem = function( ul, item ){
+                                       return $( "<li>" ).append( "<div>" + item.label+ "</div>" ).appendTo( ul );
+                             };
+                        }
+	                }).jtable('load');
+             } 
+             else {                                    
+                console.log(`Could not load members table due to the error '${listProspectiveUsersResponseJson.message}'`);
+             }
+                        
+        }
+
+        function notNullOrEmpty(obj) {
+            return typeof obj !== 'undefined' && obj && (!$.isPlainObject(obj) || !$.isEmptyObject(obj));
+        }
+    </script>
 }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoardMan.Web.Migrations
 {
     [DbContext(typeof(BoardManDbContext))]
-    [Migration("20220318054318_ChangesForAttachments")]
-    partial class ChangesForAttachments
+    [Migration("20220319082007_AttachmentsAndRoles")]
+    partial class AttachmentsAndRoles
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -265,6 +265,9 @@ namespace BoardMan.Web.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
+                    b.Property<Guid>("AddedById")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("BoardId")
                         .HasColumnType("uniqueidentifier");
 
@@ -280,11 +283,18 @@ namespace BoardMan.Web.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AddedById");
 
                     b.HasIndex("BoardId");
 
                     b.HasIndex("MemberId");
+
+                    b.HasIndex("RoleId");
 
                     b.ToTable("BoardMembers");
                 });
@@ -298,6 +308,9 @@ namespace BoardMan.Web.Migrations
 
                     b.Property<bool?>("Accepted")
                         .HasColumnType("bit");
+
+                    b.Property<Guid>("AddedById")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -319,11 +332,18 @@ namespace BoardMan.Web.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AddedById");
+
+                    b.HasIndex("RoleId");
 
                     b.ToTable("EmailInvites");
                 });
@@ -478,45 +498,45 @@ namespace BoardMan.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("1b91cf7e-c1c3-4c99-aa8a-3d1850663737"),
+                            Id = new Guid("b44fd496-71d5-424a-84f5-8f9071e382b8"),
                             Cost = 99m,
-                            CreatedAt = new DateTime(2022, 3, 18, 5, 43, 18, 99, DateTimeKind.Utc).AddTicks(4626),
+                            CreatedAt = new DateTime(2022, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(69),
                             Currency = "USD",
                             Description = "This is the standard monthly plan",
-                            ExpireAt = new DateTime(2023, 3, 18, 5, 43, 18, 99, DateTimeKind.Utc).AddTicks(4633),
-                            Name = "Standard (Monhtly)",
+                            ExpireAt = new DateTime(2023, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(73),
+                            Name = "Standard (Monthly)",
                             PlanType = 0
                         },
                         new
                         {
-                            Id = new Guid("9fc70c6e-3f9a-4a45-b73f-02f2726be82e"),
+                            Id = new Guid("8019d751-e44a-463e-bb64-d9c097e007be"),
                             Cost = 948m,
-                            CreatedAt = new DateTime(2022, 3, 18, 5, 43, 18, 99, DateTimeKind.Utc).AddTicks(4665),
+                            CreatedAt = new DateTime(2022, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(113),
                             Currency = "USD",
                             Description = "This is the standard annual plan",
-                            ExpireAt = new DateTime(2023, 3, 18, 5, 43, 18, 99, DateTimeKind.Utc).AddTicks(4665),
+                            ExpireAt = new DateTime(2023, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(114),
                             Name = "Standard (Annual)",
                             PlanType = 1
                         },
                         new
                         {
-                            Id = new Guid("a9c09c4c-e925-4991-8dcc-c41825c695eb"),
+                            Id = new Guid("0ec9e53a-a908-4bf7-b289-20a8c0e64583"),
                             Cost = 299m,
-                            CreatedAt = new DateTime(2022, 3, 18, 5, 43, 18, 99, DateTimeKind.Utc).AddTicks(4677),
+                            CreatedAt = new DateTime(2022, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(183),
                             Currency = "USD",
                             Description = "This is the premium monthly plan",
-                            ExpireAt = new DateTime(2023, 3, 18, 5, 43, 18, 99, DateTimeKind.Utc).AddTicks(4677),
+                            ExpireAt = new DateTime(2023, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(183),
                             Name = "Premium (Monthly)",
                             PlanType = 0
                         },
                         new
                         {
-                            Id = new Guid("3096058b-cb34-45d5-ba32-00ed6a6fd6bb"),
+                            Id = new Guid("5af4012d-f8bf-4d7e-8f30-44c798eb31b2"),
                             Cost = 3000m,
-                            CreatedAt = new DateTime(2022, 3, 18, 5, 43, 18, 99, DateTimeKind.Utc).AddTicks(4687),
+                            CreatedAt = new DateTime(2022, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(196),
                             Currency = "USD",
                             Description = "This is the premium annual plan",
-                            ExpireAt = new DateTime(2023, 3, 18, 5, 43, 18, 99, DateTimeKind.Utc).AddTicks(4687),
+                            ExpireAt = new DateTime(2023, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(196),
                             Name = "Premium (Annual)",
                             PlanType = 1
                         });
@@ -565,6 +585,59 @@ namespace BoardMan.Web.Migrations
                         .IsUnique();
 
                     b.ToTable("PlanDiscounts");
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newsequentialid()");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("da39b930-7150-4a95-b483-767ed2a1be6e"),
+                            CreatedAt = new DateTime(2022, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(446),
+                            Description = "This is a readonly role meant to give view access to users",
+                            Name = "Read-Only"
+                        },
+                        new
+                        {
+                            Id = new Guid("f093fd41-4d47-47af-a814-e199be624237"),
+                            CreatedAt = new DateTime(2022, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(958),
+                            Description = "This is a readwrite role meant to give access to read and write different entities",
+                            Name = "Read-Write"
+                        },
+                        new
+                        {
+                            Id = new Guid("db490797-1fbb-4d4a-99c4-d3fe37950fb2"),
+                            CreatedAt = new DateTime(2022, 3, 19, 8, 20, 6, 754, DateTimeKind.Utc).AddTicks(997),
+                            Description = "This is an admin role meant for overall access",
+                            Name = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbSubscription", b =>
@@ -891,6 +964,9 @@ namespace BoardMan.Web.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
+                    b.Property<Guid>("AddedById")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -903,12 +979,19 @@ namespace BoardMan.Web.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("WorkspaceId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AddedById");
+
                     b.HasIndex("MemberId");
+
+                    b.HasIndex("RoleId");
 
                     b.HasIndex("WorkspaceId");
 
@@ -1094,6 +1177,12 @@ namespace BoardMan.Web.Migrations
 
             modelBuilder.Entity("BoardMan.Web.Data.DbBoardMember", b =>
                 {
+                    b.HasOne("BoardMan.Web.Data.AppUser", "AddedBy")
+                        .WithMany()
+                        .HasForeignKey("AddedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("BoardMan.Web.Data.DbBoard", "Board")
                         .WithMany()
                         .HasForeignKey("BoardId")
@@ -1106,9 +1195,38 @@ namespace BoardMan.Web.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("BoardMan.Web.Data.DbRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AddedBy");
+
                     b.Navigation("Board");
 
                     b.Navigation("Member");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbEmailInvite", b =>
+                {
+                    b.HasOne("BoardMan.Web.Data.AppUser", "AddedBy")
+                        .WithMany()
+                        .HasForeignKey("AddedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BoardMan.Web.Data.DbRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AddedBy");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbList", b =>
@@ -1302,9 +1420,21 @@ namespace BoardMan.Web.Migrations
 
             modelBuilder.Entity("BoardMan.Web.Data.DbWorkspaceMember", b =>
                 {
+                    b.HasOne("BoardMan.Web.Data.AppUser", "AddedBy")
+                        .WithMany()
+                        .HasForeignKey("AddedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("BoardMan.Web.Data.AppUser", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BoardMan.Web.Data.DbRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -1314,7 +1444,11 @@ namespace BoardMan.Web.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.Navigation("AddedBy");
+
                     b.Navigation("Member");
+
+                    b.Navigation("Role");
 
                     b.Navigation("Workspace");
                 });
