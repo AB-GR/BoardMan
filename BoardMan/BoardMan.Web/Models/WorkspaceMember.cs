@@ -2,11 +2,11 @@
 
 namespace BoardMan.Web.Models
 {
-	public class BoardMember
+	public class WorkspaceMember
 	{
 		public Guid? Id { get; set; }
 
-		public Guid? BoardId { get; set; }
+		public Guid? WorkspaceId { get; set; }
 
 		public string MemberEmail { get; set; } = null!;
 

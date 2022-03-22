@@ -55,6 +55,8 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
 
     public virtual DbSet<DbBillingDetails> BillingDetails { get; set; } = null!;
 
+    public virtual DbSet<DbRole> BoardRoles { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -83,6 +85,9 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
         }
 
         builder.Entity<DbPlanDiscount>().HasIndex(pd => new { pd.Code, pd.PlanId }).IsUnique();
+        builder.Entity<DbBoardMember>().HasIndex(pd => new { pd.MemberId, pd.RoleId }).IsUnique();
+        builder.Entity<DbEmailInvite>().HasIndex(pd => new { pd.EmailAddress, pd.RoleId }).IsUnique();
+
         builder.Entity<DbPlan>().Property(p => p.Cost).HasPrecision(19, 4);
         builder.Entity<DbPlanDiscount>().Property(p => p.DiscountPercent).HasPrecision(5, 2);
         builder.Entity<DbPaymentTransaction>().Property(p => p.CostBeforeDiscount).HasPrecision(19, 4);
@@ -97,10 +102,22 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
             relationship.DeleteBehavior = DeleteBehavior.NoAction;
         }
 
-        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Monhtly)", Cost = 99, Currency = "USD", Description = "This is the standard monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
+        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Monthly)", Cost = 99, Currency = "USD", Description = "This is the standard monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
         builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Annual)", Cost = 948, Currency = "USD", Description = "This is the standard annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
         builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Monthly)", Cost = 299, Currency = "USD", Description = "This is the premium monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
         builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Annual)", Cost = 3000, Currency = "USD", Description = "This is the premium annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
+
+        builder.Entity<DbRole>().HasData(new DbRole { Id = Guid.NewGuid(), Name = "Read-Only", Description = "This is a readonly role meant to give view access to users", CreatedAt = DateTime.UtcNow });
+        builder.Entity<DbRole>().HasData(new DbRole { Id = Guid.NewGuid(), Name = "Read-Write", Description = "This is a readwrite role meant to give access to read and write different entities", CreatedAt = DateTime.UtcNow });
+        builder.Entity<DbRole>().HasData(new DbRole { Id = Guid.NewGuid(), Name = "Admin", Description = "This is an admin role meant for overall access", CreatedAt = DateTime.UtcNow });
+
+        builder.Entity<DbEmailInvite>().Navigation(e => e.AddedBy).AutoInclude();
+
+        builder.Entity<DbBoardMember>().Navigation(e => e.AddedBy).AutoInclude();
+        builder.Entity<DbBoardMember>().Navigation(e => e.Member).AutoInclude();
+
+        builder.Entity<DbWorkspaceMember>().Navigation(e => e.AddedBy).AutoInclude();
+        builder.Entity<DbWorkspaceMember>().Navigation(e => e.Member).AutoInclude();        
     }
 
     private void TrackTimeStamps()

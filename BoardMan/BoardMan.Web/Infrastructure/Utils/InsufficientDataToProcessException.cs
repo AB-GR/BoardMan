@@ -13,4 +13,11 @@
 		{
 		}
 	}
+
+	public class InvalidDataCannotProcessException : Exception
+	{
+		public InvalidDataCannotProcessException(string? message) : base(message)
+		{
+		}
+	}
 }

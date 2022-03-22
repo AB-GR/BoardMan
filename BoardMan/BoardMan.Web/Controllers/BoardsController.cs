@@ -1,5 +1,6 @@
 ﻿using BoardMan.Web.Data;
 using BoardMan.Web.Extensions;
+using BoardMan.Web.Infrastructure.Utils.Extensions;
 using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
 using Microsoft.AspNetCore.Identity;
@@ -57,6 +58,55 @@ namespace BoardMan.Web.Controllers
 		public async Task<ActionResult> ListOtherLists(Guid boardId, Guid listId)
 		{
 			return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListOtherListsForDisplayAsync(boardId, listId)));
+		}
+
+		[HttpPost]
+		public async Task<ActionResult> GetBoardMembers(Guid boardId)
+		{
+			return JsonResponse(ApiResponse.List(await this.boardManager.ListBoardMembersAsync(boardId, this.userManager.GetGuidUserId(User))));
+		}
+
+		[HttpPost]
+		public async Task<ActionResult> CreateBoardMember(BoardMember boardMember)
+		{
+			if (ModelState.IsValid)
+			{
+				boardMember.AddedById = this.userManager.GetGuidUserId(User);
+				var record = await this.boardManager.CreateBoardMemberAsync(boardMember, this.userManager.GetGuidUserId(User));
+				return JsonResponse(ApiResponse.Single(record));
+			}
+
+			return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+		}
+
+
+		[HttpPost]
+		public async Task<ActionResult> UpdateBoardMember(BoardMember boardMember)
+		{
+			if (ModelState.IsValid)
+			{				
+				var record = await this.boardManager.EditBoardMemberAsync(boardMember, this.userManager.GetGuidUserId(User));
+				return JsonResponse(ApiResponse.Single(record));
+			}
+
+			return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+		}
+
+		[HttpPost]
+		public async Task<ActionResult> DeleteBoardMember(Guid id)
+		{
+			if (ModelState.IsValid)
+			{
+				await this.boardManager.DeleteBoardMemberAsync(id);
+				return JsonResponse(ApiResponse.Success());
+			}
+
+			return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+		}
+
+		public async Task<ActionResult> ListProspectiveUsers(Guid boardId)
+		{
+			return Json(ApiResponse.List(await this.boardManager.ListProspectiveUsersAsync(this.userManager.GetGuidUserId(User), boardId)));
 		}
 	}
 }

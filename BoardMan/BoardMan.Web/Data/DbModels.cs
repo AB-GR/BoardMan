@@ -69,6 +69,16 @@ namespace BoardMan.Web.Data
 		ExistingUser
 	}
 
+	[Table("Roles")]
+	public class DbRole : DbEntity
+	{
+		[MaxLength(50)]
+		public string Name { get; set; } = null!;
+
+		[MaxLength(250)]
+		public string? Description { get; set; }
+	}
+
 	[Table("Workspaces")]
 	public class DbWorkspace : DbEntity
 	{
@@ -105,6 +115,16 @@ namespace BoardMan.Web.Data
 		public Guid MemberId { get; set; }
 
 		public AppUser Member { get; set; } = null!;
+
+		[ForeignKey("Role")]
+		public Guid RoleId { get; set; }
+
+		public DbRole Role { get; set; } = null!;
+
+		[ForeignKey("AddedBy")]
+		public Guid AddedById { get; set; }
+
+		public AppUser AddedBy { get; set; } = null!;
 	}
 
 	[Table("Boards")]
@@ -141,6 +161,16 @@ namespace BoardMan.Web.Data
 		public Guid MemberId { get; set; }
 
 		public AppUser Member { get; set; } = null!;
+
+		[ForeignKey("Role")]
+		public Guid RoleId { get; set; }
+
+		public DbRole Role { get; set; } = null!;
+
+		[ForeignKey("AddedBy")]
+		public Guid AddedById { get; set; }
+
+		public AppUser AddedBy { get; set; } = null!;
 	}
 
 
@@ -294,8 +324,6 @@ namespace BoardMan.Web.Data
 	[Table("EmailInvites")]
 	public class DbEmailInvite : DbEntity
 	{
-		//  Include prospective role as well
-
 		public string EntityUrn { get; set; } = null!;
 
 		public string EmailAddress { get; set; } = null!;
@@ -305,6 +333,16 @@ namespace BoardMan.Web.Data
 		public DateTime ExpireAt { get; set; }
 
 		public bool? Accepted { get; set; }
+
+		[ForeignKey("Role")]
+		public Guid RoleId { get; set; }
+
+		public DbRole Role { get; set; } = null!;
+
+		[ForeignKey("AddedBy")]
+		public Guid AddedById { get; set; }
+
+		public AppUser AddedBy { get; set; } = null!;
 	}
 
 	[Table("Subscriptions")]

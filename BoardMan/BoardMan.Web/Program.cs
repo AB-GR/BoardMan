@@ -23,6 +23,8 @@ services.AddScoped<IBoardManager, BoardManager>();
 services.AddScoped<IListManager, ListManager>();
 services.AddScoped<ITaskManager, TaskManager>();
 services.AddScoped<IBlobManager, BlobManager>();
+services.AddScoped<IRoleManager, RoleManager>();
+services.AddScoped<IEmailInviteManager, EmailInviteManager>();
 services.AddTransient<PaymentIntentService>();
 services.AddScoped<IPaymentService, PaymentService>();
 services.AddLocalization(o => o.ResourcesPath = "Resources");

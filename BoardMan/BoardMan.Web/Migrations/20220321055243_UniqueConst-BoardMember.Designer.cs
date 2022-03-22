@@ -4,6 +4,7 @@ using BoardMan.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoardMan.Web.Migrations
 {
     [DbContext(typeof(BoardManDbContext))]
-    partial class BoardManDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220321055243_UniqueConst-BoardMember")]
+    partial class UniqueConstBoardMember
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,7 +140,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("DoneById");
 
-                    b.ToTable("ActivityTrackings", (string)null);
+                    b.ToTable("ActivityTrackings");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbBillingDetails", b =>
@@ -213,7 +215,7 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("PaymentTransactionId")
                         .IsUnique();
 
-                    b.ToTable("BillingDetails", (string)null);
+                    b.ToTable("BillingDetails");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbBoard", b =>
@@ -253,7 +255,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("WorkspaceId");
 
-                    b.ToTable("Boards", (string)null);
+                    b.ToTable("Boards");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbBoardMember", b =>
@@ -295,7 +297,7 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("MemberId", "RoleId")
                         .IsUnique();
 
-                    b.ToTable("BoardMembers", (string)null);
+                    b.ToTable("BoardMembers");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbEmailInvite", b =>
@@ -347,7 +349,7 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("EmailAddress", "RoleId")
                         .IsUnique();
 
-                    b.ToTable("EmailInvites", (string)null);
+                    b.ToTable("EmailInvites");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbList", b =>
@@ -382,7 +384,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("BoardId");
 
-                    b.ToTable("Lists", (string)null);
+                    b.ToTable("Lists");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbPaymentTransaction", b =>
@@ -450,7 +452,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("TransactedById");
 
-                    b.ToTable("PaymentTransactions", (string)null);
+                    b.ToTable("PaymentTransactions");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbPlan", b =>
@@ -495,7 +497,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Plans", (string)null);
+                    b.ToTable("Plans");
 
                     b.HasData(
                         new
@@ -586,7 +588,7 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("Code", "PlanId")
                         .IsUnique();
 
-                    b.ToTable("PlanDiscounts", (string)null);
+                    b.ToTable("PlanDiscounts");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbRole", b =>
@@ -616,7 +618,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -681,7 +683,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("PaymentTrasactionId");
 
-                    b.ToTable("Subscriptions", (string)null);
+                    b.ToTable("Subscriptions");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTask", b =>
@@ -730,7 +732,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("ListId");
 
-                    b.ToTable("Tasks", (string)null);
+                    b.ToTable("Tasks");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskAttachment", b =>
@@ -776,7 +778,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("UploadedById");
 
-                    b.ToTable("TaskAttachments", (string)null);
+                    b.ToTable("TaskAttachments");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskChecklist", b =>
@@ -818,7 +820,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("TaskChecklists", (string)null);
+                    b.ToTable("TaskChecklists");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskComment", b =>
@@ -854,7 +856,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("TaskComments", (string)null);
+                    b.ToTable("TaskComments");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskLabel", b =>
@@ -885,7 +887,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("TaskLabels", (string)null);
+                    b.ToTable("TaskLabels");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskWatcher", b =>
@@ -916,7 +918,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("WatchedById");
 
-                    b.ToTable("TaskWatchers", (string)null);
+                    b.ToTable("TaskWatchers");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbWorkspace", b =>
@@ -956,7 +958,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("SubscriptionId");
 
-                    b.ToTable("Workspaces", (string)null);
+                    b.ToTable("Workspaces");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbWorkspaceMember", b =>
@@ -997,7 +999,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("WorkspaceId");
 
-                    b.ToTable("WorkspaceMembers", (string)null);
+                    b.ToTable("WorkspaceMembers");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.Role", b =>
