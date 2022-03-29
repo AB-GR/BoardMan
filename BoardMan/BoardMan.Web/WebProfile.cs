@@ -137,8 +137,6 @@ namespace BoardMan.Web
                 .ForMember(x => x.CreatedAt, x => x.Ignore())
                 .ForMember(x => x.ModifiedAt, x => x.Ignore())
                 .ForMember(x => x.DeletedAt, x => x.Ignore());
-
-            CreateMap<DbRole, BoardmanRole>();
         }
     }
 

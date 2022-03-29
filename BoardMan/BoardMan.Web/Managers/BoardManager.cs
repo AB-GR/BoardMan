@@ -26,6 +26,8 @@ namespace BoardMan.Web.Managers
 
 		Task DeleteBoardMemberAsync(Guid boardMemberId);
 
+		Task<Guid> GetBoardIdAsync(Guid boardMemberId);
+
 		Task<List<UsersOption>> ListProspectiveUsersAsync(Guid currentUserId, Guid boardId);
 	}
 
@@ -112,8 +114,8 @@ namespace BoardMan.Web.Managers
 
 		public async Task DeleteBoardMemberAsync(Guid boardMemberId)
 		{
-			var dbBoardMember = await this.dbContext.BoardMembers.FirstOrDefaultAsync(x => x.Id == boardMemberId);
-			var dbEmailInvite = await this.dbContext.EmailInvites.FirstOrDefaultAsync(x => x.Id == boardMemberId);
+			var dbBoardMember = await this.dbContext.BoardMembers.FirstOrDefaultAsync(x => x.Id == boardMemberId && x.DeletedAt == null);
+			var dbEmailInvite = await this.dbContext.EmailInvites.FirstOrDefaultAsync(x => x.Id == boardMemberId && x.DeletedAt == null);
 			if (dbBoardMember == null && dbEmailInvite == null)
 			{
 				throw new EntityNotFoundException($"BoardMember or EmailInvite with Id {boardMemberId} not found");
@@ -188,6 +190,22 @@ namespace BoardMan.Web.Managers
 				await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
 				return this.mapper.Map<BoardMember>(dbEmailInvite);
 			}
+		}
+
+		public async Task<Guid> GetBoardIdAsync(Guid boardMemberId)
+		{
+			var dbBoardMember = await this.dbContext.BoardMembers.FirstOrDefaultAsync(x => x.Id == boardMemberId && x.DeletedAt == null);			
+
+			if (dbBoardMember != null)
+				return dbBoardMember.BoardId;
+
+			var dbEmailInvite = await this.dbContext.EmailInvites.FirstOrDefaultAsync(x => x.Id == boardMemberId && x.DeletedAt == null);
+			if (dbEmailInvite != null && dbEmailInvite.EntityUrn.Split(":").Length > 1)
+			{
+				return Guid.Parse(dbEmailInvite.EntityUrn.Split(":")[1]);
+			}
+
+			return Guid.Empty;
 		}
 	}
 }

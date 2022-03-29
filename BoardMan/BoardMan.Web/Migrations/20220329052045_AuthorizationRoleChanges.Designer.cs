@@ -4,6 +4,7 @@ using BoardMan.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoardMan.Web.Migrations
 {
     [DbContext(typeof(BoardManDbContext))]
-    partial class BoardManDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220329052045_AuthorizationRoleChanges")]
+    partial class AuthorizationRoleChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,100 +23,6 @@ namespace BoardMan.Web.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
-
-            modelBuilder.Entity("BoardMan.Web.Data.AppRole", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newsequentialid()");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
-
-                    b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("f58e9f8a-8288-4cbc-8942-b2f401513911"),
-                            ConcurrencyStamp = "13e86009-bfb1-4547-bc81-958d6ca492c1",
-                            Name = "ApplicationSuperAdmin",
-                            NormalizedName = "ApplicationSuperAdmin"
-                        },
-                        new
-                        {
-                            Id = new Guid("b25f5ae2-cfab-439d-b3ce-d5834e5e0a7b"),
-                            ConcurrencyStamp = "4917fbc5-4492-4b49-a137-88846547d922",
-                            Name = "WorkspaceSuperAdmin",
-                            NormalizedName = "WorkspaceSuperAdmin"
-                        },
-                        new
-                        {
-                            Id = new Guid("0e13590b-566c-4d8d-a39c-0ecfbeaeaa73"),
-                            ConcurrencyStamp = "23e5335a-23ac-4a5c-af83-b2c331241a6a",
-                            Name = "WorkspaceAdmin",
-                            NormalizedName = "WorkspaceAdmin"
-                        },
-                        new
-                        {
-                            Id = new Guid("a393c00f-ff31-4acf-8003-89b18ee96cec"),
-                            ConcurrencyStamp = "e569716e-7f14-452c-8ef5-8cc2aba313a8",
-                            Name = "WorkspaceContributor",
-                            NormalizedName = "WorkspaceContributor"
-                        },
-                        new
-                        {
-                            Id = new Guid("87d90f66-6b16-453c-85bc-67e910502531"),
-                            ConcurrencyStamp = "db45ce28-7578-4dae-a927-7df216b5a049",
-                            Name = "WorkspaceReader",
-                            NormalizedName = "WorkspaceReader"
-                        },
-                        new
-                        {
-                            Id = new Guid("19752dc1-eee0-4f6c-8e72-667efe292620"),
-                            ConcurrencyStamp = "c193d4fc-6b8b-4f70-b68f-44346edc5609",
-                            Name = "BoardSuperAdmin",
-                            NormalizedName = "BoardSuperAdmin"
-                        },
-                        new
-                        {
-                            Id = new Guid("6987c099-cb95-4e07-805f-1f200086d981"),
-                            ConcurrencyStamp = "5787e344-64f9-4f3f-9912-3df6f02fe294",
-                            Name = "BoardAdmin",
-                            NormalizedName = "BoardAdmin"
-                        },
-                        new
-                        {
-                            Id = new Guid("940ecb4f-9fe3-47f2-baa4-0bf0b78b17d0"),
-                            ConcurrencyStamp = "0fa88d76-3211-461c-aeba-d486651dde98",
-                            Name = "BoardContributor",
-                            NormalizedName = "BoardContributor"
-                        },
-                        new
-                        {
-                            Id = new Guid("f5ff3262-6a47-4186-b65f-0190c7fc0baf"),
-                            ConcurrencyStamp = "8e87d1c1-62ad-4c95-a01a-651de6455611",
-                            Name = "BoardReader",
-                            NormalizedName = "BoardReader"
-                        });
-                });
 
             modelBuilder.Entity("BoardMan.Web.Data.AppUser", b =>
                 {
@@ -349,6 +257,101 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("WorkspaceId");
 
                     b.ToTable("Boards");
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbBoardmanRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newsequentialid()");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BoardmanRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("041ed186-1c4c-425c-b460-41044ef1939c"),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(354),
+                            Description = "Application level global or super admin has all api access including internal api",
+                            Name = "ApplicationSuperAdmin"
+                        },
+                        new
+                        {
+                            Id = new Guid("08a9f389-7a90-4206-bc34-bbb54c9fa82c"),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(371),
+                            Description = "Workspace level global or super admin has all workspace api access",
+                            Name = "WorkspaceSuperAdmin"
+                        },
+                        new
+                        {
+                            Id = new Guid("20040c26-699e-4862-89f7-1ce7a02228ec"),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(382),
+                            Description = "Workspace level admin",
+                            Name = "WorkspaceAdmin"
+                        },
+                        new
+                        {
+                            Id = new Guid("31da2e0d-3357-424f-b6a0-b6d959df4723"),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(406),
+                            Description = "Workspace level contributor",
+                            Name = "WorkspaceContributor"
+                        },
+                        new
+                        {
+                            Id = new Guid("8ed8dd1c-3ea5-4df5-be92-7a0a61ce133b"),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(417),
+                            Description = "Workspace level reader",
+                            Name = "WorkspaceReader"
+                        },
+                        new
+                        {
+                            Id = new Guid("df090650-169d-414a-96cc-7a6a0cd5c2dd"),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(432),
+                            Description = "Board level super admin",
+                            Name = "BoardSuperAdmin"
+                        },
+                        new
+                        {
+                            Id = new Guid("33ddc6ae-d3ae-45ed-b8d5-db7735daa4a3"),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(442),
+                            Description = "Board level admin",
+                            Name = "BoardAdmin"
+                        },
+                        new
+                        {
+                            Id = new Guid("5184d295-4796-49a9-b6b6-678462121bad"),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(453),
+                            Description = "Board level contributor",
+                            Name = "BoardContributor"
+                        },
+                        new
+                        {
+                            Id = new Guid("a9912388-ac13-4ea4-afd2-59076d40e1d1"),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(463),
+                            Description = "Board level reader",
+                            Name = "BoardReader"
+                        });
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbBoardMember", b =>
@@ -631,45 +634,45 @@ namespace BoardMan.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("25e38e03-a45e-4bdd-9545-ab79a88a3d66"),
+                            Id = new Guid("bd038e81-300b-4cf0-8d5e-3722465ae906"),
                             Cost = 99m,
-                            CreatedAt = new DateTime(2022, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6353),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(198),
                             Currency = "USD",
                             Description = "This is the standard monthly plan",
-                            ExpireAt = new DateTime(2023, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6357),
+                            ExpireAt = new DateTime(2023, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(204),
                             Name = "Standard (Monthly)",
                             PlanType = 0
                         },
                         new
                         {
-                            Id = new Guid("4dfe11ca-fe09-4960-bc58-8e903fbe59b2"),
+                            Id = new Guid("9284fcc7-cdc8-4d9c-9ab7-76e151577ca5"),
                             Cost = 948m,
-                            CreatedAt = new DateTime(2022, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6389),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(243),
                             Currency = "USD",
                             Description = "This is the standard annual plan",
-                            ExpireAt = new DateTime(2023, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6389),
+                            ExpireAt = new DateTime(2023, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(244),
                             Name = "Standard (Annual)",
                             PlanType = 1
                         },
                         new
                         {
-                            Id = new Guid("89c90293-2134-4101-ae85-f683320a5d6a"),
+                            Id = new Guid("9875aa6c-0ff2-4d8a-882f-6849b17b9c42"),
                             Cost = 299m,
-                            CreatedAt = new DateTime(2022, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6403),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(257),
                             Currency = "USD",
                             Description = "This is the premium monthly plan",
-                            ExpireAt = new DateTime(2023, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6404),
+                            ExpireAt = new DateTime(2023, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(257),
                             Name = "Premium (Monthly)",
                             PlanType = 0
                         },
                         new
                         {
-                            Id = new Guid("769ff159-02d7-44cc-867c-5f236087b505"),
+                            Id = new Guid("a138ed40-196a-4dc2-9e1a-2958cd35998f"),
                             Cost = 3000m,
-                            CreatedAt = new DateTime(2022, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6415),
+                            CreatedAt = new DateTime(2022, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(330),
                             Currency = "USD",
                             Description = "This is the premium annual plan",
-                            ExpireAt = new DateTime(2023, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6415),
+                            ExpireAt = new DateTime(2023, 3, 29, 5, 20, 44, 447, DateTimeKind.Utc).AddTicks(331),
                             Name = "Premium (Annual)",
                             PlanType = 1
                         });
@@ -1078,6 +1081,35 @@ namespace BoardMan.Web.Migrations
                     b.ToTable("WorkspaceMembers");
                 });
 
+            modelBuilder.Entity("BoardMan.Web.Data.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newsequentialid()");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
@@ -1246,7 +1278,7 @@ namespace BoardMan.Web.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("BoardMan.Web.Data.AppRole", "Role")
+                    b.HasOne("BoardMan.Web.Data.DbBoardmanRole", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1280,7 +1312,7 @@ namespace BoardMan.Web.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("BoardMan.Web.Data.AppRole", "Role")
+                    b.HasOne("BoardMan.Web.Data.DbBoardmanRole", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1494,7 +1526,7 @@ namespace BoardMan.Web.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("BoardMan.Web.Data.AppRole", "Role")
+                    b.HasOne("BoardMan.Web.Data.DbBoardmanRole", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1517,7 +1549,7 @@ namespace BoardMan.Web.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("BoardMan.Web.Data.AppRole", null)
+                    b.HasOne("BoardMan.Web.Data.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1544,7 +1576,7 @@ namespace BoardMan.Web.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.HasOne("BoardMan.Web.Data.AppRole", null)
+                    b.HasOne("BoardMan.Web.Data.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)

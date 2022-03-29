@@ -14,6 +14,7 @@ using System.Text.Encodings.Web;
 
 namespace BoardMan.Web.Controllers
 {
+	[AllowAnonymous]
 	public class PaymentsController : SiteControllerBase
 	{		
 		private readonly IPaymentManager paymentManager;
@@ -27,7 +28,7 @@ namespace BoardMan.Web.Controllers
 			this.emailSender = emailSender;	
 		}
 
-		[HttpPost, AllowAnonymous]
+		[HttpPost]
 		public async Task<ActionResult> ValidatePayment([FromBody] ValidatePaymentRequest request)
 		{
 			return await GetJsonAsync(async () =>
@@ -42,7 +43,7 @@ namespace BoardMan.Web.Controllers
 			});
 		}
 
-		[HttpPost, AllowAnonymous]
+		[HttpPost]
 		public async Task<ActionResult> CreatePaymentIntent([FromBody] PaymentIntentRequest request)
 		{
 			return await GetJsonAsync(async () =>
@@ -57,7 +58,7 @@ namespace BoardMan.Web.Controllers
 			});
 		}
 
-		[HttpPost, AllowAnonymous]
+		[HttpPost]
 		public async Task<ActionResult> PaymentSuccess(PaymentSuccessRequest request)
 		{
 			if (!ModelState.IsValid)

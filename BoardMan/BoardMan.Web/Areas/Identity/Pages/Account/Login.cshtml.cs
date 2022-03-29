@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BoardMan.Web.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class LoginModel : PageModel
     {
         private readonly SignInManager<AppUser> _signInManager;

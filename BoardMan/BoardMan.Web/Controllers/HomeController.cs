@@ -2,6 +2,7 @@
 using BoardMan.Web.Extensions;
 using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ using System.Diagnostics;
 
 namespace BoardMan.Web.Controllers
 {
+	[AllowAnonymous]
 	public class HomeController : SiteControllerBase
 	{	
 		private readonly ISubscriptionManager subscriptionManager;		

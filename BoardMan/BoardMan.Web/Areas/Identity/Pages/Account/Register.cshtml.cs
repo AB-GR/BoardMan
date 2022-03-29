@@ -24,6 +24,7 @@ using BoardMan.Web.Extensions;
 
 namespace BoardMan.Web.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<AppUser> _signInManager;

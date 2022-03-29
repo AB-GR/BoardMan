@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Options;
 using Stripe;
 using BoardMan.Web.Infrastructure.Filters;
+using Microsoft.AspNetCore.Authorization;
+using BoardMan.Web.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -28,6 +30,9 @@ services.AddScoped<IRoleManager, RoleManager>();
 services.AddScoped<IEmailInviteManager, EmailInviteManager>();
 services.AddTransient<PaymentIntentService>();
 services.AddScoped<IPaymentService, PaymentService>();
+services.AddScoped<IAuthorizationHandler, WorkspaceAuthorizationHandler>();
+services.AddScoped<IAuthorizationHandler, BoardAuthorizationHandler>();
+
 services.AddLocalization(o => o.ResourcesPath = "Resources");
 services.AddMvc(options =>
 {
@@ -55,6 +60,53 @@ services.AddAuthentication().AddGoogle(googleOptions =>
 {
 	googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
 	googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+});
+
+services.AddAuthorization(options =>
+{
+	options.FallbackPolicy = new AuthorizationPolicyBuilder()
+		.RequireAuthenticatedUser()
+		.Build();
+
+	options.AddPolicy(Policies.WorkspaceReaderPolicy, policy =>
+	{
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { RoleNames.WorkspaceReader, RoleNames.WorkspaceContributor, RoleNames.WorkspaceAdmin }));
+	});
+
+	options.AddPolicy(Policies.WorkspaceContributorPolicy, policy =>
+	{
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { RoleNames.WorkspaceContributor, RoleNames.WorkspaceAdmin }));
+	});
+
+	options.AddPolicy(Policies.WorkspaceAdminPolicy, policy =>
+	{
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { RoleNames.WorkspaceAdmin }));
+	});
+
+	options.AddPolicy(Policies.WorkspaceSuperAdminPolicy, policy =>
+	{
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement());
+	});
+
+	options.AddPolicy(Policies.BoardReaderPolicy, policy =>
+	{
+		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { RoleNames.BoardReader, RoleNames.BoardContributor, RoleNames.BoardAdmin }));
+	});
+
+	options.AddPolicy(Policies.BoardContributorPolicy, policy =>
+	{
+		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { RoleNames.BoardContributor, RoleNames.BoardAdmin }));
+	});
+
+	options.AddPolicy(Policies.BoardAdminPolicy, policy =>
+	{
+		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { RoleNames.BoardAdmin }));
+	});
+
+	options.AddPolicy(Policies.BoardSuperAdminPolicy, policy =>
+	{
+		policy.Requirements.Add(new BoardAuthorizationrRequirement());
+	});
 });
 
 var app = builder.Build();

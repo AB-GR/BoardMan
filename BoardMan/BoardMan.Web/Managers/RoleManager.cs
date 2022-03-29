@@ -13,18 +13,16 @@ namespace BoardMan.Web.Managers
 	public class RoleManager : IRoleManager
 	{
 		private readonly BoardManDbContext context;
-		private readonly IMapper mapper;
 
-		public RoleManager(BoardManDbContext context, IMapper mapper)
+		public RoleManager(BoardManDbContext context)
 		{
 			this.context = context;
-			this.mapper = mapper;
 		}		
 
 		public async Task<List<ComboOption>> ListRolesAsync()
 		{
-			var dbRoles = await this.context.BoardRoles.ToListAsync();
-			return this.mapper.Map<List<BoardmanRole>>(dbRoles).Select(x => new ComboOption { Value = x.Id, DisplayText = x.Name }).ToList();
+			var dbRoles = await this.context.Roles.ToListAsync();
+			return dbRoles.Select(x => new ComboOption { Value = x.Id, DisplayText = x.Name }).ToList();
 		}
 	}
 }

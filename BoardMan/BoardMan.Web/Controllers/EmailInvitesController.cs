@@ -2,6 +2,7 @@
 using BoardMan.Web.Extensions;
 using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,7 @@ using System.Text.Encodings.Web;
 
 namespace BoardMan.Web.Controllers
 {
+	[AllowAnonymous]
 	public class EmailInvitesController : SiteControllerBase
 	{
 		private readonly IEmailInviteManager emailInviteManager;

@@ -82,17 +82,7 @@ namespace BoardMan.Web.Data
 		InviteExpired,
 		ExistingUser
 	}
-
-	[Table("Roles")]
-	public class DbRole : DbEntity
-	{
-		[MaxLength(50)]
-		public string Name { get; set; } = null!;
-
-		[MaxLength(250)]
-		public string? Description { get; set; }
-	}
-
+	
 	[Table("Workspaces")]
 	public class DbWorkspace : DbEntity, IActivityTracked
 	{
@@ -138,7 +128,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Role")]
 		public Guid RoleId { get; set; }
 
-		public DbRole Role { get; set; } = null!;
+		public AppRole Role { get; set; } = null!;
 
 		[ForeignKey("AddedBy")]
 		public Guid AddedById { get; set; }
@@ -192,14 +182,13 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Role")]
 		public Guid RoleId { get; set; }
 
-		public DbRole Role { get; set; } = null!;
+		public AppRole Role { get; set; } = null!;
 
 		[ForeignKey("AddedBy")]
 		public Guid AddedById { get; set; }
 
 		public AppUser AddedBy { get; set; } = null!;
 	}
-
 
 	[Table("Lists")]
 	public class DbList : DbEntity
@@ -383,7 +372,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Role")]
 		public Guid RoleId { get; set; }
 
-		public DbRole Role { get; set; } = null!;
+		public AppRole Role { get; set; } = null!;
 
 		[ForeignKey("AddedBy")]
 		public Guid AddedById { get; set; }

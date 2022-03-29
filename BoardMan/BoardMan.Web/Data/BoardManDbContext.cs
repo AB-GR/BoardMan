@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using BoardMan.Web.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -6,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BoardMan.Web.Data;
 
-public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
+public class BoardManDbContext : IdentityDbContext<AppUser, AppRole, Guid>
 {
     public BoardManDbContext()
 	{
@@ -57,8 +58,6 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
 
     public virtual DbSet<DbBillingDetails> BillingDetails { get; set; } = null!;
 
-    public virtual DbSet<DbRole> BoardRoles { get; set; } = null!;
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -70,7 +69,7 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
             b.Property(u => u.Id).HasDefaultValueSql("newsequentialid()");
         });
 
-        builder.Entity<Role>(b =>
+        builder.Entity<AppRole>(b =>
         {
             b.Property(u => u.Id).HasDefaultValueSql("newsequentialid()");
         });
@@ -109,17 +108,25 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
         builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Monthly)", Cost = 299, Currency = "USD", Description = "This is the premium monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
         builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Annual)", Cost = 3000, Currency = "USD", Description = "This is the premium annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
 
-        builder.Entity<DbRole>().HasData(new DbRole { Id = Guid.NewGuid(), Name = "Read-Only", Description = "This is a readonly role meant to give view access to users", CreatedAt = DateTime.UtcNow });
-        builder.Entity<DbRole>().HasData(new DbRole { Id = Guid.NewGuid(), Name = "Read-Write", Description = "This is a readwrite role meant to give access to read and write different entities", CreatedAt = DateTime.UtcNow });
-        builder.Entity<DbRole>().HasData(new DbRole { Id = Guid.NewGuid(), Name = "Admin", Description = "This is an admin role meant for overall access", CreatedAt = DateTime.UtcNow });
+        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.ApplicationSuperAdmin, NormalizedName = RoleNames.ApplicationSuperAdmin });
+        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceSuperAdmin, NormalizedName = RoleNames.WorkspaceSuperAdmin });
+        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceAdmin, NormalizedName = RoleNames.WorkspaceAdmin });
+        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceContributor, NormalizedName = RoleNames.WorkspaceContributor });        
+        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceReader, NormalizedName = RoleNames.WorkspaceReader });
+        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardSuperAdmin, NormalizedName = RoleNames.BoardSuperAdmin });
+        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardAdmin, NormalizedName = RoleNames.BoardAdmin });
+        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardContributor, NormalizedName = RoleNames.BoardContributor });
+        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardReader, NormalizedName = RoleNames.BoardReader });
 
         builder.Entity<DbEmailInvite>().Navigation(e => e.AddedBy).AutoInclude();
 
         builder.Entity<DbBoardMember>().Navigation(e => e.AddedBy).AutoInclude();
         builder.Entity<DbBoardMember>().Navigation(e => e.Member).AutoInclude();
+        builder.Entity<DbBoardMember>().Navigation(e => e.Role).AutoInclude();
 
         builder.Entity<DbWorkspaceMember>().Navigation(e => e.AddedBy).AutoInclude();
-        builder.Entity<DbWorkspaceMember>().Navigation(e => e.Member).AutoInclude();        
+        builder.Entity<DbWorkspaceMember>().Navigation(e => e.Member).AutoInclude();
+        builder.Entity<DbWorkspaceMember>().Navigation(e => e.Role).AutoInclude();
     }
 
     private void TrackTimeStamps()
@@ -152,4 +159,4 @@ public class AppUser : IdentityUser<Guid>
     public string LastName { get; set; } = null!;
 }
 
-public class Role : IdentityRole<Guid> { }
+public class AppRole : IdentityRole<Guid> { }
