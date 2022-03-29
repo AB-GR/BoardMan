@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Options;
 using Stripe;
+using BoardMan.Web.Infrastructure.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -28,8 +29,10 @@ services.AddScoped<IEmailInviteManager, EmailInviteManager>();
 services.AddTransient<PaymentIntentService>();
 services.AddScoped<IPaymentService, PaymentService>();
 services.AddLocalization(o => o.ResourcesPath = "Resources");
-services.AddMvc()
- .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix) 
+services.AddMvc(options =>
+{
+    options.Filters.Add(typeof(AppInitializerFilter));
+}).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix) 
  .AddDataAnnotationsLocalization();
 
 services.Configure<RequestLocalizationOptions>(options =>

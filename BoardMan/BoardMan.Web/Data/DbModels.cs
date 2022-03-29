@@ -15,6 +15,17 @@ namespace BoardMan.Web.Data
 		public DateTime? DeletedAt { get; set; }
 	}
 
+	public interface IActivityTracked
+	{		
+		string? EntityDisplayName { get; }
+	}
+
+	[AttributeUsage(AttributeTargets.Property)]
+	public class ActivityTrackedAttribute : Attribute
+	{
+
+	}
+
 	public enum SqlErrors
 	{		
 		UniqueIndex = 2601,
@@ -56,7 +67,10 @@ namespace BoardMan.Web.Data
 
 	public enum UserAction
 	{
-		None
+		None,
+		Added,
+		Modified,
+		Deleted
 	}
 
 	public enum MemberStatus
@@ -80,11 +94,13 @@ namespace BoardMan.Web.Data
 	}
 
 	[Table("Workspaces")]
-	public class DbWorkspace : DbEntity
+	public class DbWorkspace : DbEntity, IActivityTracked
 	{
+		[ActivityTracked]
 		[MaxLength(100)]
 		public string Title { get; set; } = null!;
 
+		[ActivityTracked]
 		[MaxLength(250)]
 		public string? Description { get; set; }
 
@@ -99,10 +115,13 @@ namespace BoardMan.Web.Data
 		public AppUser Owner { get; set; } = null!;
 
 		public List<DbBoard> Boards { get; set; } = null!;
+
+		[NotMapped]
+		public string? EntityDisplayName => Title;
 	}
 
 	[Table("WorkspaceMembers")]
-	public class DbWorkspaceMember : DbEntity
+	public class DbWorkspaceMember : DbEntity, IActivityTracked
 	{
 		//  Include role as well
 
@@ -125,14 +144,19 @@ namespace BoardMan.Web.Data
 		public Guid AddedById { get; set; }
 
 		public AppUser AddedBy { get; set; } = null!;
+
+		[NotMapped]
+		public string? EntityDisplayName => Member?.UserName;
 	}
 
 	[Table("Boards")]
-	public class DbBoard : DbEntity
+	public class DbBoard : DbEntity, IActivityTracked
 	{
+		[ActivityTracked]
 		[MaxLength(100)]
 		public string Title { get; set; } = null!;
 
+		[ActivityTracked]
 		[MaxLength(250)]
 		public string? Description { get; set; }
 
@@ -145,6 +169,9 @@ namespace BoardMan.Web.Data
 		public Guid OwnerId { get; set; }
 
 		public AppUser Owner { get; set; } = null!;
+
+		[NotMapped]
+		public string? EntityDisplayName => Title;
 	}
 
 	[Table("BoardMembers")]
@@ -307,11 +334,7 @@ namespace BoardMan.Web.Data
 	{
 		public string EntityUrn { get; set; } = null!;
 
-		public string PropertyName { get; set; } = null!;
-
-		public string? OldValue { get; set; }
-
-		public string NewValue { get; set; } = null!;
+		public string? EntityDisplayName { get; set; } = null!;		
 
 		public UserAction Action { get; set; }
 
@@ -319,6 +342,29 @@ namespace BoardMan.Web.Data
 		public Guid DoneById { get; set; }
 
 		public AppUser DoneBy { get; set; } = null!;
+
+		public bool? Succeeded { get; set; }
+
+		public DateTime? StartTime { get; set; }
+
+		public DateTime? EndTime { get; set; }
+
+		public List<DbChangedProperty> ChangedProperties { get; set; } = null!;
+	}
+
+	[Table("ChangedProperties")]
+	public class DbChangedProperty : DbEntity
+	{
+		public string PropertyName { get; set; } = null!;
+
+		public string? OldValue { get; set; }
+
+		public string? NewValue { get; set; } = null!;
+
+		[ForeignKey("ActivityTracking")]
+		public Guid ActivityTrackingId { get; set; }
+
+		public DbActivityTracking ActivityTracking { get; set; } = null!;
 	}
 
 	[Table("EmailInvites")]

@@ -19,6 +19,8 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
         TrackTimeStamps();
     }
 
+    public Guid? LoggedInUserId { get; set; }
+
     public virtual DbSet<DbWorkspace> Workspaces { get; set; } = null!;
 
     public virtual DbSet<DbWorkspaceMember> WorkspaceMembers { get; set; } = null!;
