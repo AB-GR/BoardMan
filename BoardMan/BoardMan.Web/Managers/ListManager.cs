@@ -66,5 +66,5 @@ namespace BoardMan.Web.Managers
 			dbList.DeletedAt = DateTime.UtcNow;
 			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);			
 		}
-	}
+    }
 }

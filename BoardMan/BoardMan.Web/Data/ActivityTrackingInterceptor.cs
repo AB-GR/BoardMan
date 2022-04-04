@@ -158,7 +158,7 @@ namespace BoardMan.Web.Data
 						continue;
 
 					var activityTracking = new DbActivityTracking();
-					activityTracking.Action = entry.State == EntityState.Added ? UserAction.Added : entry.State == EntityState.Modified ? UserAction.Modified : UserAction.Deleted;
+					activityTracking.Action = entry.State == EntityState.Added ? UserAction.Add : entry.State == EntityState.Modified ? UserAction.Update : UserAction.Delete;
 					activityTracking.EntityDisplayName = (entry.Entity as IActivityTracked)?.EntityDisplayName;
 					var pk = entry.Properties.First(x => x.Metadata.IsPrimaryKey());
 					activityTracking.EntityUrn = $"{entry.Metadata.DisplayName()}:{pk.CurrentValue}";

@@ -104,9 +104,9 @@ namespace BoardMan.Web.Controllers
             });
         }
 
-        protected virtual async Task<ActionResult> AuthorizedResposeAsync(Func<Task<ActionResult>> method, Guid id, string policyName)
+        protected virtual async Task<ActionResult> AuthorizedResposeAsync(Func<Task<ActionResult>> method, object? resource, string policyName)
 		{
-            var authorizationResult = await this.authorizationService.AuthorizeAsync(User, id, policyName);
+            var authorizationResult = await this.authorizationService.AuthorizeAsync(User, resource, policyName);
 
             if (authorizationResult.Succeeded)
             {
@@ -122,9 +122,9 @@ namespace BoardMan.Web.Controllers
             }            
         }
 
-        protected virtual async Task<ActionResult> AuthorizedJsonResposeAsync(Func<Task<ActionResult>> method, Guid id, string policyName)
+        protected virtual async Task<ActionResult> AuthorizedJsonResposeAsync(Func<Task<ActionResult>> method, object? resource, string policyName)
         {
-            var authorizationResult = await this.authorizationService.AuthorizeAsync(User, id, policyName);
+            var authorizationResult = await this.authorizationService.AuthorizeAsync(User, resource, policyName);
 
             if (authorizationResult.Succeeded)
             {
@@ -133,6 +133,20 @@ namespace BoardMan.Web.Controllers
             else
             {
                 return JsonResponse(ApiResponse.Error("You are not authorized to perform this action"));
+            }
+        }
+
+        protected virtual async Task<ActionResult> AuthorizedJsonAsync(Func<Task<ActionResult>> method, object? resource, string policyName)
+        {
+            var authorizationResult = await this.authorizationService.AuthorizeAsync(User, resource, policyName);
+
+            if (authorizationResult.Succeeded)
+            {
+                return await method();
+            }
+            else
+            {
+                return Json(ApiResponse.Error("You are not authorized to perform this action"));
             }
         }
 

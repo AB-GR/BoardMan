@@ -21,7 +21,7 @@ namespace BoardMan.Web.Controllers
 		private readonly SignInManager<AppUser> signInManager;
 		private readonly IEmailSender emailSender;
 
-		public EmailInvitesController(SignInManager<AppUser> signInManager, IEmailSender emailSender, IWorkspaceManager workspaceManager, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<EmailInvitesController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IEmailInviteManager emailInviteManager) : base(userManager, configuration, logger, sharedLocalizer)
+		public EmailInvitesController(SignInManager<AppUser> signInManager, IEmailSender emailSender, IWorkspaceManager workspaceManager, UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<EmailInvitesController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IEmailInviteManager emailInviteManager) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.signInManager = signInManager;
 			this.emailSender = emailSender;

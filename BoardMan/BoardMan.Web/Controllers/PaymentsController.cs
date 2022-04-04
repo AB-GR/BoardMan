@@ -21,7 +21,7 @@ namespace BoardMan.Web.Controllers
 		private readonly SignInManager<AppUser> signInManager;
 		private readonly IEmailSender emailSender;
 
-		public PaymentsController(IPaymentManager paymentManager, SignInManager<AppUser> signInManager, IEmailSender emailSender, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<PaymentsController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, configuration, logger, sharedLocalizer)
+		public PaymentsController(IPaymentManager paymentManager, SignInManager<AppUser> signInManager, IEmailSender emailSender, UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<PaymentsController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{			
 			this.paymentManager = paymentManager;
 			this.signInManager = signInManager;

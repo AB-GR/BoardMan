@@ -48,6 +48,7 @@ namespace BoardMan.Web
             CreateMap<List, DbList>();
 
             CreateMap<DbTask, BoardTask>();
+
             CreateMap<BoardTask, DbTask>()
                 .ForMember(x => x.AssignedToId, x => x.MapFrom(src => src.AssignedToId.IsNullOrEmpty() ? null : src.AssignedToId));
 

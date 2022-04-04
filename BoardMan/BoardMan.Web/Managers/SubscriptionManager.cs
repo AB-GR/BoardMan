@@ -59,7 +59,8 @@ namespace BoardMan.Web.Managers
                             priorPlanId == null ? SubscriptionStatus.AboutToExpirePriorPlanInvalid : SubscriptionStatus.AboutToExpire
                                 : SubscriptionStatus.Valid
                     : priorPlanId == null ? SubscriptionStatus.ExpiredPriorPlanInvalid : SubscriptionStatus.Expired,
-                PriorPlanId = priorPlanId
+                PriorPlanId = priorPlanId,
+                HasOtherWorkspaces = await _dbContext.WorkspaceMembers.AnyAsync(x => x.MemberId == userId && x.DeletedAt == null).ConfigureAwait(false)
             };
 
             return result;

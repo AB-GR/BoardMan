@@ -16,7 +16,7 @@ namespace BoardMan.Web.Controllers
 	{	
 		private readonly ISubscriptionManager subscriptionManager;		
 
-		public HomeController(ISubscriptionManager subscriptionManager, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<HomeController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, configuration, logger, sharedLocalizer)
+		public HomeController(ISubscriptionManager subscriptionManager, UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<HomeController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{			
 			this.subscriptionManager = subscriptionManager;			
 		}

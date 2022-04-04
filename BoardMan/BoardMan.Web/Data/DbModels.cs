@@ -62,15 +62,23 @@ namespace BoardMan.Web.Data
 	{
 		Workspace,
 		Board,
-		Task
+		List,
+		Task,
+		TaskComment,
+		Tasklabel,
+		TaskChecklist,
+		TaskWatcher,
+		TaskAttachment,
+		BoardMember,
+		WorkspaceMember
 	}
 
 	public enum UserAction
 	{
 		None,
-		Added,
-		Modified,
-		Deleted
+		Add,
+		Update,
+		Delete
 	}
 
 	public enum MemberStatus

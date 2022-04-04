@@ -1,4 +1,5 @@
-﻿using BoardMan.Web.Data;
+﻿using BoardMan.Web.Auth;
+using BoardMan.Web.Data;
 using BoardMan.Web.Infrastructure.Utils;
 using BoardMan.Web.Models;
 using Microsoft.EntityFrameworkCore;
@@ -45,14 +46,26 @@ namespace BoardMan.Web.Managers
 			}
 			else if (entity == "Board")
 			{
-				if (!await this.dbContext.Boards.AnyAsync(x => x.Id == entityId && x.DeletedAt == null))
+				var dbBoard = await this.dbContext.Boards.FirstOrDefaultAsync(x => x.Id == entityId && x.DeletedAt == null).ConfigureAwait(false);
+				if (dbBoard == null)
 				{
 					throw new EntityNotFoundException($"Board with Id {entityId} does not exist");
 				}
 
 				dbEmailInvite.Accepted = true;
-				var boardMember = new DbBoardMember { AddedById = dbEmailInvite.AddedById, RoleId = dbEmailInvite.RoleId, BoardId = entityId, MemberId = memberId };
-				this.dbContext.BoardMembers.Add(boardMember);
+				var dbBoardMember = new DbBoardMember { AddedById = dbEmailInvite.AddedById, RoleId = dbEmailInvite.RoleId, BoardId = entityId, MemberId = memberId };
+				this.dbContext.BoardMembers.Add(dbBoardMember);
+
+				// If there doest exist a workspace member with this user Id add one with a reader role
+				var wsReaderRoleId = this.dbContext.Roles.FirstOrDefault(x => x.Name == RoleNames.WorkspaceReader)?.Id;
+				if(wsReaderRoleId == null)
+				{
+					throw new EntityNotFoundException($"WorkspaceReader role with Name {RoleNames.WorkspaceReader} does not exist");
+				}
+
+				var dbWorkspaceMember = new DbWorkspaceMember { AddedById = dbEmailInvite.AddedById, RoleId = wsReaderRoleId.Value, WorkspaceId = dbBoard.WorkspaceId, MemberId = memberId };
+				this.dbContext.WorkspaceMembers.Add(dbWorkspaceMember);
+
 				await this.dbContext.SaveChangesAsync();
 			}
 		}

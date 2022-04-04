@@ -5,7 +5,9 @@
         public SubscriptionStatus SubscriptionStatus { get; set; }
 
         public Guid? PriorPlanId { get; set; }
-    }
+
+		public bool HasOtherWorkspaces { get; set; } = false;
+	}
 
     public enum SubscriptionStatus
     {

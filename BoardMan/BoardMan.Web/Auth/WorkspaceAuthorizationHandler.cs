@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardMan.Web.Auth
 {
-	public class WorkspaceAuthorizationHandler : AuthorizationHandler<WorkspaceAuthorizationrRequirement, Guid>
+	public class WorkspaceAuthorizationHandler : AuthorizationHandler<WorkspaceAuthorizationrRequirement, EntityResource>
 	{
 		private readonly BoardManDbContext boardManDbContext;
 		private readonly UserManager<AppUser> userManager;
@@ -17,13 +17,14 @@ namespace BoardMan.Web.Auth
 			this.userManager = userManager;
 		}
 
-		protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, WorkspaceAuthorizationrRequirement requirement, Guid workspaceId)
+		protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, WorkspaceAuthorizationrRequirement requirement, EntityResource resource)
 		{
 			var currentUserId = this.userManager.GetGuidUserId(context.User);
-			var board = await this.boardManDbContext.Workspaces.FirstOrDefaultAsync(x => x.Id == workspaceId && x.DeletedAt == null);
-			if (board != null && board.OwnerId == currentUserId)
+			var workspaceId = await GetWorkspaceIdAsync(resource);
+			var workspace = await this.boardManDbContext.Workspaces.FirstOrDefaultAsync(x => x.Id == workspaceId && x.DeletedAt == null);
+			if (workspace != null && workspace.OwnerId == currentUserId)
 			{
-				// Is Board SuperAdmin
+				// Is Workspace SuperAdmin
 				context.Succeed(requirement);
 				return;
 			}
@@ -35,6 +36,20 @@ namespace BoardMan.Web.Auth
 			}
 
 			return;
+		}
+
+		private async Task<Guid> GetWorkspaceIdAsync(EntityResource resource)
+		{
+			switch (resource.Type)
+			{
+				case EntityType.Workspace:
+					return resource.Id;
+				case EntityType.WorkspaceMember:
+					var dbWorkspaceMember = await this.boardManDbContext.WorkspaceMembers.FirstOrDefaultAsync(x => x.Id == resource.Id);
+					return dbWorkspaceMember?.WorkspaceId ?? Guid.Empty;
+				default:
+					return Guid.Empty;
+			}
 		}
 	}
 

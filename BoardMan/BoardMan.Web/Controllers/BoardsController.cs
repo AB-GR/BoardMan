@@ -15,7 +15,7 @@ namespace BoardMan.Web.Controllers
 	{
 		private readonly IBoardManager boardManager;
 
-		public BoardsController(UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<BoardsController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IBoardManager boardManager) : base(userManager, configuration, logger, sharedLocalizer)
+		public BoardsController(UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<BoardsController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IBoardManager boardManager) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.boardManager = boardManager;
 		}
@@ -30,7 +30,7 @@ namespace BoardMan.Web.Controllers
 			return await AuthorizedResposeAsync(async () =>
 			{
 				return View(await this.boardManager.GetBoardAsync(boardId));
-			}, boardId, Policies.BoardReaderPolicy);		
+			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardReaderPolicy);		
 		}
 
 		public async Task<IActionResult> Add(Guid workspaceId)
@@ -38,7 +38,7 @@ namespace BoardMan.Web.Controllers
 			return await AuthorizedResposeAsync(async () =>
 			{
 				return View(new Board { WorkspaceId = workspaceId });
-			}, workspaceId, Policies.WorkspaceContributorPolicy);		
+			}, new EntityResource { Id = workspaceId, Type = EntityType.Workspace }, Policies.WorkspaceContributorPolicy);		
 		}
 
 		[HttpPost]
@@ -49,7 +49,7 @@ namespace BoardMan.Web.Controllers
 				await this.boardManager.CreateBoardAsync(board, this.userManager.GetGuidUserId(User));
 				return this.RedirectToAction("Index", "Workspaces");
 
-			}, board.WorkspaceId, Policies.WorkspaceContributorPolicy);
+			}, new EntityResource { Id = board.WorkspaceId, Type = EntityType.Workspace }, Policies.WorkspaceContributorPolicy);
 		}
 
 		// Find how to do it with Delete
@@ -61,7 +61,7 @@ namespace BoardMan.Web.Controllers
 				await this.boardManager.DeleteBoardAsync(boardId);
 				return this.RedirectToAction("Index", "Workspaces");
 
-			}, boardId, Policies.BoardSuperAdminPolicy);			
+			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardSuperAdminPolicy);			
 		}
 
 		[HttpPost]
@@ -71,7 +71,7 @@ namespace BoardMan.Web.Controllers
 			{
 				return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListBoardMembersForDisplayAsync(boardId, this.userManager.GetGuidUserId(User))));
 
-			}, boardId, Policies.BoardSuperAdminPolicy);			
+			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardContributorPolicy);			
 		}
 
 		[HttpPost]
@@ -81,7 +81,7 @@ namespace BoardMan.Web.Controllers
 			{
 				return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListOtherListsForDisplayAsync(boardId, listId)));
 
-			}, boardId, Policies.BoardContributorPolicy);			
+			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardContributorPolicy);			
 		}
 
 		[HttpPost]
@@ -91,7 +91,7 @@ namespace BoardMan.Web.Controllers
 			{
 				return JsonResponse(ApiResponse.List(await this.boardManager.ListBoardMembersAsync(boardId, this.userManager.GetGuidUserId(User))));
 
-			}, boardId, Policies.BoardAdminPolicy);			
+			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardAdminPolicy);			
 		}
 
 		[HttpPost]
@@ -108,7 +108,7 @@ namespace BoardMan.Web.Controllers
 
 				return JsonResponse(ApiResponse.Error(ModelState.Errors()));
 
-			}, boardMember.BoardId.GetValueOrDefault(), Policies.BoardAdminPolicy);
+			}, new EntityResource { Id = boardMember.BoardId.GetValueOrDefault(), Type = EntityType.Board }, Policies.BoardAdminPolicy);
 			
 		}
 
@@ -125,7 +125,7 @@ namespace BoardMan.Web.Controllers
 
 				return JsonResponse(ApiResponse.Error(ModelState.Errors()));
 
-			}, boardMember.BoardId.GetValueOrDefault(), Policies.BoardAdminPolicy);
+			}, new EntityResource { Id = boardMember.BoardId.GetValueOrDefault(), Type = EntityType.Board }, Policies.BoardAdminPolicy);
 		}
 
 		[HttpPost]
@@ -141,16 +141,16 @@ namespace BoardMan.Web.Controllers
 
 				return JsonResponse(ApiResponse.Error(ModelState.Errors()));
 
-			}, await this.boardManager.GetBoardIdAsync(id), Policies.BoardAdminPolicy);			
+			}, new EntityResource { Id = id, Type = EntityType.BoardMember }, Policies.BoardAdminPolicy);			
 		}
 
 		public async Task<ActionResult> ListProspectiveUsers(Guid boardId)
 		{
-			return await AuthorizedJsonResposeAsync(async () =>
+			return await AuthorizedJsonAsync(async () =>
 			{
 				return Json(ApiResponse.List(await this.boardManager.ListProspectiveUsersAsync(this.userManager.GetGuidUserId(User), boardId)));
 
-			}, boardId, Policies.BoardAdminPolicy);			
+			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardAdminPolicy);			
 		}
 	}
 }

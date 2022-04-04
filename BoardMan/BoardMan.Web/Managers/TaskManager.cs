@@ -290,5 +290,5 @@ namespace BoardMan.Web.Managers
 			dbTaskAttachment.DeletedAt = DateTime.UtcNow;
 			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
 		}
-	}
+    }
 }
