@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BoardMan.Web.Auth;
 using BoardMan.Web.Data;
 using BoardMan.Web.Infrastructure.Utils;
 using BoardMan.Web.Models;
@@ -14,8 +15,10 @@ namespace BoardMan.Web.Managers
 
 		Task DeleteBoardAsync(Guid boardId);
 
-		Task<List<ComboOption>> ListBoardMembersForDisplayAsync(Guid boardId, Guid currentUserId);
-		
+		Task<List<ComboOption>> ListWatchersForDisplayAsync(Guid boardId, Guid currentUserId);
+
+		Task<List<ComboOption>> ListAssigneesForDisplayAsync(Guid boardId, Guid currentUserId);
+
 		Task<IEnumerable<ComboOption>> ListOtherListsForDisplayAsync(Guid boardId, Guid currentListId);
 
 		Task<List<BoardMember>> ListBoardMembersAsync(Guid boardId, Guid currentUserId);
@@ -127,10 +130,25 @@ namespace BoardMan.Web.Managers
 			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
 		}
 
-		// ToDo should only load those members who atleast have readwrite access
-		public async Task<List<ComboOption>> ListBoardMembersForDisplayAsync(Guid boardId, Guid currentUserId)
+		
+		public async Task<List<ComboOption>> ListWatchersForDisplayAsync(Guid boardId, Guid currentUserId)
 		{
 			var members = await this.dbContext.BoardMembers.Where(x => x.BoardId == boardId && x.MemberId != currentUserId).Select(x => new ComboOption { Value = x.Member.Id, DisplayText = x.Member.UserName }).ToListAsync();			
+			members.Insert(0, new ComboOption { Value = Guid.Empty, DisplayText = "Select a user" });
+			return members;
+		}
+
+		public async Task<List<ComboOption>> ListAssigneesForDisplayAsync(Guid boardId, Guid currentUserId)
+		{
+			var applicableRoles = new List<string> { Roles.BoardAdmin, Roles.BoardContributor, Roles.BoardSuperAdmin };
+			var board = await this.dbContext.Boards.Include(x => x.Owner).FirstOrDefaultAsync(x => x.Id == boardId).ConfigureAwait(false);
+			if(board == null)
+			{
+				throw new EntityNotFoundException($"Board with Id {boardId} not found");
+			}
+
+			var members = await this.dbContext.BoardMembers.Where(x => x.BoardId == boardId && applicableRoles.Contains(x.Role.Name)).Select(x => new ComboOption { Value = x.Member.Id, DisplayText = x.Member.UserName }).ToListAsync();
+			members.Insert(0, new ComboOption { Value = board.Owner.Id, DisplayText = board.Owner.UserName });
 			members.Insert(0, new ComboOption { Value = Guid.Empty, DisplayText = "Select a user" });
 			return members;
 		}

@@ -57,10 +57,10 @@ namespace BoardMan.Web.Managers
 				this.dbContext.BoardMembers.Add(dbBoardMember);
 
 				// If there doest exist a workspace member with this user Id add one with a reader role
-				var wsReaderRoleId = this.dbContext.Roles.FirstOrDefault(x => x.Name == RoleNames.WorkspaceReader)?.Id;
+				var wsReaderRoleId = this.dbContext.Roles.FirstOrDefault(x => x.Name == Roles.WorkspaceReader)?.Id;
 				if(wsReaderRoleId == null)
 				{
-					throw new EntityNotFoundException($"WorkspaceReader role with Name {RoleNames.WorkspaceReader} does not exist");
+					throw new EntityNotFoundException($"WorkspaceReader role with Name {Roles.WorkspaceReader} does not exist");
 				}
 
 				var dbWorkspaceMember = new DbWorkspaceMember { AddedById = dbEmailInvite.AddedById, RoleId = wsReaderRoleId.Value, WorkspaceId = dbBoard.WorkspaceId, MemberId = memberId };

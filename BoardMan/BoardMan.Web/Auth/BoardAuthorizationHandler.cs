@@ -22,9 +22,29 @@ namespace BoardMan.Web.Auth
 			var currentUserId = this.userManager.GetGuidUserId(context.User);
 			var boardId = await GetBoardIdAsync(resource);
 			var board = await this.boardManDbContext.Boards.Include(x => x.Workspace).FirstOrDefaultAsync(x => x.Id == boardId && x.DeletedAt == null);
-			if (board != null && (board.OwnerId == currentUserId || board.Workspace.OwnerId  == currentUserId))
+			if (board == null)
 			{
-				// Is Board SuperAdmin or Workspace SuperAdmin
+				return;
+			}
+
+			var latestSubscription = await this.boardManDbContext.Subscriptions
+				.Where(x => x.OwnerId == board.Workspace.OwnerId && x.DeletedAt == null)
+				.OrderByDescending(x => x.ExpireAt).FirstOrDefaultAsync();
+			if (latestSubscription == null || latestSubscription.ExpireAt < DateTime.UtcNow)
+			{
+				return;
+			}
+
+			// If Application Super Admin
+			if (context.User.IsInRole(Roles.ApplicationSuperAdmin))
+			{
+				context.Succeed(requirement);
+				return;
+			}
+
+			// Is Board SuperAdmin or Workspace SuperAdmin
+			if (board.OwnerId == currentUserId || board.Workspace.OwnerId  == currentUserId)
+			{				
 				context.Succeed(requirement);
 				return;
 			}

@@ -6,56 +6,49 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardMan.Web.Auth
 {
-	public class WorkspaceAuthorizationHandler : AuthorizationHandler<WorkspaceAuthorizationrRequirement, EntityResource>
+	public class BoardLimitAuthorizationHandler : AuthorizationHandler<BoardLimitAuthorizatioRequirement, EntityResource>
 	{
 		private readonly BoardManDbContext boardManDbContext;
 		private readonly UserManager<AppUser> userManager;
 
-		public WorkspaceAuthorizationHandler(BoardManDbContext boardManDbContext, UserManager<AppUser> userManager)
+		public BoardLimitAuthorizationHandler(BoardManDbContext boardManDbContext, UserManager<AppUser> userManager)
 		{
 			this.boardManDbContext = boardManDbContext;
 			this.userManager = userManager;
 		}
 
-		protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, WorkspaceAuthorizationrRequirement requirement, EntityResource resource)
+		protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, BoardLimitAuthorizatioRequirement requirement, EntityResource resource)
 		{
 			var currentUserId = this.userManager.GetGuidUserId(context.User);
 			var workspaceId = await GetWorkspaceIdAsync(resource);
-			var workspace = await this.boardManDbContext.Workspaces.FirstOrDefaultAsync(x => x.Id == workspaceId && x.DeletedAt == null);
-			if(workspace == null)
+			var workspace = await this.boardManDbContext.Workspaces.Include(x => x.Boards).FirstOrDefaultAsync(x => x.Id == workspaceId && x.DeletedAt == null);
+			if (workspace == null)
 			{
 				return;
 			}
 
 			var latestSubscription = await this.boardManDbContext.Subscriptions
+				.Include(x => x.PaymentTrasaction.Plan)
 				.Where(x => x.OwnerId == workspace.OwnerId && x.DeletedAt == null)
 				.OrderByDescending(x => x.ExpireAt).FirstOrDefaultAsync();
-			if(latestSubscription == null  || latestSubscription.ExpireAt < DateTime.UtcNow)
+
+			if (latestSubscription == null || latestSubscription.ExpireAt < DateTime.UtcNow)
 			{
 				return;
 			}
 
 			// If Application Super Admin
-			if(context.User.IsInRole(Roles.ApplicationSuperAdmin))
+			if (context.User.IsInRole(Roles.ApplicationSuperAdmin))
 			{
 				context.Succeed(requirement);
 				return;
 			}
 
-			// Is Workspace SuperAdmin
-			if (workspace.OwnerId == currentUserId)
-			{	
-				context.Succeed(requirement);
-				return;
-			}
-
-			if (await this.boardManDbContext.WorkspaceMembers.AnyAsync(x => x.WorkspaceId == workspaceId && x.MemberId == currentUserId && requirement.RolesAllowed.Contains(x.Role.Name)))
+			if (latestSubscription.PaymentTrasaction.Plan.BoardLimit == null || latestSubscription.PaymentTrasaction.Plan.BoardLimit > workspace.Boards.Count(x => x.DeletedAt == null))
 			{
 				context.Succeed(requirement);
 				return;
 			}
-
-			return;
 		}
 
 		private async Task<Guid> GetWorkspaceIdAsync(EntityResource resource)
@@ -73,18 +66,7 @@ namespace BoardMan.Web.Auth
 		}
 	}
 
-	public class WorkspaceAuthorizationrRequirement : IAuthorizationRequirement
+	public class BoardLimitAuthorizatioRequirement : IAuthorizationRequirement
 	{
-		public WorkspaceAuthorizationrRequirement()
-		{
-			RolesAllowed = new List<string>();
-		}
-
-		public WorkspaceAuthorizationrRequirement(List<string> rolesAllowed)
-		{
-			RolesAllowed = rolesAllowed;
-		}
-
-		public List<string> RolesAllowed { get; private set; } = null!;
 	}
 }

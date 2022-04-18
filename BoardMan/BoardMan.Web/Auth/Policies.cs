@@ -17,6 +17,8 @@
 
 		public const string WorkspaceContributorPolicy = "WorkspaceContributorPolicy";
 
+		public const string WorkspaceContributorWithBoardLimitPolicy = "WorkspaceContributorWithBoardLimitPolicy";
+
 		public const string WorkspaceReaderPolicy = "WorkspaceReaderPolicy";
 	}
 }

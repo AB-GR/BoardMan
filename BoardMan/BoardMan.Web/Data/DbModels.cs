@@ -48,7 +48,8 @@ namespace BoardMan.Web.Data
 		CanBeProcessed,
 		Invalid,
 		PlanExpired,
-		AmountNotMatched
+		AmountNotMatched,
+		ProcessedNoCharge
 	}
 
 	public enum AttachmentType
@@ -404,12 +405,12 @@ namespace BoardMan.Web.Data
 		[ForeignKey("PaymentTrasaction")]
 		public Guid PaymentTrasactionId { get; set; }
 
-		public DbPaymentTransaction PaymentTrasaction { get; set; }
+		public DbPaymentTransaction PaymentTrasaction { get; set; } = null!;
 
 		[ForeignKey("AppUser")]
 		public Guid OwnerId { get; set; }
 
-		public AppUser Owner { get; set; }
+		public AppUser Owner { get; set; } = null!;
 	}
 
 	[Table("Plans")]
@@ -429,6 +430,8 @@ namespace BoardMan.Web.Data
 		public PlanType PlanType { get; set; }
 
 		public DateTime? ExpireAt { get; set; }
+
+		public int? BoardLimit { get; set; }
 
 		[NotMapped]
 		public bool Expired => ExpireAt.HasValue && ExpireAt <= DateTime.UtcNow;

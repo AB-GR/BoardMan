@@ -49,71 +49,6 @@ namespace BoardMan.Web.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("f58e9f8a-8288-4cbc-8942-b2f401513911"),
-                            ConcurrencyStamp = "13e86009-bfb1-4547-bc81-958d6ca492c1",
-                            Name = "ApplicationSuperAdmin",
-                            NormalizedName = "ApplicationSuperAdmin"
-                        },
-                        new
-                        {
-                            Id = new Guid("b25f5ae2-cfab-439d-b3ce-d5834e5e0a7b"),
-                            ConcurrencyStamp = "4917fbc5-4492-4b49-a137-88846547d922",
-                            Name = "WorkspaceSuperAdmin",
-                            NormalizedName = "WorkspaceSuperAdmin"
-                        },
-                        new
-                        {
-                            Id = new Guid("0e13590b-566c-4d8d-a39c-0ecfbeaeaa73"),
-                            ConcurrencyStamp = "23e5335a-23ac-4a5c-af83-b2c331241a6a",
-                            Name = "WorkspaceAdmin",
-                            NormalizedName = "WorkspaceAdmin"
-                        },
-                        new
-                        {
-                            Id = new Guid("a393c00f-ff31-4acf-8003-89b18ee96cec"),
-                            ConcurrencyStamp = "e569716e-7f14-452c-8ef5-8cc2aba313a8",
-                            Name = "WorkspaceContributor",
-                            NormalizedName = "WorkspaceContributor"
-                        },
-                        new
-                        {
-                            Id = new Guid("87d90f66-6b16-453c-85bc-67e910502531"),
-                            ConcurrencyStamp = "db45ce28-7578-4dae-a927-7df216b5a049",
-                            Name = "WorkspaceReader",
-                            NormalizedName = "WorkspaceReader"
-                        },
-                        new
-                        {
-                            Id = new Guid("19752dc1-eee0-4f6c-8e72-667efe292620"),
-                            ConcurrencyStamp = "c193d4fc-6b8b-4f70-b68f-44346edc5609",
-                            Name = "BoardSuperAdmin",
-                            NormalizedName = "BoardSuperAdmin"
-                        },
-                        new
-                        {
-                            Id = new Guid("6987c099-cb95-4e07-805f-1f200086d981"),
-                            ConcurrencyStamp = "5787e344-64f9-4f3f-9912-3df6f02fe294",
-                            Name = "BoardAdmin",
-                            NormalizedName = "BoardAdmin"
-                        },
-                        new
-                        {
-                            Id = new Guid("940ecb4f-9fe3-47f2-baa4-0bf0b78b17d0"),
-                            ConcurrencyStamp = "0fa88d76-3211-461c-aeba-d486651dde98",
-                            Name = "BoardContributor",
-                            NormalizedName = "BoardContributor"
-                        },
-                        new
-                        {
-                            Id = new Guid("f5ff3262-6a47-4186-b65f-0190c7fc0baf"),
-                            ConcurrencyStamp = "8e87d1c1-62ad-4c95-a01a-651de6455611",
-                            Name = "BoardReader",
-                            NormalizedName = "BoardReader"
-                        });
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.AppUser", b =>
@@ -233,7 +168,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("DoneById");
 
-                    b.ToTable("ActivityTrackings");
+                    b.ToTable("ActivityTrackings", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbBillingDetails", b =>
@@ -308,7 +243,7 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("PaymentTransactionId")
                         .IsUnique();
 
-                    b.ToTable("BillingDetails");
+                    b.ToTable("BillingDetails", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbBoard", b =>
@@ -348,7 +283,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("WorkspaceId");
 
-                    b.ToTable("Boards");
+                    b.ToTable("Boards", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbBoardMember", b =>
@@ -390,7 +325,7 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("MemberId", "RoleId")
                         .IsUnique();
 
-                    b.ToTable("BoardMembers");
+                    b.ToTable("BoardMembers", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbChangedProperty", b =>
@@ -426,7 +361,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("ActivityTrackingId");
 
-                    b.ToTable("ChangedProperties");
+                    b.ToTable("ChangedProperties", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbEmailInvite", b =>
@@ -478,7 +413,7 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("EmailAddress", "RoleId")
                         .IsUnique();
 
-                    b.ToTable("EmailInvites");
+                    b.ToTable("EmailInvites", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbList", b =>
@@ -513,7 +448,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("BoardId");
 
-                    b.ToTable("Lists");
+                    b.ToTable("Lists", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbPaymentTransaction", b =>
@@ -581,7 +516,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("TransactedById");
 
-                    b.ToTable("PaymentTransactions");
+                    b.ToTable("PaymentTransactions", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbPlan", b =>
@@ -590,6 +525,9 @@ namespace BoardMan.Web.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
+
+                    b.Property<int?>("BoardLimit")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Cost")
                         .HasPrecision(19, 4)
@@ -626,53 +564,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Plans");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("25e38e03-a45e-4bdd-9545-ab79a88a3d66"),
-                            Cost = 99m,
-                            CreatedAt = new DateTime(2022, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6353),
-                            Currency = "USD",
-                            Description = "This is the standard monthly plan",
-                            ExpireAt = new DateTime(2023, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6357),
-                            Name = "Standard (Monthly)",
-                            PlanType = 0
-                        },
-                        new
-                        {
-                            Id = new Guid("4dfe11ca-fe09-4960-bc58-8e903fbe59b2"),
-                            Cost = 948m,
-                            CreatedAt = new DateTime(2022, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6389),
-                            Currency = "USD",
-                            Description = "This is the standard annual plan",
-                            ExpireAt = new DateTime(2023, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6389),
-                            Name = "Standard (Annual)",
-                            PlanType = 1
-                        },
-                        new
-                        {
-                            Id = new Guid("89c90293-2134-4101-ae85-f683320a5d6a"),
-                            Cost = 299m,
-                            CreatedAt = new DateTime(2022, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6403),
-                            Currency = "USD",
-                            Description = "This is the premium monthly plan",
-                            ExpireAt = new DateTime(2023, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6404),
-                            Name = "Premium (Monthly)",
-                            PlanType = 0
-                        },
-                        new
-                        {
-                            Id = new Guid("769ff159-02d7-44cc-867c-5f236087b505"),
-                            Cost = 3000m,
-                            CreatedAt = new DateTime(2022, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6415),
-                            Currency = "USD",
-                            Description = "This is the premium annual plan",
-                            ExpireAt = new DateTime(2023, 3, 29, 10, 9, 7, 592, DateTimeKind.Utc).AddTicks(6415),
-                            Name = "Premium (Annual)",
-                            PlanType = 1
-                        });
+                    b.ToTable("Plans", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbPlanDiscount", b =>
@@ -717,7 +609,7 @@ namespace BoardMan.Web.Migrations
                     b.HasIndex("Code", "PlanId")
                         .IsUnique();
 
-                    b.ToTable("PlanDiscounts");
+                    b.ToTable("PlanDiscounts", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbSubscription", b =>
@@ -759,7 +651,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("PaymentTrasactionId");
 
-                    b.ToTable("Subscriptions");
+                    b.ToTable("Subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTask", b =>
@@ -808,7 +700,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("ListId");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("Tasks", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskAttachment", b =>
@@ -854,7 +746,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("UploadedById");
 
-                    b.ToTable("TaskAttachments");
+                    b.ToTable("TaskAttachments", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskChecklist", b =>
@@ -896,7 +788,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("TaskChecklists");
+                    b.ToTable("TaskChecklists", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskComment", b =>
@@ -932,7 +824,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("TaskComments");
+                    b.ToTable("TaskComments", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskLabel", b =>
@@ -963,7 +855,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("TaskLabels");
+                    b.ToTable("TaskLabels", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskWatcher", b =>
@@ -994,7 +886,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("WatchedById");
 
-                    b.ToTable("TaskWatchers");
+                    b.ToTable("TaskWatchers", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbWorkspace", b =>
@@ -1034,7 +926,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("SubscriptionId");
 
-                    b.ToTable("Workspaces");
+                    b.ToTable("Workspaces", (string)null);
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbWorkspaceMember", b =>
@@ -1075,7 +967,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasIndex("WorkspaceId");
 
-                    b.ToTable("WorkspaceMembers");
+                    b.ToTable("WorkspaceMembers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

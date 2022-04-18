@@ -36,7 +36,8 @@ else
     <p>No Boards to display!</p>
 }
 
-@if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Primary.Id, Type = EntityType.Workspace } ,Policies.WorkspaceContributorPolicy)).Succeeded)
+@if (
+    (await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Primary.Id, Type = EntityType.Workspace } ,Policies.WorkspaceContributorWithBoardLimitPolicy)).Succeeded)
 {
     <a asp-controller="Boards" asp-action="Add" asp-route-workspaceId="@Model.Primary.Id" class="btn btn-primary" >Add a board</a>
 }
@@ -85,7 +86,7 @@ else
                 <br/>
             }
 
-            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = ws.Id, Type = EntityType.Workspace } ,Policies.WorkspaceContributorPolicy)).Succeeded)
+            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = ws.Id, Type = EntityType.Workspace } ,Policies.WorkspaceContributorWithBoardLimitPolicy)).Succeeded)
             {
                 <a asp-controller="Boards" asp-action="Add" asp-route-workspaceId="@ws.Id" class="btn btn-primary" >Add a board</a>
             }

@@ -38,7 +38,7 @@ namespace BoardMan.Web.Controllers
 			return await AuthorizedResposeAsync(async () =>
 			{
 				return View(new Board { WorkspaceId = workspaceId });
-			}, new EntityResource { Id = workspaceId, Type = EntityType.Workspace }, Policies.WorkspaceContributorPolicy);		
+			}, new EntityResource { Id = workspaceId, Type = EntityType.Workspace }, Policies.WorkspaceContributorWithBoardLimitPolicy);		
 		}
 
 		[HttpPost]
@@ -49,7 +49,7 @@ namespace BoardMan.Web.Controllers
 				await this.boardManager.CreateBoardAsync(board, this.userManager.GetGuidUserId(User));
 				return this.RedirectToAction("Index", "Workspaces");
 
-			}, new EntityResource { Id = board.WorkspaceId, Type = EntityType.Workspace }, Policies.WorkspaceContributorPolicy);
+			}, new EntityResource { Id = board.WorkspaceId, Type = EntityType.Workspace }, Policies.WorkspaceContributorWithBoardLimitPolicy);
 		}
 
 		// Find how to do it with Delete
@@ -62,16 +62,26 @@ namespace BoardMan.Web.Controllers
 				return this.RedirectToAction("Index", "Workspaces");
 
 			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardSuperAdminPolicy);			
-		}
+		}		
 
 		[HttpPost]
-		public async Task<ActionResult> ListBoardMembers(Guid boardId, Guid? taskId)
+		public async Task<ActionResult> ListAssignees(Guid boardId)
 		{
 			return await AuthorizedJsonResposeAsync(async () =>
 			{
-				return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListBoardMembersForDisplayAsync(boardId, this.userManager.GetGuidUserId(User))));
+				return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListAssigneesForDisplayAsync(boardId, this.userManager.GetGuidUserId(User))));
 
-			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardContributorPolicy);			
+			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardContributorPolicy);
+		}
+
+		[HttpPost]
+		public async Task<ActionResult> ListWatchers(Guid boardId)
+		{
+			return await AuthorizedJsonResposeAsync(async () =>
+			{
+				return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListWatchersForDisplayAsync(boardId, this.userManager.GetGuidUserId(User))));
+
+			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardContributorPolicy);
 		}
 
 		[HttpPost]

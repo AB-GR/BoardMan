@@ -190,7 +190,7 @@ else{
                                         }
                                         @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardAdminPolicy)).Succeeded)
                                         {                                       
-                                            @:,AssignedToId:{ title: 'Assigned To',  options: '/Boards/ListBoardMembers?boardId=@Model.Id' }                                           
+                                            @:,AssignedToId:{ title: 'Assigned To',  options: '/Boards/ListAssignees?boardId=@Model.Id' }                                           
                                         },
                                         Comments:
                                         {                                            
@@ -392,7 +392,7 @@ else{
                                                             },
                                                             WatchedById:{
                                                                 title: "Watched By",
-                                                                options: '/Boards/ListBoardMembers?boardId=@Model.Id'
+                                                                options: '/Boards/ListWatchers?boardId=@Model.Id'
                                                             }
                                                         }
                                                     }, function (data) { //opened handler

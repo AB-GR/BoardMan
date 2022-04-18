@@ -103,20 +103,25 @@ public class BoardManDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             relationship.DeleteBehavior = DeleteBehavior.NoAction;
         }
 
-        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Monthly)", Cost = 99, Currency = "USD", Description = "This is the standard monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
-        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Annual)", Cost = 948, Currency = "USD", Description = "This is the standard annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
-        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Monthly)", Cost = 299, Currency = "USD", Description = "This is the premium monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
-        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Annual)", Cost = 3000, Currency = "USD", Description = "This is the premium annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
+		//builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Free", Cost = 0, Currency = "USD", Description = "This is the free plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1), BoardLimit = 1 });
+		//builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Monthly)", Cost = 99, Currency = "USD", Description = "This is the standard monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1), BoardLimit = 5 });
+		//builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Annual)", Cost = 948, Currency = "USD", Description = "This is the standard annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1), BoardLimit = 5 });
+		//builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Monthly)", Cost = 299, Currency = "USD", Description = "This is the premium monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
+		//builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Annual)", Cost = 3000, Currency = "USD", Description = "This is the premium annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
 
-        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.ApplicationSuperAdmin, NormalizedName = RoleNames.ApplicationSuperAdmin });
-        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceSuperAdmin, NormalizedName = RoleNames.WorkspaceSuperAdmin });
-        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceAdmin, NormalizedName = RoleNames.WorkspaceAdmin });
-        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceContributor, NormalizedName = RoleNames.WorkspaceContributor });        
-        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceReader, NormalizedName = RoleNames.WorkspaceReader });
-        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardSuperAdmin, NormalizedName = RoleNames.BoardSuperAdmin });
-        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardAdmin, NormalizedName = RoleNames.BoardAdmin });
-        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardContributor, NormalizedName = RoleNames.BoardContributor });
-        builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardReader, NormalizedName = RoleNames.BoardReader });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.ApplicationSuperAdmin, NormalizedName = RoleNames.ApplicationSuperAdmin });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceSuperAdmin, NormalizedName = RoleNames.WorkspaceSuperAdmin });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceAdmin, NormalizedName = RoleNames.WorkspaceAdmin });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceContributor, NormalizedName = RoleNames.WorkspaceContributor });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceReader, NormalizedName = RoleNames.WorkspaceReader });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardSuperAdmin, NormalizedName = RoleNames.BoardSuperAdmin });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardAdmin, NormalizedName = RoleNames.BoardAdmin });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardContributor, NormalizedName = RoleNames.BoardContributor });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardReader, NormalizedName = RoleNames.BoardReader });
+
+		//var userId = Guid.NewGuid();
+        //builder.Entity<AppUser>().HasData(new AppUser { Id = userId, FirstName = "Admin", LastName = "User", UserName = "admin@boardman.com", NormalizedUserName = "admin@boardman.com", Email = "admin@boardman.com", NormalizedEmail = "admin@boardman.com", EmailConfirmed = true, PasswordHash = "", SecurityStamp = Guid.NewGuid().ToString() });
+        //builder.Entity<IdentityUserRole<Guid>>().HasData(new IdentityUserRole<Guid> { UserId = userId, RoleId = Guid.Parse("49e3045d-b948-4d0a-b596-455673bd989c") });
 
         builder.Entity<DbEmailInvite>().Navigation(e => e.AddedBy).AutoInclude();
 

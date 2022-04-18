@@ -32,6 +32,7 @@ services.AddTransient<PaymentIntentService>();
 services.AddScoped<IPaymentService, PaymentService>();
 services.AddScoped<IAuthorizationHandler, WorkspaceAuthorizationHandler>();
 services.AddScoped<IAuthorizationHandler, BoardAuthorizationHandler>();
+services.AddScoped<IAuthorizationHandler, BoardLimitAuthorizationHandler>();
 
 services.AddLocalization(o => o.ResourcesPath = "Resources");
 services.AddMvc(options =>
@@ -70,17 +71,23 @@ services.AddAuthorization(options =>
 
 	options.AddPolicy(Policies.WorkspaceReaderPolicy, policy =>
 	{
-		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { RoleNames.WorkspaceReader, RoleNames.WorkspaceContributor, RoleNames.WorkspaceAdmin }));
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { Roles.WorkspaceReader, Roles.WorkspaceContributor, Roles.WorkspaceAdmin }));
 	});
 
 	options.AddPolicy(Policies.WorkspaceContributorPolicy, policy =>
 	{
-		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { RoleNames.WorkspaceContributor, RoleNames.WorkspaceAdmin }));
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { Roles.WorkspaceContributor, Roles.WorkspaceAdmin }));
+	});
+
+	options.AddPolicy(Policies.WorkspaceContributorWithBoardLimitPolicy, policy =>
+	{
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { Roles.WorkspaceContributor, Roles.WorkspaceAdmin }));
+		policy.Requirements.Add(new BoardLimitAuthorizatioRequirement());
 	});
 
 	options.AddPolicy(Policies.WorkspaceAdminPolicy, policy =>
 	{
-		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { RoleNames.WorkspaceAdmin }));
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { Roles.WorkspaceAdmin }));
 	});
 
 	options.AddPolicy(Policies.WorkspaceSuperAdminPolicy, policy =>
@@ -90,17 +97,17 @@ services.AddAuthorization(options =>
 
 	options.AddPolicy(Policies.BoardReaderPolicy, policy =>
 	{
-		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { RoleNames.BoardReader, RoleNames.BoardContributor, RoleNames.BoardAdmin }));
+		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { Roles.BoardReader, Roles.BoardContributor, Roles.BoardAdmin }));
 	});
 
 	options.AddPolicy(Policies.BoardContributorPolicy, policy =>
 	{
-		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { RoleNames.BoardContributor, RoleNames.BoardAdmin }));
+		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { Roles.BoardContributor, Roles.BoardAdmin }));
 	});
 
 	options.AddPolicy(Policies.BoardAdminPolicy, policy =>
 	{
-		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { RoleNames.BoardAdmin }));
+		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { Roles.BoardAdmin }));
 	});
 
 	options.AddPolicy(Policies.BoardSuperAdminPolicy, policy =>
