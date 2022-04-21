@@ -66,27 +66,27 @@ namespace BoardMan.Web.Models
 				
 		[Display(Name = "Name as on Card")]
 		[MaxLength(100)]
-		public string NameAsOnCard { get; set; }
+		public string? NameAsOnCard { get; set; }
 				
 		[MaxLength(200)]
 		[Display(Name = "Line1")]
-		public string AddressLine1 { get; set; }
+		public string? AddressLine1 { get; set; }
 
 		[MaxLength(200)]
 		[Display(Name = "Line2")]
 		public string? AddressLine2 { get; set; }
 				
 		[MaxLength(50)]		
-		public string City { get; set; }
+		public string? City { get; set; }
 				
 		[MaxLength(50)]
-		public string State { get; set; }
+		public string? State { get; set; }
 				
 		[MaxLength(20)]
-		public string ZipCode { get; set; }
+		public string? ZipCode { get; set; }
 				
 		[MaxLength(3)]
-		public string Country => "US";
+		public string? Country => "US";
 
 		public List<SelectListItem> Countries { get; } = new List<SelectListItem>
 		{

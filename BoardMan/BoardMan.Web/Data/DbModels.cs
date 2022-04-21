@@ -511,25 +511,25 @@ namespace BoardMan.Web.Data
 		public string UserEmail { get; set; }
 				
 		[MaxLength(100)]
-		public string NameAsOnCard { get; set; }
+		public string? NameAsOnCard { get; set; }
 				
 		[MaxLength(200)]
-		public string AddressLine1 { get; set; }
+		public string? AddressLine1 { get; set; }
 
 		[MaxLength(200)]
 		public string? AddressLine2 { get; set; }
 				
 		[MaxLength(50)]
-		public string City { get; set; }
+		public string? City { get; set; }
 				
 		[MaxLength(50)]
-		public string State { get; set; }
+		public string? State { get; set; }
 				
 		[MaxLength(20)]
-		public string ZipCode { get; set; }
+		public string? ZipCode { get; set; }
 				
 		[MaxLength(3)]
-		public string Country { get; set; }
+		public string? Country { get; set; }
 
 		[ForeignKey("PaymentTransaction")]
 		public Guid PaymentTransactionId { get; set; }

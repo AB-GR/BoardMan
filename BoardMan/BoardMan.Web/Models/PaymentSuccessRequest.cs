@@ -2,12 +2,16 @@
 
 namespace BoardMan.Web.Models
 {
-	public class PaymentSuccessRequest
-	{		
-		public string PaymentIntentId { get; set; }
-
+	public class RegisterInfoRequest
+	{
 		public Guid? UserId { get; set; }
 
 		public BillingDetails BillingDetails { get; set; }
+	}
+
+	public class PaymentSuccessRequest : RegisterInfoRequest
+	{		
+		public string PaymentIntentId { get; set; }
+		
 	}
 }

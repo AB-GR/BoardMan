@@ -73,6 +73,68 @@ namespace BoardMan.Web.Controllers
 				{
 					if(paymentResult.UserDetails.UserCreated)
 					{
+						return await UserCreatedAction(paymentResult, "Payment success.");
+					}
+
+					return RedirectWithMessage("Index", "Home", $"Payment success. {(paymentResult.UserDetails.UserIsLoggedIn ? "new subscription has been created" : "Login and verify the new subscription" )}");
+				}
+			}
+			catch (PaymentException ex)
+			{
+				this.logger.LogError(ex, ex.Message);
+			}
+
+			return RedirectWithMessage("Index", "Home",
+						$"Payment failed. Don't worry we'll be looking into the issue shortly. You may also contact us at " + this.configuration["SupportMailId"]);
+		}
+
+		private async Task<ActionResult> UserCreatedAction(PaymentResult paymentResult, string successMessage)
+		{
+			logger.LogInformation("User created a new account with password.");
+
+			var user = paymentResult.UserDetails.User;
+			var userId = await userManager.GetUserIdAsync(user);
+			var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
+			code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+			var callbackUrl = Url.Page(
+				"/Account/ConfirmEmail",
+				pageHandler: null,
+				values: new { area = "Identity", userId = userId, code = code },
+				protocol: Request.Scheme);
+
+			await emailSender.SendEmailAsync(user.Email, "Confirm your email",
+				$"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+			if (userManager.Options.SignIn.RequireConfirmedAccount)
+			{
+				var registerConfirmUrl = Url.Page(
+				"/Account/RegisterConfirmation",
+				pageHandler: null,
+				values: new { area = "Identity", email = user.Email },
+				protocol: Request.Scheme);
+				return RedirectWithMessage(registerConfirmUrl, $"{successMessage} Please confirm your email and then login and check your subscription", "Free account creation success.");
+			}
+			else
+			{
+				await signInManager.SignInAsync(user, isPersistent: false);
+				return RedirectWithMessage("Index", "Home", successMessage);
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> RegisterForFree(RegisterInfoRequest request)
+		{
+			if (!ModelState.IsValid)
+				return RedirectWithMessage("Index", "Home", "Failure registering free account.");
+
+			try
+			{
+				var paymentResult = await this.paymentManager.ProcessFreeAccountAsync(request);
+				if (paymentResult.PaymentStatus == PaymentStatus.Processed)
+				{
+					if (paymentResult.UserDetails.UserCreated)
+					{
+						var successMessage = "Free account creation success.";
 						logger.LogInformation("User created a new account with password.");
 
 						var user = paymentResult.UserDetails.User;
@@ -89,34 +151,31 @@ namespace BoardMan.Web.Controllers
 							$"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
 						if (userManager.Options.SignIn.RequireConfirmedAccount)
-						{							
+						{
 							var registerConfirmUrl = Url.Page(
 							"/Account/RegisterConfirmation",
 							pageHandler: null,
 							values: new { area = "Identity", email = user.Email },
-							protocol: Request.Scheme);							
-							return RedirectWithMessage(registerConfirmUrl, "Payment success. Please confirm your email and then login and check your subscription");
+							protocol: Request.Scheme);
+							return RedirectWithMessage(registerConfirmUrl, $"{successMessage} Please confirm your email and then login and check your subscription", "Free account creation success.");
 						}
 						else
 						{
 							await signInManager.SignInAsync(user, isPersistent: false);
-							return RedirectWithMessage("Index", "Home", "Payment success.");
+							return RedirectWithMessage("Index", "Home", successMessage);
 						}
 					}
 
-					return RedirectWithMessage("Index", "Home", $"Payment success. {(paymentResult.UserDetails.UserIsLoggedIn ? "new subscription has been created" : "Login and verify the new subscription" )}");
+					return RedirectWithMessage("Index", "Home", $"Free account creation success. {(paymentResult.UserDetails.UserIsLoggedIn ? "new subscription has been created" : "Login and verify the new subscription")}");
 				}
-
-				// ask to login if done anonymously
 			}
 			catch (PaymentException ex)
 			{
-				this.logger.LogError(ex, ex.Message);
-				return RedirectWithMessage("Index", "Home", "Payment failed. Don't worry we'll be looking into the issue shortly. You may also contact us at " + this.configuration["SupportMailId"]);
+				this.logger.LogError(ex, ex.Message);				
 			}
 
 			return RedirectWithMessage("Index", "Home",
-						$"Payment failed. Don't worry we'll be looking into the issue shortly. You may also contact us at " + this.configuration["SupportMailId"]);
+						$"Registering your free account failed. Don't worry we'll be looking into the issue shortly. You may also contact us at " + this.configuration["SupportMailId"]);
 		}
 	}
 }
