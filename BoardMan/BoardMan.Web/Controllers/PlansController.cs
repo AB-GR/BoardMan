@@ -13,7 +13,7 @@ namespace BoardMan.Web.Controllers
 	{
 		private readonly IPlanManager planManager;		
 
-		public PlansController(IPlanManager planManager, UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<PlansController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
+		public PlansController(IPlanManager planManager, UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<PlansController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{ 
 			this.planManager = planManager;			
 		}

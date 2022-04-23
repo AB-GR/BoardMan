@@ -9,9 +9,9 @@ namespace BoardMan.Web.Auth
 	public class BoardLimitAuthorizationHandler : AuthorizationHandler<BoardLimitAuthorizatioRequirement, EntityResource>
 	{
 		private readonly BoardManDbContext boardManDbContext;
-		private readonly UserManager<AppUser> userManager;
+		private readonly UserManager<DbAppUser> userManager;
 
-		public BoardLimitAuthorizationHandler(BoardManDbContext boardManDbContext, UserManager<AppUser> userManager)
+		public BoardLimitAuthorizationHandler(BoardManDbContext boardManDbContext, UserManager<DbAppUser> userManager)
 		{
 			this.boardManDbContext = boardManDbContext;
 			this.userManager = userManager;
@@ -35,14 +35,7 @@ namespace BoardMan.Web.Auth
 			if (latestSubscription == null || latestSubscription.ExpireAt < DateTime.UtcNow)
 			{
 				return;
-			}
-
-			// If Application Super Admin
-			if (context.User.IsInRole(Roles.ApplicationSuperAdmin))
-			{
-				context.Succeed(requirement);
-				return;
-			}
+			}			
 
 			if (latestSubscription.PaymentTrasaction.Plan.BoardLimit == null || latestSubscription.PaymentTrasaction.Plan.BoardLimit > workspace.Boards.Count(x => x.DeletedAt == null))
 			{

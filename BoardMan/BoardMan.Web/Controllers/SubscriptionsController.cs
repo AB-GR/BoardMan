@@ -11,7 +11,7 @@ namespace BoardMan.Web.Controllers
 {
 	public class SubscriptionsController : SiteControllerBase
 	{
-		public SubscriptionsController(ISubscriptionManager subscriptionManager, UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<SubscriptionsController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
+		public SubscriptionsController(ISubscriptionManager subscriptionManager, UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<SubscriptionsController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.subscriptionManager = subscriptionManager;
 		}

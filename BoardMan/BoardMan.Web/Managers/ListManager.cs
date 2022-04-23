@@ -38,7 +38,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task<List> UpdateListAsync(List list)
 		{
-			var dbList = await this.dbContext.Lists.FirstOrDefaultAsync(x => x.Id == list.Id);
+			var dbList = await this.dbContext.Lists.FirstOrDefaultAsync(x => x.Id == list.Id && x.DeletedAt == null).ConfigureAwait(false);
 			if(dbList == null)
 			{
 				throw new EntityNotFoundException($"List with Id {list.Id} not found");
@@ -51,13 +51,13 @@ namespace BoardMan.Web.Managers
 
 		public async Task<List<List>> GetListsAsync(Guid boardId)
 		{
-			var dbLists = await this.dbContext.Lists.Where(x => x.BoardId == boardId && x.DeletedAt == null).ToListAsync();
+			var dbLists = await this.dbContext.Lists.Where(x => x.BoardId == boardId && x.DeletedAt == null).ToListAsync().ConfigureAwait(false);
 			return this.mapper.Map<List<List>>(dbLists);	
 		}
 
 		public async Task DeleteListAsync(Guid listId)
 		{
-			var dbList = await this.dbContext.Lists.FirstOrDefaultAsync(x => x.Id == listId);
+			var dbList = await this.dbContext.Lists.FirstOrDefaultAsync(x => x.Id == listId && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbList == null)
 			{
 				throw new EntityNotFoundException($"List with Id {listId} not found");

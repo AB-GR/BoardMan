@@ -14,12 +14,12 @@ namespace BoardMan.Web.Areas.Identity.Pages.Account.Manage
 {
     public class TwoFactorAuthenticationModel : PageModel
     {
-        private readonly UserManager<AppUser> _userManager;
-        private readonly SignInManager<AppUser> _signInManager;
+        private readonly UserManager<DbAppUser> _userManager;
+        private readonly SignInManager<DbAppUser> _signInManager;
         private readonly ILogger<TwoFactorAuthenticationModel> _logger;
 
         public TwoFactorAuthenticationModel(
-            UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<TwoFactorAuthenticationModel> logger)
+            UserManager<DbAppUser> userManager, SignInManager<DbAppUser> signInManager, ILogger<TwoFactorAuthenticationModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;

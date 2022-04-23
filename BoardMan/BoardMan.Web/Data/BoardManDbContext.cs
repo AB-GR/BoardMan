@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BoardMan.Web.Data;
 
-public class BoardManDbContext : IdentityDbContext<AppUser, AppRole, Guid>
+public class BoardManDbContext : IdentityDbContext<DbAppUser, DbAppRole, Guid>
 {
     public BoardManDbContext()
 	{
@@ -64,12 +64,12 @@ public class BoardManDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         // Customize the ASP.NET Identity model and override the defaults if needed.
         // For example, you can rename the ASP.NET Identity table names and more.
         // Add your customizations after calling base.OnModelCreating(builder);
-        builder.Entity<AppUser>(b =>
+        builder.Entity<DbAppUser>(b =>
         {
             b.Property(u => u.Id).HasDefaultValueSql("newsequentialid()");
         });
 
-        builder.Entity<AppRole>(b =>
+        builder.Entity<DbAppRole>(b =>
         {
             b.Property(u => u.Id).HasDefaultValueSql("newsequentialid()");
         });
@@ -86,8 +86,21 @@ public class BoardManDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         }
 
         builder.Entity<DbPlanDiscount>().HasIndex(pd => new { pd.Code, pd.PlanId }).IsUnique();
-        builder.Entity<DbBoardMember>().HasIndex(pd => new { pd.MemberId, pd.RoleId }).IsUnique();
-        builder.Entity<DbEmailInvite>().HasIndex(pd => new { pd.EmailAddress, pd.RoleId }).IsUnique();
+        builder.Entity<DbWorkspaceMember>()
+                .HasIndex(x => new { x.WorkspaceId, x.MemberId })
+                .HasDatabaseName("UK_WorkspaceMember_WorkspaceId_MemberId_DeletedAt")
+                .IsUnique()
+                .HasFilter("[DeletedAt] IS NULL");
+
+        builder.Entity<DbBoardMember>().HasIndex(x => new { x.BoardId, x.MemberId })
+                .HasDatabaseName("UK_BoardMember_BoardId_MemberId_DeletedAt")
+                .IsUnique()
+                .HasFilter("[DeletedAt] IS NULL");
+
+        builder.Entity<DbEmailInvite>().HasIndex(pd => new { pd.EntityUrn, pd.EmailAddress })
+                .HasDatabaseName("UK_EmailInvite_EntityUrn_EmailAddress_DeletedAt")
+                .IsUnique()
+                .HasFilter("[DeletedAt] IS NULL");
 
         builder.Entity<DbPlan>().Property(p => p.Cost).HasPrecision(19, 4);
         builder.Entity<DbPlanDiscount>().Property(p => p.DiscountPercent).HasPrecision(5, 2);
@@ -157,11 +170,11 @@ public class BoardManDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     }
 }
 
-public class AppUser : IdentityUser<Guid>
+public class DbAppUser : IdentityUser<Guid>
 {
 	public string FirstName { get; set; } = null!;
 
     public string LastName { get; set; } = null!;
 }
 
-public class AppRole : IdentityRole<Guid> { }
+public class DbAppRole : IdentityRole<Guid> { }

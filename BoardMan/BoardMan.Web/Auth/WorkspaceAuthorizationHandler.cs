@@ -9,9 +9,9 @@ namespace BoardMan.Web.Auth
 	public class WorkspaceAuthorizationHandler : AuthorizationHandler<WorkspaceAuthorizationrRequirement, EntityResource>
 	{
 		private readonly BoardManDbContext boardManDbContext;
-		private readonly UserManager<AppUser> userManager;
+		private readonly UserManager<DbAppUser> userManager;
 
-		public WorkspaceAuthorizationHandler(BoardManDbContext boardManDbContext, UserManager<AppUser> userManager)
+		public WorkspaceAuthorizationHandler(BoardManDbContext boardManDbContext, UserManager<DbAppUser> userManager)
 		{
 			this.boardManDbContext = boardManDbContext;
 			this.userManager = userManager;

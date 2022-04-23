@@ -28,10 +28,10 @@ namespace BoardMan.Web.Managers
 		private readonly IPlanManager planManager;
 		private readonly IPaymentService paymentService;
 		private readonly IMapper mapper;
-		private readonly UserManager<AppUser> userManager;
+		private readonly UserManager<DbAppUser> userManager;
 		private readonly IWorkspaceManager workspaceManager;
 
-		public PaymentManager(IPlanManager planManager, IPaymentService paymentService, BoardManDbContext dbContext, ILogger<PaymentManager> logger, IMapper mapper, UserManager<AppUser> userManager, IWorkspaceManager workspaceManager)
+		public PaymentManager(IPlanManager planManager, IPaymentService paymentService, BoardManDbContext dbContext, ILogger<PaymentManager> logger, IMapper mapper, UserManager<DbAppUser> userManager, IWorkspaceManager workspaceManager)
 		{
 			this.planManager = planManager;
 			this.paymentService = paymentService;
@@ -85,7 +85,7 @@ namespace BoardMan.Web.Managers
 				}
 				else
 				{
-					result.UserDetails = await CreateNewUserAsync(new AppUser
+					result.UserDetails = await CreateNewUserAsync(new DbAppUser
 					{
 						FirstName = request.BillingDetails.UserFirstName,
 						LastName = request.BillingDetails.UserLastName,
@@ -142,7 +142,7 @@ namespace BoardMan.Web.Managers
 						}
 						else
 						{
-							result.UserDetails = await CreateNewUserAsync(new AppUser
+							result.UserDetails = await CreateNewUserAsync(new DbAppUser
 							{
 								FirstName = paymentIntentVM.BillingDetails.UserFirstName,
 								LastName = paymentIntentVM.BillingDetails.UserLastName,
@@ -184,7 +184,7 @@ namespace BoardMan.Web.Managers
 			};
 			
 			// Check for a valid user
-			AppUser user;
+			DbAppUser user;
 			if(!request.UserId.IsNullOrEmpty())
 			{
 				user = await this.userManager.FindByIdAsync(request.UserId.GetValueOrDefault().ToString()).ConfigureAwait(false);
@@ -221,7 +221,7 @@ namespace BoardMan.Web.Managers
 			return response;
 		}
 		
-		private async Task<UserResult> CreateNewUserAsync(AppUser user, string password)
+		private async Task<UserResult> CreateNewUserAsync(DbAppUser user, string password)
 		{			
 			var result = await userManager.CreateAsync(user, password).ConfigureAwait(false);
 

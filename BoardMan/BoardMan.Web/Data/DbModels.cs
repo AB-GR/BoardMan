@@ -111,7 +111,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Owner")]
 		public Guid OwnerId { get; set; }
 
-		public AppUser Owner { get; set; } = null!;
+		public DbAppUser Owner { get; set; } = null!;
 
 		public List<DbBoard> Boards { get; set; } = null!;
 
@@ -132,17 +132,17 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Member")]
 		public Guid MemberId { get; set; }
 
-		public AppUser Member { get; set; } = null!;
+		public DbAppUser Member { get; set; } = null!;
 
 		[ForeignKey("Role")]
 		public Guid RoleId { get; set; }
 
-		public AppRole Role { get; set; } = null!;
+		public DbAppRole Role { get; set; } = null!;
 
 		[ForeignKey("AddedBy")]
 		public Guid AddedById { get; set; }
 
-		public AppUser AddedBy { get; set; } = null!;
+		public DbAppUser AddedBy { get; set; } = null!;
 
 		[NotMapped]
 		public string? EntityDisplayName => Member?.UserName;
@@ -167,7 +167,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Owner")]
 		public Guid OwnerId { get; set; }
 
-		public AppUser Owner { get; set; } = null!;
+		public DbAppUser Owner { get; set; } = null!;
 
 		[NotMapped]
 		public string? EntityDisplayName => Title;
@@ -186,17 +186,17 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Member")]
 		public Guid MemberId { get; set; }
 
-		public AppUser Member { get; set; } = null!;
+		public DbAppUser Member { get; set; } = null!;
 
 		[ForeignKey("Role")]
 		public Guid RoleId { get; set; }
 
-		public AppRole Role { get; set; } = null!;
+		public DbAppRole Role { get; set; } = null!;
 
 		[ForeignKey("AddedBy")]
 		public Guid AddedById { get; set; }
 
-		public AppUser AddedBy { get; set; } = null!;
+		public DbAppUser AddedBy { get; set; } = null!;
 	}
 
 	[Table("Lists")]
@@ -237,7 +237,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("AssignedTo")]
 		public Guid? AssignedToId { get; set; }
 
-		public AppUser? AssignedTo { get; set; } = null!;
+		public DbAppUser? AssignedTo { get; set; } = null!;
 	}
 
 	[Table("TaskComments")]
@@ -254,7 +254,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("CommentedBy")]
 		public Guid CommentedById { get; set; }
 
-		public AppUser CommentedBy { get; set; } = null!;
+		public DbAppUser CommentedBy { get; set; } = null!;
 	}
 
 	[Table("TaskChecklists")]
@@ -275,7 +275,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("CommentedBy")]
 		public Guid CreatedById { get; set; }
 
-		public AppUser CreatedBy { get; set; } = null!;
+		public DbAppUser CreatedBy { get; set; } = null!;
 	}
 
 	[Table("TaskAttachments")]
@@ -298,7 +298,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("UploadedBy")]
 		public Guid UploadedById { get; set; }
 
-		public AppUser UploadedBy { get; set; } = null!;
+		public DbAppUser UploadedBy { get; set; } = null!;
 	}
 
 	[Table("TaskWatchers")]
@@ -312,7 +312,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("WatchedBy")]
 		public Guid WatchedById { get; set; }
 
-		public AppUser WatchedBy { get; set; } = null!;
+		public DbAppUser WatchedBy { get; set; } = null!;
 	}
 
 	[Table("TaskLabels")]
@@ -339,7 +339,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("DoneBy")]
 		public Guid DoneById { get; set; }
 
-		public AppUser DoneBy { get; set; } = null!;
+		public DbAppUser DoneBy { get; set; } = null!;
 
 		public bool? Succeeded { get; set; }
 
@@ -381,12 +381,12 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Role")]
 		public Guid RoleId { get; set; }
 
-		public AppRole Role { get; set; } = null!;
+		public DbAppRole Role { get; set; } = null!;
 
 		[ForeignKey("AddedBy")]
 		public Guid AddedById { get; set; }
 
-		public AppUser AddedBy { get; set; } = null!;
+		public DbAppUser AddedBy { get; set; } = null!;
 	}
 
 	[Table("Subscriptions")]
@@ -410,7 +410,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("AppUser")]
 		public Guid OwnerId { get; set; }
 
-		public AppUser Owner { get; set; } = null!;
+		public DbAppUser Owner { get; set; } = null!;
 	}
 
 	[Table("Plans")]
@@ -492,7 +492,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("TransactedBy")]
 		public Guid? TransactedById { get; set; }
 
-		public AppUser? TransactedBy { get; set; }
+		public DbAppUser? TransactedBy { get; set; }
 
 		public DbBillingDetails BillingDetails { get; set; }
 

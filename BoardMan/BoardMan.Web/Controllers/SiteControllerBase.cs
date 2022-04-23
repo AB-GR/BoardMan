@@ -17,13 +17,13 @@ namespace BoardMan.Web.Controllers
 {
 	public abstract class SiteControllerBase : Controller
 	{		
-		protected readonly UserManager<AppUser> userManager;
+		protected readonly UserManager<DbAppUser> userManager;
 		protected readonly IConfiguration configuration;
 		protected readonly ILogger logger;
         protected readonly IStringLocalizer<SharedResource> sharedLocalizer;
         protected readonly IAuthorizationService authorizationService;
 
-        protected SiteControllerBase(UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger logger, IStringLocalizer<SharedResource> sharedLocalizer)
+        protected SiteControllerBase(UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger logger, IStringLocalizer<SharedResource> sharedLocalizer)
 		{
 			this.userManager = userManager;
 			this.configuration = configuration;

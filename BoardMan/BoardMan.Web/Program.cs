@@ -9,14 +9,19 @@ using Stripe;
 using BoardMan.Web.Infrastructure.Filters;
 using Microsoft.AspNetCore.Authorization;
 using BoardMan.Web.Auth;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
-var services = builder.Services;
+var services = builder.Services;	
 var configuration = builder.Configuration;
 
 var connectionString = configuration.GetConnectionString("BoardManDbContextConnection"); 
 services.AddDbContext<BoardManDbContext>(options => options.UseSqlServer(connectionString)); 
-services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<BoardManDbContext>();
+services.AddIdentity<DbAppUser, DbAppRole>(options => options.SignIn.RequireConfirmedAccount = true)
+	.AddRoleManager<RoleManager<DbAppRole>>()
+	.AddEntityFrameworkStores<BoardManDbContext>()
+	.AddDefaultUI().AddDefaultTokenProviders();
+
 services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 services.AddScoped<ISubscriptionManager, SubscriptionManager>();
 services.AddScoped<IPlanManager, PlanManager>();

@@ -12,7 +12,7 @@ namespace BoardMan.Web.Models
 
 	public class UserResult
 	{
-		public AppUser User { get; set; }
+		public DbAppUser User { get; set; }
 
 		public IdentityResult CreateResult { get; set; }
 

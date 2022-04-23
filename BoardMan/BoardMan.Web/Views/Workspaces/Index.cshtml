@@ -24,7 +24,7 @@
                 <p class="card-text">@pBoard.Description</p>  
                 @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = @pBoard.Id, Type = EntityType.Board } ,Policies.BoardSuperAdminPolicy)).Succeeded)
                 {
-                   <a asp-controller="Boards" asp-action="Delete" asp-route-boardId="@pBoard.Id" class="btn btn-primary">Remove</a>
+                   <a asp-controller="Boards" asp-action="Delete" asp-route-boardId="@pBoard.Id" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-primary">Remove</a>
                 }                
             </div>
         </div>
@@ -36,10 +36,9 @@ else
     <p>No Boards to display!</p>
 }
 
-@if (
-    (await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Primary.Id, Type = EntityType.Workspace } ,Policies.WorkspaceContributorWithBoardLimitPolicy)).Succeeded)
+@if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Primary.Id, Type = EntityType.Workspace } ,Policies.WorkspaceContributorWithBoardLimitPolicy)).Succeeded)
 {
-    <a asp-controller="Boards" asp-action="Add" asp-route-workspaceId="@Model.Primary.Id" class="btn btn-primary" >Add a board</a>
+    <a asp-controller="Boards" asp-action="Add" asp-route-workspaceId="@Model.Primary.Id" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-primary" >Add a board</a>
 }
 
 <br/>

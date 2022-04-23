@@ -15,7 +15,7 @@ namespace BoardMan.Web.Controllers
 	{
 		private readonly IBoardManager boardManager;
 
-		public BoardsController(UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<BoardsController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IBoardManager boardManager) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
+		public BoardsController(UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<BoardsController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IBoardManager boardManager) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.boardManager = boardManager;
 		}
@@ -33,11 +33,11 @@ namespace BoardMan.Web.Controllers
 			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardReaderPolicy);		
 		}
 
-		public async Task<IActionResult> Add(Guid workspaceId)
+		public async Task<IActionResult> Add(Guid workspaceId, string? returnUrl)
 		{
 			return await AuthorizedResposeAsync(async () =>
 			{
-				return View(new Board { WorkspaceId = workspaceId });
+				return View(new Board { WorkspaceId = workspaceId, ReturnUrl = returnUrl });
 			}, new EntityResource { Id = workspaceId, Type = EntityType.Workspace }, Policies.WorkspaceContributorWithBoardLimitPolicy);		
 		}
 
@@ -47,19 +47,19 @@ namespace BoardMan.Web.Controllers
 			return await AuthorizedResposeAsync(async () =>
 			{
 				await this.boardManager.CreateBoardAsync(board, this.userManager.GetGuidUserId(User));
-				return this.RedirectToAction("Index", "Workspaces");
+				return !string.IsNullOrWhiteSpace(board.ReturnUrl) ? LocalRedirect(board.ReturnUrl) : this.RedirectToAction("Index", "Workspaces");
 
 			}, new EntityResource { Id = board.WorkspaceId, Type = EntityType.Workspace }, Policies.WorkspaceContributorWithBoardLimitPolicy);
 		}
 
 		// Find how to do it with Delete
 		//[HttpDelete]
-		public async Task<IActionResult> Delete(Guid boardId)
+		public async Task<IActionResult> Delete(Guid boardId, string? returnUrl)
 		{
 			return await AuthorizedResposeAsync(async () =>
 			{
 				await this.boardManager.DeleteBoardAsync(boardId);
-				return this.RedirectToAction("Index", "Workspaces");
+				return !string.IsNullOrWhiteSpace(returnUrl) ? LocalRedirect(returnUrl) : this.RedirectToAction("Index", "Workspaces");
 
 			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardSuperAdminPolicy);			
 		}		
@@ -69,7 +69,7 @@ namespace BoardMan.Web.Controllers
 		{
 			return await AuthorizedJsonResposeAsync(async () =>
 			{
-				return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListAssigneesForDisplayAsync(boardId, this.userManager.GetGuidUserId(User))));
+				return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListAssigneesForDisplayAsync(boardId)));
 
 			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardContributorPolicy);
 		}
@@ -79,7 +79,7 @@ namespace BoardMan.Web.Controllers
 		{
 			return await AuthorizedJsonResposeAsync(async () =>
 			{
-				return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListWatchersForDisplayAsync(boardId, this.userManager.GetGuidUserId(User))));
+				return JsonResponse(ApiResponse.ListOptions(await this.boardManager.ListWatchersForDisplayAsync(boardId)));
 
 			}, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardContributorPolicy);
 		}

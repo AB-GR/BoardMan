@@ -69,7 +69,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task<List<BoardTask>> GetTasksAsync(Guid listId)
 		{
-			var dbTasks = await this.dbContext.Tasks.Where(x => x.ListId == listId && x.DeletedAt == null).ToListAsync();
+			var dbTasks = await this.dbContext.Tasks.Where(x => x.ListId == listId && x.DeletedAt == null).ToListAsync().ConfigureAwait(false);
 			return this.mapper.Map<List<BoardTask>>(dbTasks);
 		}
 
@@ -83,7 +83,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task<BoardTask> UpdateTaskAsync(BoardTask task)
 		{
-			var dbTask = await this.dbContext.Tasks.FirstOrDefaultAsync(x => x.Id == task.Id);
+			var dbTask = await this.dbContext.Tasks.FirstOrDefaultAsync(x => x.Id == task.Id && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTask == null)
 			{
 				throw new EntityNotFoundException($"Task with Id {task.Id} not found");
@@ -96,7 +96,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task DeleteTaskAsync(Guid taskId)
 		{
-			var dbTask = await this.dbContext.Tasks.FirstOrDefaultAsync(x => x.Id == taskId);
+			var dbTask = await this.dbContext.Tasks.FirstOrDefaultAsync(x => x.Id == taskId && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTask == null)
 			{
 				throw new EntityNotFoundException($"Task with Id {taskId} not found");
@@ -109,7 +109,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task<List<TaskComment>> GetTaskCommentsAsync(Guid taskId)
 		{
-			var dbTaskComments = await this.dbContext.TaskComments.Where(x => x.TaskId == taskId && x.DeletedAt == null).Include(x => x.CommentedBy).ToListAsync();
+			var dbTaskComments = await this.dbContext.TaskComments.Where(x => x.TaskId == taskId && x.DeletedAt == null).Include(x => x.CommentedBy).ToListAsync().ConfigureAwait(false);
 			return this.mapper.Map<List<TaskComment>>(dbTaskComments);
 		}
 
@@ -123,7 +123,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task<TaskComment> UpdateTaskCommentAsync(TaskComment taskComment)
 		{
-			var dbTaskComment = await this.dbContext.TaskComments.Include(x => x.CommentedBy).FirstOrDefaultAsync(x => x.Id == taskComment.Id);
+			var dbTaskComment = await this.dbContext.TaskComments.Include(x => x.CommentedBy).FirstOrDefaultAsync(x => x.Id == taskComment.Id && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTaskComment == null)
 			{
 				throw new EntityNotFoundException($"TaskComment with Id {taskComment.Id} not found");
@@ -136,7 +136,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task DeleteTaskCommentAsync(Guid id)
 		{
-			var dbTaskComment = await this.dbContext.TaskComments.FirstOrDefaultAsync(x => x.Id == id);
+			var dbTaskComment = await this.dbContext.TaskComments.FirstOrDefaultAsync(x => x.Id == id && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTaskComment == null)
 			{
 				throw new EntityNotFoundException($"TaskComment with Id {id} not found");
@@ -149,7 +149,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task<List<TaskLabel>> GetTaskLabelsAsync(Guid taskId)
 		{
-			var dbTaskLabels = await this.dbContext.TaskLabels.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			var dbTaskLabels = await this.dbContext.TaskLabels.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync().ConfigureAwait(false);
 			return this.mapper.Map<List<TaskLabel>>(dbTaskLabels);
 		}
 
@@ -163,7 +163,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task<TaskLabel> UpdateTaskLabelAsync(TaskLabel taskLabel)
 		{
-			var dbTaskLabel = await this.dbContext.TaskLabels.FirstOrDefaultAsync(x => x.Id == taskLabel.Id);
+			var dbTaskLabel = await this.dbContext.TaskLabels.FirstOrDefaultAsync(x => x.Id == taskLabel.Id && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTaskLabel == null)
 			{
 				throw new EntityNotFoundException($"TaskLabel with Id {taskLabel.Id} not found");
@@ -176,7 +176,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task DeleteTaskLabelAsync(Guid id)
 		{
-			var dbTaskLabel = await this.dbContext.TaskLabels.FirstOrDefaultAsync(x => x.Id == id);
+			var dbTaskLabel = await this.dbContext.TaskLabels.FirstOrDefaultAsync(x => x.Id == id && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTaskLabel == null)
 			{
 				throw new EntityNotFoundException($"TaskLabel with Id {id} not found");
@@ -189,7 +189,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task<List<TaskChecklist>> GetTaskChecklistsAsync(Guid taskId)
 		{
-			var dbTaskChecklist = await this.dbContext.TaskChecklists.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			var dbTaskChecklist = await this.dbContext.TaskChecklists.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync().ConfigureAwait(false);
 			return this.mapper.Map<List<TaskChecklist>>(dbTaskChecklist);
 		}
 
@@ -203,7 +203,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task<TaskChecklist> UpdateTaskChecklistAsync(TaskChecklist taskChecklist)
 		{
-			var dbTaskChecklist = await this.dbContext.TaskChecklists.FirstOrDefaultAsync(x => x.Id == taskChecklist.Id);
+			var dbTaskChecklist = await this.dbContext.TaskChecklists.FirstOrDefaultAsync(x => x.Id == taskChecklist.Id && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTaskChecklist == null)
 			{
 				throw new EntityNotFoundException($"TaskChecklist with Id {taskChecklist.Id} not found");
@@ -216,7 +216,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task DeleteTaskChecklistAsync(Guid id)
 		{
-			var dbTaskChecklist = await this.dbContext.TaskChecklists.FirstOrDefaultAsync(x => x.Id == id);
+			var dbTaskChecklist = await this.dbContext.TaskChecklists.FirstOrDefaultAsync(x => x.Id == id && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTaskChecklist == null)
 			{
 				throw new EntityNotFoundException($"TaskChecklist with Id {id} not found");
@@ -229,7 +229,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task<List<TaskWatcher>> GetTaskWatchersAsync(Guid taskId)
 		{
-			var dbTaskWatcher = await this.dbContext.TaskWatchers.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			var dbTaskWatcher = await this.dbContext.TaskWatchers.Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync().ConfigureAwait(false);
 			return this.mapper.Map<List<TaskWatcher>>(dbTaskWatcher);
 		}
 
@@ -243,7 +243,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task DeleteTaskWatcherAsync(Guid id)
 		{
-			var dbTaskWatcher = await this.dbContext.TaskWatchers.FirstOrDefaultAsync(x => x.Id == id);
+			var dbTaskWatcher = await this.dbContext.TaskWatchers.FirstOrDefaultAsync(x => x.Id == id && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTaskWatcher == null)
 			{
 				throw new EntityNotFoundException($"TaskWatcher with Id {id} not found");
@@ -256,13 +256,13 @@ namespace BoardMan.Web.Managers
 
 		public async Task<List<TaskAttachment>> GetTaskAttachmentsAsync(Guid taskId)
 		{
-			var dbTaskAttachments = await this.dbContext.TaskAttachments.Include(x => x.UploadedBy).Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync();
+			var dbTaskAttachments = await this.dbContext.TaskAttachments.Include(x => x.UploadedBy).Where(x => x.TaskId == taskId && x.DeletedAt == null).ToListAsync().ConfigureAwait(false);
 			return this.mapper.Map<List<TaskAttachment>>(dbTaskAttachments);
 		}
 
 		public async Task<TaskAttachment> GetTaskAttachmentAsync(Guid taskAttachmentId)
 		{
-			var dbTaskAttachment = await this.dbContext.TaskAttachments.FirstOrDefaultAsync(x => x.Id == taskAttachmentId);
+			var dbTaskAttachment = await this.dbContext.TaskAttachments.FirstOrDefaultAsync(x => x.Id == taskAttachmentId && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTaskAttachment == null)
 			{
 				throw new EntityNotFoundException($"TaskAttachment with Id {taskAttachmentId} not found");
@@ -281,7 +281,7 @@ namespace BoardMan.Web.Managers
 
 		public async Task DeleteTaskAttachmentAsync(Guid id)
 		{
-			var dbTaskAttachment = await this.dbContext.TaskAttachments.FirstOrDefaultAsync(x => x.Id == id);
+			var dbTaskAttachment = await this.dbContext.TaskAttachments.FirstOrDefaultAsync(x => x.Id == id && x.DeletedAt == null).ConfigureAwait(false);
 			if (dbTaskAttachment == null)
 			{
 				throw new EntityNotFoundException($"TaskAttachment with Id {id} not found");

@@ -15,14 +15,17 @@ namespace BoardMan.Web.Controllers
 	{
 		private readonly IWorkspaceManager workspaceManager;
 
-		public WorkspacesController(UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<WorkspacesController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IWorkspaceManager workspaceManager) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
+		public WorkspacesController(UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<WorkspacesController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IWorkspaceManager workspaceManager) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.workspaceManager = workspaceManager;
 		}
 
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(Guid? userId)
 		{
-			return View(await this.workspaceManager.GetAllWorkSpacesAsync(this.userManager.GetGuidUserId(User)));
+			var allWs = await this.workspaceManager.GetAllWorkSpacesAsync(userId ?? this.userManager.GetGuidUserId(User));
+			if(userId.HasValue)
+				allWs.ReturnUrl = $"{Request.Path}?userId={userId}";
+			return View(allWs);
 		}
 
 		[HttpPost]
@@ -58,7 +61,7 @@ namespace BoardMan.Web.Controllers
 			{
 				if (ModelState.IsValid)
 				{
-					var record = await this.workspaceManager.EditWorkspaceMemberAsync(workspaceMember, this.userManager.GetGuidUserId(User));
+					var record = await this.workspaceManager.EditWorkspaceMemberAsync(workspaceMember);
 					return JsonResponse(ApiResponse.Single(record));
 				}
 

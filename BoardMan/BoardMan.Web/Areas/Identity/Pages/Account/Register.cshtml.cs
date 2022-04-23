@@ -27,18 +27,18 @@ namespace BoardMan.Web.Areas.Identity.Pages.Account
     [AllowAnonymous]
     public class RegisterModel : PageModel
     {
-        private readonly SignInManager<AppUser> _signInManager;
-        private readonly UserManager<AppUser> _userManager;
-        private readonly IUserStore<AppUser> _userStore;
-        private readonly IUserEmailStore<AppUser> _emailStore;
+        private readonly SignInManager<DbAppUser> _signInManager;
+        private readonly UserManager<DbAppUser> _userManager;
+        private readonly IUserStore<DbAppUser> _userStore;
+        private readonly IUserEmailStore<DbAppUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly IWorkspaceManager workspaceManager;
 
 		public RegisterModel(
-			UserManager<AppUser> userManager,
-			IUserStore<AppUser> userStore,
-			SignInManager<AppUser> signInManager,
+			UserManager<DbAppUser> userManager,
+			IUserStore<DbAppUser> userStore,
+			SignInManager<DbAppUser> signInManager,
 			ILogger<RegisterModel> logger,
 			IEmailSender emailSender, IWorkspaceManager workspaceManager)
 		{
@@ -172,27 +172,27 @@ namespace BoardMan.Web.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private AppUser CreateUser()
+        private DbAppUser CreateUser()
         {
             try
             {
-                return Activator.CreateInstance<AppUser>();
+                return Activator.CreateInstance<DbAppUser>();
             }
             catch
             {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(AppUser)}'. " +
-                    $"Ensure that '{nameof(AppUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+                throw new InvalidOperationException($"Can't create an instance of '{nameof(DbAppUser)}'. " +
+                    $"Ensure that '{nameof(DbAppUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
                     $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
             }
         }
 
-        private IUserEmailStore<AppUser> GetEmailStore()
+        private IUserEmailStore<DbAppUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
             {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
-            return (IUserEmailStore<AppUser>)_userStore;
+            return (IUserEmailStore<DbAppUser>)_userStore;
         }
     }
 }

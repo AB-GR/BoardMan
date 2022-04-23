@@ -18,10 +18,10 @@ namespace BoardMan.Web.Controllers
 	public class PaymentsController : SiteControllerBase
 	{		
 		private readonly IPaymentManager paymentManager;
-		private readonly SignInManager<AppUser> signInManager;
+		private readonly SignInManager<DbAppUser> signInManager;
 		private readonly IEmailSender emailSender;
 
-		public PaymentsController(IPaymentManager paymentManager, SignInManager<AppUser> signInManager, IEmailSender emailSender, UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<PaymentsController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
+		public PaymentsController(IPaymentManager paymentManager, SignInManager<DbAppUser> signInManager, IEmailSender emailSender, UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<PaymentsController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{			
 			this.paymentManager = paymentManager;
 			this.signInManager = signInManager;

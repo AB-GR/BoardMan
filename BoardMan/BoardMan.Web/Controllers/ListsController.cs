@@ -14,7 +14,7 @@ namespace BoardMan.Web.Controllers
 	{
         private readonly IListManager listManager;
 
-		public ListsController(UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<ListsController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IListManager listManager) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
+		public ListsController(UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<ListsController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IListManager listManager) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.listManager = listManager;
 		}

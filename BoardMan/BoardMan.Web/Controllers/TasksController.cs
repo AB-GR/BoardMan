@@ -20,7 +20,7 @@ namespace BoardMan.Web.Controllers
         private readonly long _fileSizeLimit = 2097152;
         private readonly string[] _permittedExtensions = { ".png", ".jpg", ".jpeg" };
 
-		public TasksController(UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<TasksController> logger, IStringLocalizer<SharedResource> sharedLocalizer, ITaskManager taskManager, IBlobManager uploadService) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
+		public TasksController(UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<TasksController> logger, IStringLocalizer<SharedResource> sharedLocalizer, ITaskManager taskManager, IBlobManager uploadService) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.taskManager = taskManager;
 			this.uploadService = uploadService;

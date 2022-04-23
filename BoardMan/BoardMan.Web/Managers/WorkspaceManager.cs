@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BoardMan.Web.Auth;
 using BoardMan.Web.Data;
 using BoardMan.Web.Infrastructure.Utils;
 using BoardMan.Web.Models;
@@ -16,7 +17,7 @@ namespace BoardMan.Web.Managers
 
 		Task<WorkspaceMember> CreateWorkspaceMemberAsync(WorkspaceMember workspaceMember, Guid currentUserId);
 
-		Task<WorkspaceMember> EditWorkspaceMemberAsync(WorkspaceMember workspaceMember, Guid currentUserId);
+		Task<WorkspaceMember> EditWorkspaceMemberAsync(WorkspaceMember workspaceMember);
 
 		Task DeleteWorkspaceMemberAsync(Guid workspaceMemberId);
 
@@ -99,6 +100,23 @@ namespace BoardMan.Web.Managers
 					throw new InvalidDataCannotProcessException($"Email {workspaceMember.MemberEmail} belongs to the current user");
 				}
 
+				if (existingUserId == Users.ApplicationSuperAdminId)
+				{
+					throw new InvalidDataCannotProcessException($"Email {workspaceMember.MemberEmail} belongs to application super admin");
+				}
+
+				var workspace = await this.dbContext.Workspaces.FirstOrDefaultAsync(x => x.Id == workspaceMember.WorkspaceId && x.DeletedAt == null);
+
+				if(workspace == null)
+				{
+					throw new EntityNotFoundException($"Workspace with id {workspaceMember.WorkspaceId} does not exist");
+				}
+
+				if (existingUserId == workspace.OwnerId)
+				{
+					throw new EntityNotFoundException($"Email {workspaceMember.MemberEmail} belongs to workspace owner");
+				}
+
 				// Existing User
 				var dbWorkspaceMember = this.mapper.Map<DbWorkspaceMember>(workspaceMember);
 				this.dbContext.WorkspaceMembers.Add(dbWorkspaceMember);
@@ -119,50 +137,51 @@ namespace BoardMan.Web.Managers
 
 		public async Task DeleteWorkspaceMemberAsync(Guid id)
 		{
-			var dbWorkspaceMember = await this.dbContext.WorkspaceMembers.FirstOrDefaultAsync(x => x.Id == id);
-			var dbEmailInvite = await this.dbContext.EmailInvites.FirstOrDefaultAsync(x => x.Id == id);
-			if (dbWorkspaceMember == null && dbEmailInvite == null)
-			{
-				throw new EntityNotFoundException($"WorkspaceMember or EmailInvite with Id {id} not found");
-			}
-
+			var dbWorkspaceMember = await this.dbContext.WorkspaceMembers.FirstOrDefaultAsync(x => x.Id == id && x.DeletedAt == null);
+			var dbEmailInvite = await this.dbContext.EmailInvites.FirstOrDefaultAsync(x => x.Id == id && x.DeletedAt == null);
+			
 			if (dbWorkspaceMember != null)
 				dbWorkspaceMember.DeletedAt = DateTime.UtcNow;
-			else
+			else if(dbEmailInvite != null)
 				dbEmailInvite.DeletedAt = DateTime.UtcNow;
+			else
+				throw new EntityNotFoundException($"WorkspaceMember or EmailInvite with Id {id} not found");
 
 			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
 		}
 
 		public async Task<List<UsersOption>> ListProspectiveUsersAsync(Guid currentUserId, Guid workSpaceId)
 		{
-			var results = this.dbContext.Users.Where(u => !dbContext.WorkspaceMembers.Select(m => m.MemberId).Contains(u.Id));
+			var workspace = await this.dbContext.Workspaces.FirstOrDefaultAsync(x => x.Id == workSpaceId && x.DeletedAt == null);
 
-			var existingUsers = await results.Where(x => x.Id != currentUserId).Select(x => new UsersOption
+			if (workspace == null)
 			{
-				Value = x.Id,
-				Label = x.UserName
-			}).ToListAsync();
+				throw new EntityNotFoundException($"Workspace with id {workSpaceId} does not exist");
+			}
+
+			var existingUsers = await this.dbContext.Users
+				.Where(u => !dbContext.WorkspaceMembers.Select(m => m.MemberId).Contains(u.Id) 
+				&& u.Id != Users.ApplicationSuperAdminId && u.Id != currentUserId && u.Id != workspace.OwnerId)
+				.Select(x => new UsersOption
+				{
+					Value = x.Id,
+					Label = x.UserName
+				})
+				.ToListAsync();
 
 			return existingUsers;
 		}
 
-		public async Task<WorkspaceMember> EditWorkspaceMemberAsync(WorkspaceMember workspaceMember, Guid currentUserId)
-		{
-			var existingUserId = workspaceMember.MemberId ?? (await this.dbContext.Users.Where(x => x.UserName == workspaceMember.MemberEmail).FirstOrDefaultAsync())?.Id;
+		public async Task<WorkspaceMember> EditWorkspaceMemberAsync(WorkspaceMember workspaceMember)
+		{			
+			var dbWorkspaceMember = await this.dbContext.WorkspaceMembers.FirstOrDefaultAsync(x => x.Id == workspaceMember.Id && x.DeletedAt == null);
 
-			if (existingUserId.HasValue)
+			if (dbWorkspaceMember != null)
 			{
-				if (existingUserId == currentUserId)
+				if (dbWorkspaceMember.Member.UserName != workspaceMember.MemberEmail)
 				{
-					throw new InvalidDataCannotProcessException($"Email {workspaceMember.MemberEmail} belongs to the current user");
-				}
-
-				var dbWorkspaceMember = await this.dbContext.WorkspaceMembers.FirstOrDefaultAsync(x => x.Id == workspaceMember.Id);
-				if (dbWorkspaceMember == null)
-				{
-					throw new EntityNotFoundException($"WorkspaceMember with Id {workspaceMember.Id} not found");
-				}
+					throw new InvalidDataCannotProcessException($"Email {workspaceMember.MemberEmail} has changed.");
+				}			
 
 				this.mapper.Map(workspaceMember, dbWorkspaceMember);
 				await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -174,6 +193,11 @@ namespace BoardMan.Web.Managers
 				if (dbEmailInvite == null)
 				{
 					throw new EntityNotFoundException($"EmailInvite with Id {workspaceMember.Id} not found");
+				}
+
+				if (dbEmailInvite.EmailAddress != workspaceMember.MemberEmail)
+				{
+					throw new InvalidDataCannotProcessException($"Email {workspaceMember.MemberEmail} has changed.");
 				}
 
 				this.mapper.Map(workspaceMember, dbEmailInvite);

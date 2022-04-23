@@ -12,7 +12,7 @@ namespace BoardMan.Web.Controllers
 	{
 		private readonly IRoleManager roleManager;
 
-		public RolesController(UserManager<AppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<RolesController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IRoleManager roleManager = null) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
+		public RolesController(UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<RolesController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IRoleManager roleManager = null) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.roleManager = roleManager;
 		}

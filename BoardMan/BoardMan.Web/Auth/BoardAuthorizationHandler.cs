@@ -9,9 +9,9 @@ namespace BoardMan.Web.Auth
 	public class BoardAuthorizationHandler : AuthorizationHandler<BoardAuthorizationrRequirement, EntityResource>
 	{
 		private readonly BoardManDbContext boardManDbContext;
-		private readonly UserManager<AppUser> userManager;
+		private readonly UserManager<DbAppUser> userManager;
 
-		public BoardAuthorizationHandler(BoardManDbContext boardManDbContext, UserManager<AppUser> userManager) 
+		public BoardAuthorizationHandler(BoardManDbContext boardManDbContext, UserManager<DbAppUser> userManager) 
 		{
 			this.boardManDbContext = boardManDbContext;
 			this.userManager = userManager;
