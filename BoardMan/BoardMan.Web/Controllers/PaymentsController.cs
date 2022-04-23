@@ -112,7 +112,7 @@ namespace BoardMan.Web.Controllers
 				pageHandler: null,
 				values: new { area = "Identity", email = user.Email },
 				protocol: Request.Scheme);
-				return RedirectWithMessage(registerConfirmUrl, $"{successMessage} Please confirm your email and then login and check your subscription", "Free account creation success.");
+				return RedirectWithMessage(registerConfirmUrl, $"{successMessage} Please confirm your email and then login and check your subscription");
 			}
 			else
 			{
@@ -133,37 +133,8 @@ namespace BoardMan.Web.Controllers
 				if (paymentResult.PaymentStatus == PaymentStatus.Processed)
 				{
 					if (paymentResult.UserDetails.UserCreated)
-					{
-						var successMessage = "Free account creation success.";
-						logger.LogInformation("User created a new account with password.");
-
-						var user = paymentResult.UserDetails.User;
-						var userId = await userManager.GetUserIdAsync(user);
-						var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
-						code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-						var callbackUrl = Url.Page(
-							"/Account/ConfirmEmail",
-							pageHandler: null,
-							values: new { area = "Identity", userId = userId, code = code },
-							protocol: Request.Scheme);
-
-						await emailSender.SendEmailAsync(user.Email, "Confirm your email",
-							$"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-						if (userManager.Options.SignIn.RequireConfirmedAccount)
-						{
-							var registerConfirmUrl = Url.Page(
-							"/Account/RegisterConfirmation",
-							pageHandler: null,
-							values: new { area = "Identity", email = user.Email },
-							protocol: Request.Scheme);
-							return RedirectWithMessage(registerConfirmUrl, $"{successMessage} Please confirm your email and then login and check your subscription", "Free account creation success.");
-						}
-						else
-						{
-							await signInManager.SignInAsync(user, isPersistent: false);
-							return RedirectWithMessage("Index", "Home", successMessage);
-						}
+					{						
+						return await UserCreatedAction(paymentResult, "Free account creation success.");
 					}
 
 					return RedirectWithMessage("Index", "Home", $"Free account creation success. {(paymentResult.UserDetails.UserIsLoggedIn ? "new subscription has been created" : "Login and verify the new subscription")}");
