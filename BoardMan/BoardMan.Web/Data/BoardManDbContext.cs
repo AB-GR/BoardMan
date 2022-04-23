@@ -177,4 +177,7 @@ public class DbAppUser : IdentityUser<Guid>
     public string LastName { get; set; } = null!;
 }
 
-public class DbAppRole : IdentityRole<Guid> { }
+public class DbAppRole : IdentityRole<Guid> 
+{
+	public RoleType RoleType { get; set; }
+}

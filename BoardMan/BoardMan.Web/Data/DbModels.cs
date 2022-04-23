@@ -92,6 +92,13 @@ namespace BoardMan.Web.Data
 		ExistingUser
 	}
 	
+	public enum RoleType
+	{
+		BoardRole,
+		WorkSpaceRole,
+		ApplicationRole
+	}
+
 	[Table("Workspaces")]
 	public class DbWorkspace : DbEntity, IActivityTracked
 	{

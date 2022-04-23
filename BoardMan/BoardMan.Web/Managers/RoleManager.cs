@@ -7,7 +7,7 @@ namespace BoardMan.Web.Managers
 {
 	public interface IRoleManager
 	{
-		Task<List<ComboOption>> ListRolesAsync();
+		Task<List<ComboOption>> ListRolesAsync(RoleType roleType);
 	}
 
 	public class RoleManager : IRoleManager
@@ -19,9 +19,9 @@ namespace BoardMan.Web.Managers
 			this.context = context;
 		}		
 
-		public async Task<List<ComboOption>> ListRolesAsync()
+		public async Task<List<ComboOption>> ListRolesAsync(RoleType roleType)
 		{
-			var dbRoles = await this.context.Roles.ToListAsync();
+			var dbRoles = await this.context.Roles.Where(x => x.RoleType == roleType).ToListAsync().ConfigureAwait(false);
 			return dbRoles.Select(x => new ComboOption { Value = x.Id, DisplayText = x.Name }).ToList();
 		}
 	}

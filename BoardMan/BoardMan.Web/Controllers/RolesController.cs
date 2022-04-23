@@ -23,9 +23,9 @@ namespace BoardMan.Web.Controllers
 		}
 
 		[HttpPost]
-		public async Task<ActionResult> ListRoles()
+		public async Task<ActionResult> ListRoles(RoleType roleType)
 		{
-			return JsonResponse(ApiResponse.ListOptions(await this.roleManager.ListRolesAsync()));
+			return JsonResponse(ApiResponse.ListOptions(await this.roleManager.ListRolesAsync(roleType)));
 		}
 	}
 }
