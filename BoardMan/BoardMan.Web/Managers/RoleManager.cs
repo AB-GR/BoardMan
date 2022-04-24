@@ -7,7 +7,7 @@ namespace BoardMan.Web.Managers
 {
 	public interface IRoleManager
 	{
-		Task<List<ComboOption>> ListRolesAsync(RoleType roleType);
+		Task<List<ComboOption>> ListRolesAsync(RoleType roleType, bool excludeSuperAdmin = true);
 	}
 
 	public class RoleManager : IRoleManager
@@ -19,9 +19,9 @@ namespace BoardMan.Web.Managers
 			this.context = context;
 		}		
 
-		public async Task<List<ComboOption>> ListRolesAsync(RoleType roleType)
+		public async Task<List<ComboOption>> ListRolesAsync(RoleType roleType, bool excludeSuperAdmin = true)
 		{
-			var dbRoles = await this.context.Roles.Where(x => x.RoleType == roleType).ToListAsync().ConfigureAwait(false);
+			var dbRoles = await this.context.Roles.Where(x => x.RoleType == roleType x.Name.Contains("SuperAdmin")).ToListAsync().ConfigureAwait(false);
 			return dbRoles.Select(x => new ComboOption { Value = x.Id, DisplayText = x.Name }).ToList();
 		}
 	}
