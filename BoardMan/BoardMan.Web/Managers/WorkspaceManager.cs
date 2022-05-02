@@ -160,7 +160,7 @@ namespace BoardMan.Web.Managers
 			}
 
 			var existingUsers = await this.dbContext.Users
-				.Where(u => !dbContext.WorkspaceMembers.Select(m => m.MemberId).Contains(u.Id) 
+				.Where(u => !dbContext.WorkspaceMembers.Where(x => x.WorkspaceId == workSpaceId && x.DeletedAt == null).Select(m => m.MemberId).Contains(u.Id) 
 				&& u.Id != Users.ApplicationSuperAdminId && u.Id != currentUserId && u.Id != workspace.OwnerId)
 				.Select(x => new UsersOption
 				{

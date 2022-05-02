@@ -28,9 +28,9 @@ namespace BoardMan.Web.Controllers
 		}
 
 		[HttpPost]
-		public async Task<ActionResult> ListUsers()
+		public async Task<ActionResult> ListUsers(string name = "")
 		{
-			var dbUsers = await this.dbContext.Users.Where(x => x.Id != Users.ApplicationSuperAdminId).ToListAsync();
+			var dbUsers = await this.dbContext.Users.Where(x => x.Id != Users.ApplicationSuperAdminId && (string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(name) && x.UserName.Contains(name))).ToListAsync();
 			return JsonResponse(ApiResponse.List(this.mapper.Map<List<AppUser>>(dbUsers)));
 		}
 

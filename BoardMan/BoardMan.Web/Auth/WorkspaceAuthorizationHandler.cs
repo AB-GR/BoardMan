@@ -1,5 +1,6 @@
 ﻿using BoardMan.Web.Data;
 using BoardMan.Web.Extensions;
+using BoardMan.Web.Infrastructure.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -65,8 +66,14 @@ namespace BoardMan.Web.Auth
 				case EntityType.Workspace:
 					return resource.Id;
 				case EntityType.WorkspaceMember:
-					var dbWorkspaceMember = await this.boardManDbContext.WorkspaceMembers.FirstOrDefaultAsync(x => x.Id == resource.Id);
-					return dbWorkspaceMember?.WorkspaceId ?? Guid.Empty;
+					var dbWorkspaceMember = await this.boardManDbContext.WorkspaceMembers.FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
+					if (dbWorkspaceMember != null)
+						return dbWorkspaceMember.Id;
+					else
+					{
+						var dbEmailInvite = await this.boardManDbContext.EmailInvites.FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
+						return dbEmailInvite != null ? dbEmailInvite.EntityUrn.ToEntityUrn().EntityId : Guid.Empty;
+					}
 				default:
 					return Guid.Empty;
 			}

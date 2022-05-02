@@ -597,9 +597,9 @@ else{
                             title: 'Email',
                             input: function(data) {
                                 if (data.record) {
-                                    return '<input type="text" name="MemberEmail" style="width:200px" value="' + data.record.MemberEmail + '" readonly />';
+                                    return '<input type="email" name="MemberEmail" style="width:200px" value="' + data.record.MemberEmail + '" readonly />';
                                 } else {
-                                    return '<input type="text" name="MemberEmail" style="width:200px" />';
+                                    return '<input type="email" name="MemberEmail" style="width:200px" />';
                                 }
                             }
                         },

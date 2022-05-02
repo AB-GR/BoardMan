@@ -27,5 +27,24 @@
 		{
 			return value == null || value == Guid.Empty;
 		}
+
+		public static EntityUrn ToEntityUrn(this string? entityUrn)
+		{				
+			if(!string.IsNullOrWhiteSpace(entityUrn) && entityUrn.Split(":").Length == 2 && Guid.TryParse(entityUrn.Split(":")[1], out var entityId))
+			{
+				return new EntityUrn { EntityId = entityId, EntityName = entityUrn.Split(":")[0] };
+			}
+			else
+			{
+				return new EntityUrn();
+			}
+		}
+	}
+
+	public class EntityUrn
+	{
+		public string? EntityName { get; set; }
+
+		public Guid EntityId { get; set; }
 	}
 }

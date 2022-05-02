@@ -1,6 +1,7 @@
 ﻿using BoardMan.Web.Auth;
 using BoardMan.Web.Data;
 using BoardMan.Web.Infrastructure.Utils;
+using BoardMan.Web.Infrastructure.Utils.Extensions;
 using BoardMan.Web.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,31 +30,30 @@ namespace BoardMan.Web.Managers
 			{
 				throw new EntityNotFoundException($"EmailInvite for {token} does not exist");
 			}
-
-			var entity = dbEmailInvite.EntityUrn.Split(":")[0];
-			var entityId = Guid.Parse(dbEmailInvite.EntityUrn.Split(":")[1]);
-			if (entity == "Workspace")
+			
+			var entityUrn = dbEmailInvite.EntityUrn.ToEntityUrn();
+			if (entityUrn.EntityName == "Workspace")
 			{
-				if (!await this.dbContext.Workspaces.AnyAsync(x => x.Id == entityId && x.DeletedAt == null))
+				if (!await this.dbContext.Workspaces.AnyAsync(x => x.Id == entityUrn.EntityId && x.DeletedAt == null))
 				{
-					throw new EntityNotFoundException($"Workspace with Id {entityId} does not exist");
+					throw new EntityNotFoundException($"Workspace with Id {entityUrn.EntityId} does not exist");
 				}
 
 				dbEmailInvite.Accepted = true;
-				var workspaceMember = new DbWorkspaceMember { AddedById = dbEmailInvite.AddedById, RoleId = dbEmailInvite.RoleId, WorkspaceId = entityId, MemberId = memberId };
+				var workspaceMember = new DbWorkspaceMember { AddedById = dbEmailInvite.AddedById, RoleId = dbEmailInvite.RoleId, WorkspaceId = entityUrn.EntityId, MemberId = memberId };
 				this.dbContext.WorkspaceMembers.Add(workspaceMember);
 				await this.dbContext.SaveChangesAsync();
 			}
-			else if (entity == "Board")
+			else if (entityUrn.EntityName == "Board")
 			{
-				var dbBoard = await this.dbContext.Boards.FirstOrDefaultAsync(x => x.Id == entityId && x.DeletedAt == null).ConfigureAwait(false);
+				var dbBoard = await this.dbContext.Boards.FirstOrDefaultAsync(x => x.Id == entityUrn.EntityId && x.DeletedAt == null).ConfigureAwait(false);
 				if (dbBoard == null)
 				{
-					throw new EntityNotFoundException($"Board with Id {entityId} does not exist");
+					throw new EntityNotFoundException($"Board with Id {entityUrn.EntityId} does not exist");
 				}
 
 				dbEmailInvite.Accepted = true;
-				var dbBoardMember = new DbBoardMember { AddedById = dbEmailInvite.AddedById, RoleId = dbEmailInvite.RoleId, BoardId = entityId, MemberId = memberId };
+				var dbBoardMember = new DbBoardMember { AddedById = dbEmailInvite.AddedById, RoleId = dbEmailInvite.RoleId, BoardId = entityUrn.EntityId, MemberId = memberId };
 				this.dbContext.BoardMembers.Add(dbBoardMember);
 
 				// If there doest exist a workspace member with this user Id add one with a reader role
@@ -73,45 +73,46 @@ namespace BoardMan.Web.Managers
 		public async Task<EmailInviteModel> ValidateToken(string token)
 		{
 			var result = new EmailInviteModel { Token = token };
-			var emailInvite = await this.dbContext.EmailInvites.SingleOrDefaultAsync(x => x.Token == token && x.DeletedAt == null);
-			if(emailInvite == null)
+			var dbEmailInvite = await this.dbContext.EmailInvites.SingleOrDefaultAsync(x => x.Token == token && x.DeletedAt == null);
+			if(dbEmailInvite == null)
 			{
 				result.ValidationMessage = $"EmailInvite for {token} does not exist";
 			}
-
-			if(emailInvite.ExpireAt < DateTime.UtcNow)
+			else
 			{
-				result.ValidationMessage = $"EmailInvite expired on {emailInvite.ExpireAt}";
-			}
-
-			if (emailInvite.Accepted == true)
-			{
-				result.ValidationMessage = $"EmailInvite has been accepted on {emailInvite.ModifiedAt}";
-			}
-
-			var entity = emailInvite.EntityUrn.Split(":")[0];
-			var entityId = Guid.Parse(emailInvite.EntityUrn.Split(":")[1]);
-			if (entity == "Board")
-			{
-				if(!await this.dbContext.Boards.AnyAsync(x => x.Id == entityId && x.DeletedAt == null))
+				if (dbEmailInvite.ExpireAt < DateTime.UtcNow)
 				{
-					result.ValidationMessage = $"Board with Id {entityId} does not exist";
+					result.ValidationMessage = $"EmailInvite expired on {dbEmailInvite.ExpireAt}";
 				}
-			}
-			else if (entity == "Workspace")
-			{
-				if (!await this.dbContext.Workspaces.AnyAsync(x => x.Id == entityId && x.DeletedAt == null))
+
+				if (dbEmailInvite.Accepted == true)
 				{
-					result.ValidationMessage = $"Workspace with Id {entityId} does not exist";
+					result.ValidationMessage = $"EmailInvite has been accepted on {dbEmailInvite.ModifiedAt}";
 				}
-			}
+				
+				var entityUrn = dbEmailInvite.EntityUrn.ToEntityUrn();
+				if (entityUrn.EntityName == "Board")
+				{
+					if (!await this.dbContext.Boards.AnyAsync(x => x.Id == entityUrn.EntityId && x.DeletedAt == null))
+					{
+						result.ValidationMessage = $"Board with Id {entityUrn.EntityId} does not exist";
+					}
+				}
+				else if (entityUrn.EntityName == "Workspace")
+				{
+					if (!await this.dbContext.Workspaces.AnyAsync(x => x.Id == entityUrn.EntityId && x.DeletedAt == null))
+					{
+						result.ValidationMessage = $"Workspace with Id {entityUrn.EntityId} does not exist";
+					}
+				}
 
-			if(await this.dbContext.Users.AnyAsync(x => x.UserName == emailInvite.EmailAddress))
-			{
-				result.ValidationMessage = $"User with email {emailInvite.EmailAddress} already exists";
-			}
+				if (await this.dbContext.Users.AnyAsync(x => x.UserName == dbEmailInvite.EmailAddress))
+				{
+					result.ValidationMessage = $"User with email {dbEmailInvite.EmailAddress} already exists";
+				}
 
-			result.Email = emailInvite.EmailAddress;
+				result.Email = dbEmailInvite.EmailAddress;
+			}
 
 			if (string.IsNullOrWhiteSpace(result.ValidationMessage))
 			{

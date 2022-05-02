@@ -85,11 +85,6 @@ else
                 <br/>
             }
 
-            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = ws.Id, Type = EntityType.Workspace } ,Policies.WorkspaceContributorWithBoardLimitPolicy)).Succeeded)
-            {
-                <a asp-controller="Boards" asp-action="Add" asp-route-workspaceId="@ws.Id" class="btn btn-primary" >Add a board</a>
-            }
-
             <br/>
             <br/>           
         }
@@ -97,6 +92,13 @@ else
         {
             <p>No Boards to display!</p>
         }
+
+        
+
+            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = ws.Id, Type = EntityType.Workspace } ,Policies.WorkspaceContributorWithBoardLimitPolicy)).Succeeded)
+            {
+                <a asp-controller="Boards" asp-action="Add" asp-route-workspaceId="@ws.Id" class="btn btn-primary" >Add a board</a>
+            }
 
          <h2>@ws.Title Members</h2>
             @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = ws.Id, Type = EntityType.Workspace } ,Policies.WorkspaceAdminPolicy)).Succeeded)
@@ -106,7 +108,7 @@ else
             }
             else
             {
-                <p>You are not authorized to view the workspace members 1</p>
+                <p>You are not authorized to view the workspace members</p>
             }
 
         <br/>
@@ -189,9 +191,9 @@ else
 			                    title: 'Email',
                                 input: function (data) {
                                     if (data.record) {
-                                        return '<input type="text" name="MemberEmail" style="width:200px" value="' + data.record.MemberEmail + '" readonly />';
+                                        return '<input type="email" name="MemberEmail" style="width:200px" value="' + data.record.MemberEmail + '" readonly />';
                                     } else {
-                                        return '<input type="text" name="MemberEmail" style="width:200px" />';
+                                        return '<input type="email" name="MemberEmail" style="width:200px" />';
                                     }
                                 }
 		                    },

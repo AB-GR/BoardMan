@@ -1,5 +1,6 @@
 ﻿using BoardMan.Web.Data;
 using BoardMan.Web.Extensions;
+using BoardMan.Web.Infrastructure.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -74,29 +75,35 @@ namespace BoardMan.Web.Auth
             {
 				case EntityType.Board:
 					return resource.Id;
-				case EntityType.BoardMember:
-					var dbBoardMember = await this.boardManDbContext.BoardMembers.FirstOrDefaultAsync(x => x.Id == resource.Id);
-					return dbBoardMember?.BoardId ?? Guid.Empty;
+				case EntityType.BoardMember:					
+					var dbBoardMember = await this.boardManDbContext.BoardMembers.FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
+					if(dbBoardMember != null)
+						return dbBoardMember.Id;
+					else
+					{
+						var dbEmailInvite = await this.boardManDbContext.EmailInvites.FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
+						return dbEmailInvite != null ? dbEmailInvite.EntityUrn.ToEntityUrn().EntityId : Guid.Empty;
+					}
 				case EntityType.List:
-					var dbList = await this.boardManDbContext.Lists.FirstOrDefaultAsync(x => x.Id == resource.Id);
+					var dbList = await this.boardManDbContext.Lists.FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
 					return dbList?.BoardId ?? Guid.Empty;
 				case EntityType.Task:
-					var dbTask = await this.boardManDbContext.Tasks.Include(x => x.List).FirstOrDefaultAsync(x => x.Id == resource.Id);
+					var dbTask = await this.boardManDbContext.Tasks.Include(x => x.List).FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
 					return dbTask?.List.BoardId ?? Guid.Empty;
 				case EntityType.TaskComment:
-					var dbTaskComment = await this.boardManDbContext.TaskComments.Include(x => x.Task.List).FirstOrDefaultAsync(x => x.Id == resource.Id);
+					var dbTaskComment = await this.boardManDbContext.TaskComments.Include(x => x.Task.List).FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
 					return dbTaskComment?.Task.List.BoardId ?? Guid.Empty;
 				case EntityType.Tasklabel:
-					var dbTaskLabel = await this.boardManDbContext.TaskLabels.Include(x => x.Task.List).FirstOrDefaultAsync(x => x.Id == resource.Id);
+					var dbTaskLabel = await this.boardManDbContext.TaskLabels.Include(x => x.Task.List).FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
 					return dbTaskLabel?.Task.List.BoardId ?? Guid.Empty;
 				case EntityType.TaskChecklist:
-					var dbTaskChecklist = await this.boardManDbContext.TaskChecklists.Include(x => x.Task.List).FirstOrDefaultAsync(x => x.Id == resource.Id);
+					var dbTaskChecklist = await this.boardManDbContext.TaskChecklists.Include(x => x.Task.List).FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
 					return dbTaskChecklist?.Task.List.BoardId ?? Guid.Empty;
 				case EntityType.TaskWatcher:
-					var dbTaskWatcher = await this.boardManDbContext.TaskWatchers.Include(x => x.Task.List).FirstOrDefaultAsync(x => x.Id == resource.Id);
+					var dbTaskWatcher = await this.boardManDbContext.TaskWatchers.Include(x => x.Task.List).FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
 					return dbTaskWatcher?.Task.List.BoardId ?? Guid.Empty;
 				case EntityType.TaskAttachment:
-					var dbTaskAttachment = await this.boardManDbContext.TaskAttachments.Include(x => x.Task.List).FirstOrDefaultAsync(x => x.Id == resource.Id);
+					var dbTaskAttachment = await this.boardManDbContext.TaskAttachments.Include(x => x.Task.List).FirstOrDefaultAsync(x => x.Id == resource.Id && x.DeletedAt == null);
 					return dbTaskAttachment?.Task.List.BoardId ?? Guid.Empty;
 				default:
 					return Guid.Empty;

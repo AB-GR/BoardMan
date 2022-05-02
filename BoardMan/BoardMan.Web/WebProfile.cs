@@ -84,7 +84,7 @@ namespace BoardMan.Web
 
             CreateMap<DbEmailInvite, BoardMember>()
                 .ForMember(x => x.MemberEmail, x => x.MapFrom(src => src.EmailAddress))
-                .ForMember(x => x.BoardId, x => x.MapFrom(src => src.EntityUrn.Contains("Board:") ? Guid.Parse(src.EntityUrn.Substring(src.EntityUrn.IndexOf(":") + 1)) : (Guid?)null))
+                .ForMember(x => x.BoardId, x => x.MapFrom(src => src.EntityUrn.ToEntityUrn().EntityName == "Board" ? src.EntityUrn.ToEntityUrn().EntityId : (Guid?)null))
                 .ForMember(x => x.MemberName, x => x.Ignore())
                 .ForMember(x => x.MemberId, x => x.Ignore())
                 .ForMember(x => x.Status, x => x.MapFrom(src => src.ExpireAt < DateTime.UtcNow ? MemberStatus.InviteExpired : (src.Accepted.GetValueOrDefault() ? MemberStatus.InviteAccepted : MemberStatus.InviteSent)))
@@ -118,7 +118,7 @@ namespace BoardMan.Web
 
             CreateMap<DbEmailInvite, WorkspaceMember>()
                 .ForMember(x => x.MemberEmail, x => x.MapFrom(src => src.EmailAddress))
-                .ForMember(x => x.WorkspaceId, x => x.MapFrom(src => src.EntityUrn.Contains("Workspace:") ? Guid.Parse(src.EntityUrn.Substring(src.EntityUrn.IndexOf(":") + 1)) : (Guid?)null))
+                .ForMember(x => x.WorkspaceId, x => x.MapFrom(src => src.EntityUrn.ToEntityUrn().EntityName == "Workspace" ? src.EntityUrn.ToEntityUrn().EntityId : (Guid?)null))
                 .ForMember(x => x.MemberName, x => x.Ignore())
                 .ForMember(x => x.MemberId, x => x.Ignore())
                 .ForMember(x => x.Status, x => x.MapFrom(src => src.ExpireAt < DateTime.UtcNow ? MemberStatus.InviteExpired : (src.Accepted.GetValueOrDefault() ? MemberStatus.InviteAccepted : MemberStatus.InviteSent)))
