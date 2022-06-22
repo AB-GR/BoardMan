@@ -2,6 +2,7 @@
 using BoardMan.Web.Extensions;
 using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,11 +11,12 @@ using System.Diagnostics;
 
 namespace BoardMan.Web.Controllers
 {
+	[AllowAnonymous]
 	public class HomeController : SiteControllerBase
 	{	
 		private readonly ISubscriptionManager subscriptionManager;		
 
-		public HomeController(ISubscriptionManager subscriptionManager, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<HomeController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, configuration, logger, sharedLocalizer)
+		public HomeController(ISubscriptionManager subscriptionManager, UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<HomeController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{			
 			this.subscriptionManager = subscriptionManager;			
 		}

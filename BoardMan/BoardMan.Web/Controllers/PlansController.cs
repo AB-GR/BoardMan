@@ -13,89 +13,19 @@ namespace BoardMan.Web.Controllers
 	{
 		private readonly IPlanManager planManager;		
 
-		public PlansController(IPlanManager planManager, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<PlansController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, configuration, logger, sharedLocalizer)
+		public PlansController(IPlanManager planManager, UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<PlansController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{ 
 			this.planManager = planManager;			
 		}
-
-		// GET: PlansController
+		
 		[AllowAnonymous]
 		public async Task<ActionResult> Index()
 		{
 			var plans = await planManager.GetAllPlansAsync();
 			return View(plans);
 		}
-
-		// GET: PlansController/Details/5
-		public ActionResult Details(int id)
-		{
-			return View();
-		}
-
-		// GET: PlansController/Create
-		public ActionResult Create()
-		{
-			return View();
-		}
-
-		// POST: PlansController/Create
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public ActionResult Create(IFormCollection collection)
-		{
-			try
-			{
-				return RedirectToAction(nameof(Index));
-			}
-			catch
-			{
-				return View();
-			}
-		}
-
-		// GET: PlansController/Edit/5
-		public ActionResult Edit(int id)
-		{
-			return View();
-		}
-
-		// POST: PlansController/Edit/5
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public ActionResult Edit(int id, IFormCollection collection)
-		{
-			try
-			{
-				return RedirectToAction(nameof(Index));
-			}
-			catch
-			{
-				return View();
-			}
-		}
-
-		// GET: PlansController/Delete/5
-		public ActionResult Delete(int id)
-		{
-			return View();
-		}
-
-		// POST: PlansController/Delete/5
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public ActionResult Delete(int id, IFormCollection collection)
-		{
-			try
-			{
-				return RedirectToAction(nameof(Index));
-			}
-			catch
-			{
-				return View();
-			}
-		}
-
-		// GET: PlansController/Buy
+		
+		[AllowAnonymous]
 		public async Task<ActionResult> Buy(Guid planId)
 		{
 			var plan = await this.planManager.GetPlanAsync(planId);

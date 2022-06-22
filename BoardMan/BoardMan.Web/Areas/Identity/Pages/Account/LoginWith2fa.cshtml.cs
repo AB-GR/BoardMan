@@ -17,13 +17,13 @@ namespace BoardMan.Web.Areas.Identity.Pages.Account
 {
     public class LoginWith2faModel : PageModel
     {
-        private readonly SignInManager<AppUser> _signInManager;
-        private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<DbAppUser> _signInManager;
+        private readonly UserManager<DbAppUser> _userManager;
         private readonly ILogger<LoginWith2faModel> _logger;
 
         public LoginWith2faModel(
-            SignInManager<AppUser> signInManager,
-            UserManager<AppUser> userManager,
+            SignInManager<DbAppUser> signInManager,
+            UserManager<DbAppUser> userManager,
             ILogger<LoginWith2faModel> logger)
         {
             _signInManager = signInManager;

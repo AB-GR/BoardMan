@@ -1,4 +1,9 @@
-﻿@using BoardMan.Web.Infrastructure.Extensions
+﻿@using BoardMan.Web.Auth
+@using BoardMan.Web.Data
+@using BoardMan.Web.Infrastructure.Extensions
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
@@ -16,8 +21,11 @@
         <div class="card" style="width: 18rem;">
             <div class="card-body">
                 <h5 class="card-title"> <a asp-controller="Boards" asp-action="Get" asp-route-boardId="@pBoard.Id">@pBoard.Title</a></h5>
-                <p class="card-text">@pBoard.Description</p>                
-                <a asp-controller="Boards" asp-action="Delete" asp-route-boardId="@pBoard.Id" class="btn btn-primary">Remove</a>
+                <p class="card-text">@pBoard.Description</p>  
+                @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = @pBoard.Id, Type = EntityType.Board } ,Policies.BoardSuperAdminPolicy)).Succeeded)
+                {
+                   <a asp-controller="Boards" asp-action="Delete" asp-route-boardId="@pBoard.Id" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-primary">Remove</a>
+                }                
             </div>
         </div>
         <br/>
@@ -28,16 +36,33 @@ else
     <p>No Boards to display!</p>
 }
 
-<a asp-controller="Boards" asp-action="Add" asp-route-workspaceId="@Model.Primary.Id" class="btn btn-primary" >Add a board</a>
+@if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Primary.Id, Type = EntityType.Workspace } ,Policies.WorkspaceContributorWithBoardLimitPolicy)).Succeeded)
+{
+    <a asp-controller="Boards" asp-action="Add" asp-route-workspaceId="@Model.Primary.Id" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-primary" >Add a board</a>
+}
+
+<br/>
+<br/>
+<h2>@Model.Primary.Title Members</h2>
+@if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Primary.Id, Type = EntityType.Workspace } ,Policies.WorkspaceAdminPolicy)).Succeeded)
+{
+    <div id="membersTable"></div>
+}
+else
+{
+    <p>You are not authorized to view the workspace members</p>
+}
 
 <br/>
 <br/>
 <h2>Member Workspaces</h2>
 @if (Model.Others.Count > 0)
 {
-    @foreach(var ws in Model.Others){        
-        <h3>ws.Title</h3>
-        <p>ws.Description</p>
+    int counter = 0;
+    @foreach(var ws in Model.Others){
+        counter++;
+        <h3>@ws.Title</h3>
+        <p>@ws.Description</p>
         <h3>Boards</h3>
         @if (ws.Boards.Count > 0)
         {
@@ -45,17 +70,46 @@ else
             {
                 <div class="card" style="width: 18rem;">
                     <div class="card-body">
-                        <h5 class="card-title"><a href="#">@otherBoard.Title</a></h5>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = @otherBoard.Id, Type = EntityType.Board } ,Policies.BoardReaderPolicy)).Succeeded)
+                        {
+                            <h5 class="card-title"><a asp-controller="Boards" asp-action="Get" asp-route-boardId="@otherBoard.Id">@otherBoard.Title</a></h5>    
+                        }
+                        else
+                        {
+                            <h5 class="card-title">@otherBoard.Title</h5>
+                        }
+                        
                         <p class="card-text">@otherBoard.Description</p>
                     </div>
                 </div>
                 <br/>
             }
+
+            <br/>
+            <br/>           
         }
         else
         {
             <p>No Boards to display!</p>
         }
+
+        
+
+            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = ws.Id, Type = EntityType.Workspace } ,Policies.WorkspaceContributorWithBoardLimitPolicy)).Succeeded)
+            {
+                <a asp-controller="Boards" asp-action="Add" asp-route-workspaceId="@ws.Id" class="btn btn-primary" >Add a board</a>
+            }
+
+         <h2>@ws.Title Members</h2>
+            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = ws.Id, Type = EntityType.Workspace } ,Policies.WorkspaceAdminPolicy)).Succeeded)
+            {
+                var membersId = "membersTable" + counter;
+                <div id="@membersId"></div>
+            }
+            else
+            {
+                <p>You are not authorized to view the workspace members</p>
+            }
 
         <br/>
         <br/>
@@ -66,8 +120,6 @@ else
     <p>You are not part of any other workspaces!</p>
 }
 
-<h2>Members</h2>
-<div id="membersTable"></div>
 
 @section Css
 {
@@ -83,15 +135,9 @@ else
     <script src="~/lib/jtable.2.4.0/jquery.jtable.js"></script> 
 
     <script type="text/javascript">
-        
-        listProspectiveUsers()
-        .then(onListProspectiveUsers)
-        .catch(function(error) {
-            console.log(error);
-        });
-        
-        function listProspectiveUsers(){
-            return fetch('/Workspaces/ListProspectiveUsers?workspaceId=@Model.Primary.Id',
+        function listProspectiveUsers(workspaceId){
+            console.log('here');
+            return fetch('/Workspaces/ListProspectiveUsers?workspaceId=' + workspaceId,
             {
                 method: "get"
             })
@@ -100,7 +146,7 @@ else
             });
         }
         
-        function onListProspectiveUsers(listProspectiveUsersResponseJson){
+        function onListProspectiveUsers(listProspectiveUsersResponseJson, workspaceId, memberTableId){
             if (listProspectiveUsersResponseJson.succeeded === true){
                 var listProspectiveUsersResponse = listProspectiveUsersResponseJson.records;
                 if (!notNullOrEmpty(listProspectiveUsersResponse)) {
@@ -110,14 +156,14 @@ else
                 
                 var users = listProspectiveUsersResponseJson.records;
 
-                    $('#membersTable').jtable({
+                    $('#' + memberTableId).jtable({
 		                title: "Members",
                         sorting: false,
 		                multiSorting: false,
 		                columnSelectable: false,				
 		                AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
 		                actions: {
-		                    listAction: '/Workspaces/GetWorkspaceMembers?workspaceId=@Model.Primary.Id',
+		                    listAction: '/Workspaces/GetWorkspaceMembers?workspaceId=' + workspaceId,
                             createAction: '/Workspaces/CreateWorkspaceMember',
                             updateAction: '/Workspaces/UpdateWorkspaceMember',
                             deleteAction: '/Workspaces/DeleteWorkspaceMember'
@@ -125,7 +171,7 @@ else
 		                fields: {
                             WorkspaceId: {
                                 type: 'hidden',
-                                defaultValue: '@Model.Primary.Id'
+                                defaultValue: workspaceId
                             },
                             MemberId: {
                                 type: 'hidden'
@@ -145,15 +191,15 @@ else
 			                    title: 'Email',
                                 input: function (data) {
                                     if (data.record) {
-                                        return '<input type="text" name="MemberEmail" style="width:200px" value="' + data.record.MemberEmail + '" readonly />';
+                                        return '<input type="email" name="MemberEmail" style="width:200px" value="' + data.record.MemberEmail + '" readonly />';
                                     } else {
-                                        return '<input type="text" name="MemberEmail" style="width:200px" />';
+                                        return '<input type="email" name="MemberEmail" style="width:200px" />';
                                     }
                                 }
 		                    },
                             RoleId:{
                                 title: "Role",
-                                options: '/Roles/ListRoles'
+                                options: '/Roles/ListRoles?roleType=@($"{RoleType.WorkSpaceRole}")'
                             },
                             Status: {
                                 title: "Status",
@@ -204,4 +250,33 @@ else
             return typeof obj !== 'undefined' && obj && (!$.isPlainObject(obj) || !$.isEmptyObject(obj));
         }
     </script>
+
+@if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Primary.Id, Type = EntityType.Workspace } ,Policies.WorkspaceAdminPolicy)).Succeeded)
+{
+    <script type="text/javascript">
+        
+        listProspectiveUsers(`@Model.Primary.Id`)
+        .then(data => onListProspectiveUsers(data, `@Model.Primary.Id`, "membersTable"))
+        .catch(function(error) {
+            console.log(error);
+        });      
+    </script>
+}
+
+@{int counter = 0;
+         foreach(var ws in Model.Others){
+            counter++;
+            var memberTableId = "membersTable" + @counter;
+            if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = ws.Id, Type = EntityType.Workspace } ,Policies.WorkspaceAdminPolicy)).Succeeded)
+            {                
+                <script type="text/javascript">                            
+                        listProspectiveUsers(`@ws.Id`)
+                            .then(data => onListProspectiveUsers(data, `@ws.Id`, `@memberTableId`))
+                            .catch(function(error) {
+                                console.log(error);
+                            });                          
+                </script>
+            }
+         }
+}
 }

@@ -14,11 +14,11 @@ namespace BoardMan.Web.Areas.Identity.Pages.Account.Manage
 {
     public class Disable2faModel : PageModel
     {
-        private readonly UserManager<AppUser> _userManager;
+        private readonly UserManager<DbAppUser> _userManager;
         private readonly ILogger<Disable2faModel> _logger;
 
         public Disable2faModel(
-            UserManager<AppUser> userManager,
+            UserManager<DbAppUser> userManager,
             ILogger<Disable2faModel> logger)
         {
             _userManager = userManager;

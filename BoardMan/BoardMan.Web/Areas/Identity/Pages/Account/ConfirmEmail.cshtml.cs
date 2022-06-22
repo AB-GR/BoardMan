@@ -15,11 +15,12 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace BoardMan.Web.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class ConfirmEmailModel : PageModel
     {
-        private readonly UserManager<AppUser> _userManager;
+        private readonly UserManager<DbAppUser> _userManager;
 
-        public ConfirmEmailModel(UserManager<AppUser> userManager)
+        public ConfirmEmailModel(UserManager<DbAppUser> userManager)
         {
             _userManager = userManager;
         }

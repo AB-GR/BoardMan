@@ -1,6 +1,7 @@
 ﻿using BoardMan.Web.Data;
 using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -11,7 +12,7 @@ namespace BoardMan.Web.Controllers
 	{
 		private readonly IRoleManager roleManager;
 
-		public RolesController(UserManager<AppUser> userManager, IConfiguration configuration, ILogger<RolesController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IRoleManager roleManager = null) : base(userManager, configuration, logger, sharedLocalizer)
+		public RolesController(UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<RolesController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IRoleManager roleManager = null) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.roleManager = roleManager;
 		}
@@ -22,9 +23,9 @@ namespace BoardMan.Web.Controllers
 		}
 
 		[HttpPost]
-		public async Task<ActionResult> ListRoles()
+		public async Task<ActionResult> ListRoles(RoleType roleType)
 		{
-			return JsonResponse(ApiResponse.ListOptions(await this.roleManager.ListRolesAsync()));
+			return JsonResponse(ApiResponse.ListOptions(await this.roleManager.ListRolesAsync(roleType)));
 		}
 	}
 }

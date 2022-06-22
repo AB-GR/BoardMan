@@ -5,5 +5,7 @@
 		public Workspace Primary { get; set; }
 
 		public List<Workspace> Others { get; set; }
+
+		public string ReturnUrl { get; set; }
 	}
 }

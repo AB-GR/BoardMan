@@ -6,14 +6,22 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Options;
 using Stripe;
+using BoardMan.Web.Infrastructure.Filters;
+using Microsoft.AspNetCore.Authorization;
+using BoardMan.Web.Auth;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
-var services = builder.Services;
+var services = builder.Services;	
 var configuration = builder.Configuration;
 
 var connectionString = configuration.GetConnectionString("BoardManDbContextConnection"); 
 services.AddDbContext<BoardManDbContext>(options => options.UseSqlServer(connectionString)); 
-services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<BoardManDbContext>();
+services.AddIdentity<DbAppUser, DbAppRole>(options => options.SignIn.RequireConfirmedAccount = true)
+	.AddRoleManager<RoleManager<DbAppRole>>()
+	.AddEntityFrameworkStores<BoardManDbContext>()
+	.AddDefaultUI().AddDefaultTokenProviders();
+
 services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 services.AddScoped<ISubscriptionManager, SubscriptionManager>();
 services.AddScoped<IPlanManager, PlanManager>();
@@ -27,9 +35,15 @@ services.AddScoped<IRoleManager, RoleManager>();
 services.AddScoped<IEmailInviteManager, EmailInviteManager>();
 services.AddTransient<PaymentIntentService>();
 services.AddScoped<IPaymentService, PaymentService>();
+services.AddScoped<IAuthorizationHandler, WorkspaceAuthorizationHandler>();
+services.AddScoped<IAuthorizationHandler, BoardAuthorizationHandler>();
+services.AddScoped<IAuthorizationHandler, BoardLimitAuthorizationHandler>();
+
 services.AddLocalization(o => o.ResourcesPath = "Resources");
-services.AddMvc()
- .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix) 
+services.AddMvc(options =>
+{
+    options.Filters.Add(typeof(AppInitializerFilter));
+}).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix) 
  .AddDataAnnotationsLocalization();
 
 services.Configure<RequestLocalizationOptions>(options =>
@@ -52,6 +66,59 @@ services.AddAuthentication().AddGoogle(googleOptions =>
 {
 	googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
 	googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+});
+
+services.AddAuthorization(options =>
+{
+	options.FallbackPolicy = new AuthorizationPolicyBuilder()
+		.RequireAuthenticatedUser()
+		.Build();
+
+	options.AddPolicy(Policies.WorkspaceReaderPolicy, policy =>
+	{
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { Roles.WorkspaceReader, Roles.WorkspaceContributor, Roles.WorkspaceAdmin }));
+	});
+
+	options.AddPolicy(Policies.WorkspaceContributorPolicy, policy =>
+	{
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { Roles.WorkspaceContributor, Roles.WorkspaceAdmin }));
+	});
+
+	options.AddPolicy(Policies.WorkspaceContributorWithBoardLimitPolicy, policy =>
+	{
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { Roles.WorkspaceContributor, Roles.WorkspaceAdmin }));
+		policy.Requirements.Add(new BoardLimitAuthorizatioRequirement());
+	});
+
+	options.AddPolicy(Policies.WorkspaceAdminPolicy, policy =>
+	{
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement(new List<string> { Roles.WorkspaceAdmin }));
+	});
+
+	options.AddPolicy(Policies.WorkspaceSuperAdminPolicy, policy =>
+	{
+		policy.Requirements.Add(new WorkspaceAuthorizationrRequirement());
+	});
+
+	options.AddPolicy(Policies.BoardReaderPolicy, policy =>
+	{
+		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { Roles.BoardReader, Roles.BoardContributor, Roles.BoardAdmin }));
+	});
+
+	options.AddPolicy(Policies.BoardContributorPolicy, policy =>
+	{
+		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { Roles.BoardContributor, Roles.BoardAdmin }));
+	});
+
+	options.AddPolicy(Policies.BoardAdminPolicy, policy =>
+	{
+		policy.Requirements.Add(new BoardAuthorizationrRequirement(new List<string> { Roles.BoardAdmin }));
+	});
+
+	options.AddPolicy(Policies.BoardSuperAdminPolicy, policy =>
+	{
+		policy.Requirements.Add(new BoardAuthorizationrRequirement());
+	});
 });
 
 var app = builder.Build();

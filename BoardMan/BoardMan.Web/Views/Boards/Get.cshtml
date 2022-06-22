@@ -1,4 +1,8 @@
-﻿@using BoardMan.Web.Infrastructure.Extensions
+﻿@using BoardMan.Web.Auth
+@using BoardMan.Web.Data
+@using BoardMan.Web.Infrastructure.Extensions
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
@@ -13,8 +17,23 @@
 <p>@Model.Description</p>
 <h3>Lists & Tasks</h3>
 
-<div id="listsTable"></div>
-<div id="membersTable"></div>
+@if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardReaderPolicy)).Succeeded)
+{
+    <div id="listsTable"></div>
+}
+else{
+    <p>You are not authorized to view the board lists and tasks</p>
+}
+
+
+@if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardAdminPolicy)).Succeeded)
+{
+    <div id="membersTable"></div>
+}
+else{
+    <p>You are not authorized to view the board members</p>
+}
+
 
 <div class="modal fade" id="filePreviewModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -32,8 +51,6 @@
 @section Css
 {
 	<link href="@Url.Content("~/lib/jquery-ui-1.13.1/jquery-ui.css")" rel="stylesheet" type="text/css" />
-    <br />
-    <br />
 	<link href="@Url.Content("~/lib/jtable.2.4.0/themes/metro/blue/jtable.css")" rel="stylesheet" type="text/css" />
 }
 
@@ -42,6 +59,8 @@
     <script src="~/lib/jquery-ui-1.13.1/jquery-ui.js"></script>
     <script src="~/lib/jtable.2.4.0/jquery.jtable.js"></script> 
 
+ @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardReaderPolicy)).Succeeded)
+ { 
     <script type="text/javascript">
 
         $(document).on("click", ".open-FilePreviewModal", function () {
@@ -82,9 +101,12 @@
 				AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
 				actions: {
 					listAction: '/Lists/GetListsByBoardId?boardId=@Model.Id',
-                    createAction: '/Lists/CreateList',
-                    updateAction: '/Lists/UpdateList',
-                    deleteAction: '/Lists/DeleteList'
+                    @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardContributorPolicy)).Succeeded)
+                    {
+                        @: createAction: '/Lists/CreateList',
+                        @: updateAction: '/Lists/UpdateList',
+                        @: deleteAction: '/Lists/DeleteList'
+                    }                    
 				},
 				fields: {
                     BoardId: {
@@ -121,15 +143,26 @@
 				                    AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
 				                    actions: {
 					                    listAction: '/Tasks/GetTasksByListId?listId=' + listData.record.Id,
-                                        createAction: '/Tasks/CreateTask',
-                                        updateAction: '/Tasks/UpdateTask',
-                                        deleteAction: '/Tasks/DeleteTask'
+                                        @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardContributorPolicy)).Succeeded)
+                                        {
+                                            @: createAction: '/Tasks/CreateTask',
+                                            @: updateAction: '/Tasks/UpdateTask',
+                                            @: deleteAction: '/Tasks/DeleteTask'
+                                        }                                        
 				                    },
                                     fields: {
                                         ListId: {
                                             title: 'List',
                                             list: false,
+                                            create: false,                                           
                                             options: '/Boards/ListOtherLists?boardId=@Model.Id&listId=' + listData.record.Id
+                                        },
+                                        ListId: {
+                                            title: 'List',
+                                            list: false,
+                                            update: false,
+                                            type: 'hidden',
+                                            defaultValue: listData.record.Id
                                         },
                                         Id: {
                                             key: true,
@@ -154,10 +187,10 @@
                                             display: function (data) {
                                                 return `<input type="checkbox" id="isCompleted" name="isCompleted" ${data.record.IsCompleted === true ? 'checked' : ''}>`;
                                             }
-                                        },
-                                        AssignedToId:{
-                                            title: "Assigned To",
-                                            options: '/Boards/ListBoardMembers?boardId=@Model.Id'
+                                        }
+                                        @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardAdminPolicy)).Succeeded)
+                                        {                                       
+                                            @:,AssignedToId:{ title: 'Assigned To',  options: '/Boards/ListAssignees?boardId=@Model.Id' }                                           
                                         },
                                         Comments:
                                         {                                            
@@ -177,9 +210,12 @@
 				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
 				                                        actions: {
 					                                        listAction: '/Tasks/GetTaskComments?taskId=' + tasksData.record.Id,
-                                                            createAction: '/Tasks/CreateTaskComment',
-                                                            updateAction: '/Tasks/UpdateTaskComment',
-                                                            deleteAction: '/Tasks/DeleteTaskComment'
+                                                            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardReaderPolicy)).Succeeded)
+                                                            {
+                                                                @: createAction: '/Tasks/CreateTaskComment',
+                                                                @: updateAction: '/Tasks/UpdateTaskComment',
+                                                                @: deleteAction: '/Tasks/DeleteTaskComment'
+                                                            }  
 				                                        },
                                                         fields: {
                                                             TaskId: {
@@ -230,9 +266,12 @@
 				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
 				                                        actions: {
 					                                        listAction: '/Tasks/GetTaskLabels?taskId=' + labelData.record.Id,
-                                                            createAction: '/Tasks/CreateTaskLabel',
-                                                            updateAction: '/Tasks/UpdateTaskLabel',
-                                                            deleteAction: '/Tasks/DeleteTaskLabel'
+                                                            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardContributorPolicy)).Succeeded)
+                                                            {
+                                                                @: createAction: '/Tasks/CreateTaskLabel',
+                                                                @: updateAction: '/Tasks/UpdateTaskLabel',
+                                                                @: deleteAction: '/Tasks/DeleteTaskLabel'
+                                                            }
 				                                        },
                                                         fields: {
                                                             TaskId: {
@@ -275,9 +314,12 @@
 				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
 				                                        actions: {
 					                                        listAction: '/Tasks/GetTaskChecklists?taskId=' + checklistData.record.Id,
-                                                            createAction: '/Tasks/CreateTaskChecklist',
-                                                            updateAction: '/Tasks/UpdateTaskChecklist',
-                                                            deleteAction: '/Tasks/DeleteTaskChecklist'
+                                                            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardContributorPolicy)).Succeeded)
+                                                            {
+                                                                @: createAction: '/Tasks/CreateTaskChecklist',
+                                                                @: updateAction: '/Tasks/UpdateTaskChecklist',
+                                                                @: deleteAction: '/Tasks/DeleteTaskChecklist'
+                                                            }                                                            
 				                                        },
                                                         fields: {
                                                             TaskId: {
@@ -332,8 +374,11 @@
 				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
 				                                        actions: {
 					                                        listAction: '/Tasks/GetTaskWatchers?taskId=' + taskWatcherData.record.Id,
-                                                            createAction: '/Tasks/CreateTaskWatcher',                                                            
-                                                            deleteAction: '/Tasks/DeleteTaskWatcher'
+                                                            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardContributorPolicy)).Succeeded)
+                                                            {
+                                                                @: createAction: '/Tasks/CreateTaskWatcher',
+                                                                @: deleteAction: '/Tasks/DeleteTaskWatcher'                                                                
+                                                            }
 				                                        },
                                                         fields: {
                                                             TaskId: {
@@ -347,7 +392,7 @@
                                                             },
                                                             WatchedById:{
                                                                 title: "Watched By",
-                                                                options: '/Boards/ListBoardMembers?boardId=@Model.Id'
+                                                                options: '/Boards/ListWatchers?boardId=@Model.Id'
                                                             }
                                                         }
                                                     }, function (data) { //opened handler
@@ -376,33 +421,38 @@
 				                                        AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
 				                                        actions: {
 					                                        listAction: '/Tasks/GetTaskAttachments?taskId=' + taskAttachmentData.record.Id,
-                                                            createAction: function (postData) {
-                                                                var formData = getVars(postData);
+                                                            @if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardContributorPolicy)).Succeeded)
+                                                            {
+                                                                <text>
+                                                                    createAction: function (postData) {
+                                                                        var formData = getVars(postData);
 
-                                                                if($('#input-image').val() !== "")
-                                                                {
-                                                                    formData.append("File", $('#input-image').get(0).files[0]);
-                                                                }
-                                                                
-                                                                return $.Deferred(function ($dfd) {                                                                    
-                                                                    $.ajax({
-                                                                        url: '/Tasks/CreateTaskAttachment',
-                                                                        type: 'POST',
-                                                                        dataType: 'json',
-                                                                        data: formData,
-                                                                        processData: false, // Don't process the files
-                                                                        contentType: false, // Set content type to false as jQuery will tell the server its a query string request
-                                                                        success: function (data) {
-                                                                            $dfd.resolve(data);
-                                                                            $img.closest('.jtable-child-table-container').jtable('load');
-                                                                        },
-                                                                        error: function () {
-                                                                            $dfd.reject();                                                                           
+                                                                        if($('#input-image').val() !== "")
+                                                                        {
+                                                                            formData.append("File", $('#input-image').get(0).files[0]);
                                                                         }
-                                                                    });
-                                                                });
-                                                            },                                                            
-                                                            deleteAction: '/Tasks/DeleteTaskAttachment'
+                                                                
+                                                                        return $.Deferred(function ($dfd) {                                                                    
+                                                                            $.ajax({
+                                                                                url: '/Tasks/CreateTaskAttachment',
+                                                                                type: 'POST',
+                                                                                dataType: 'json',
+                                                                                data: formData,
+                                                                                processData: false, // Don't process the files
+                                                                                contentType: false, // Set content type to false as jQuery will tell the server its a query string request
+                                                                                success: function (data) {
+                                                                                    $dfd.resolve(data);
+                                                                                    $img.closest('.jtable-child-table-container').jtable('load');
+                                                                                },
+                                                                                error: function () {
+                                                                                    $dfd.reject();                                                                           
+                                                                                }
+                                                                            });
+                                                                        });
+                                                                    },    
+                                                                </text>
+                                                                @: deleteAction: '/Tasks/DeleteTaskAttachment'                                                                
+                                                            }
 				                                        },
                                                         fields: {
                                                             TaskId: {
@@ -475,137 +525,131 @@
                         }
                     }
 				}				
-            }).jtable('load');
-
-             var users = [
-                    {
-                        value: null,
-                        label: "select a user"
-                    },
-                    {
-                        value: "0698f372-55a3-ec11-89fe-2c6e85721e2d",
-                        label: "abhilash@aspsecuritykit.net"
-                    }];
-
-            listProspectiveUsers()
-            .then(onListProspectiveUsers)
-            .catch(function(error) {
-                console.log(error);
-            });
-
-            function listProspectiveUsers(){
-                return fetch('/Boards/ListProspectiveUsers?boardId=@Model.Id',
-                {
-                    method: "get"
-                })
-                .then(function (response) {
-                    return response.json();
-                });
-            }
-
-            function onListProspectiveUsers(listProspectiveUsersResponseJson){            
-                if (listProspectiveUsersResponseJson.succeeded === true){
-                    var listProspectiveUsersResponse = listProspectiveUsersResponseJson.records;
-                    if (!notNullOrEmpty(listProspectiveUsersResponse)) {                    
-                        console.log("Server error, a call to ListMembers failed.");
-                        return;
-                    }
-
-                    var users = listProspectiveUsersResponseJson.records;
-
-                    $('#membersTable').jtable({
-		                title: "Members",
-                        sorting: false,
-		                multiSorting: false,
-		                columnSelectable: false,				
-		                AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
-		                actions: {
-		                    listAction: '/Boards/GetBoardMembers?boardId=@Model.Id',
-                            createAction: '/Boards/CreateBoardMember',
-                            updateAction: '/Boards/UpdateBoardMember',
-                            deleteAction: '/Boards/DeleteBoardMember'
-		                },
-		                fields: {
-                            BoardId: {
-                                type: 'hidden',
-                                defaultValue: '@Model.Id'
-                            },
-                            MemberId: {
-                                type: 'hidden'
-                            },
-                            Id: {
-                                key: true,
-                                create: false,
-                                edit: false,
-                                list: false
-                            },
-		                    MemberName: {
-			                    title: 'Name',
-                                create: false,
-                                 edit: false
-		                    },
-		                    MemberEmail: {
-			                    title: 'Email',
-                                input: function (data) {
-                                    if (data.record) {
-                                        return '<input type="text" name="MemberEmail" style="width:200px" value="' + data.record.MemberEmail + '" readonly />';
-                                    } else {
-                                        return '<input type="text" name="MemberEmail" style="width:200px" />';
-                                    }
-                                }
-		                    },
-                            RoleId:{
-                                title: "Role",
-                                options: '/Roles/ListRoles'
-                            },
-                            Status: {
-                                title: "Status",
-                                create: false,
-                                edit: false
-                            },
-                            AddedByName: {
-			                    title: 'Added By',
-                                create: false,
-                                edit: false
-		                    },
-                            AddedById: {
-			                     type: 'hidden'
-		                    },
-		                    CreatedAt: {
-			                    title: 'Added At',
-                                create: false,
-                                edit: false
-		                    }
-		                },
-                        formCreated: function(event, data){
-                             data.form.find('[name=MemberEmail]').autocomplete({
-                                minLength: 0,
-                                source: users,                        
-                                focus: function( event, ui ) {
-                                    $("#Edit-MemberEmail").val( ui.item.label);
-                                    return false;
-                                },
-                                select: function( event, ui ) {
-                                    $("#Edit-MemberEmail").val(ui.item.label);
-                                    $("#Edit-MemberId").val(ui.item.value); 
-                                    return false;
-                                }                        
-                             })
-                             .autocomplete("instance")._renderItem = function( ul, item ){
-                                       return $( "<li>" ).append( "<div>" + item.label+ "</div>" ).appendTo( ul );
-                             };
-                        }
-	                }).jtable('load');
-                } 
-                else {                                    
-                    console.log(`Could not load members table due to the error '${listProspectiveUsersResponseJson.message}'`);
-                }
-            }
-            
+            }).jtable('load');            
         });
 
         function notNullOrEmpty(obj) {
             return typeof obj !== 'undefined' && obj && (!$.isPlainObject(obj) || !$.isEmptyObject(obj));
         }
     </script>
+}
+
+@if ((await AuthorizationService.AuthorizeAsync(User, new EntityResource { Id = Model.Id, Type = EntityType.Board } ,Policies.BoardAdminPolicy)).Succeeded)
+{
+    <script type="text/javascript">
+        listProspectiveUsers()
+        .then(onListProspectiveUsers)
+        .catch(function(error) {
+            console.log(error);
+        });
+
+        function listProspectiveUsers() {
+            return fetch('/Boards/ListProspectiveUsers?boardId=@Model.Id', {
+                    method: "get"
+                })
+                .then(function(response) {
+                    return response.json();
+                });
+        }
+
+        function onListProspectiveUsers(listProspectiveUsersResponseJson) {
+            if (listProspectiveUsersResponseJson.succeeded === true) {
+                var listProspectiveUsersResponse = listProspectiveUsersResponseJson.records;
+                if (!notNullOrEmpty(listProspectiveUsersResponse)) {
+                    console.log("Server error, a call to ListMembers failed.");
+                    return;
+                }
+
+                var users = listProspectiveUsersResponseJson.records;
+
+                $('#membersTable').jtable({
+                    title: "Members",
+                    sorting: false,
+                    multiSorting: false,
+                    columnSelectable: false,
+                    AntiForgeryToken: '@Html.AntiForgeryTokenValue()',
+                    actions: {
+                        listAction: '/Boards/GetBoardMembers?boardId=@Model.Id',
+                        createAction: '/Boards/CreateBoardMember',
+                        updateAction: '/Boards/UpdateBoardMember',
+                        deleteAction: '/Boards/DeleteBoardMember'
+                    },
+                    fields: {
+                        BoardId: {
+                            type: 'hidden',
+                            defaultValue: '@Model.Id'
+                        },
+                        MemberId: {
+                            type: 'hidden'
+                        },
+                        Id: {
+                            key: true,
+                            create: false,
+                            edit: false,
+                            list: false
+                        },
+                        MemberName: {
+                            title: 'Name',
+                            create: false,
+                            edit: false
+                        },
+                        MemberEmail: {
+                            title: 'Email',
+                            input: function(data) {
+                                if (data.record) {
+                                    return '<input type="email" name="MemberEmail" style="width:200px" value="' + data.record.MemberEmail + '" readonly />';
+                                } else {
+                                    return '<input type="email" name="MemberEmail" style="width:200px" />';
+                                }
+                            }
+                        },
+                        RoleId: {
+                            title: "Role",
+                            options: '/Roles/ListRoles?roleType=@($"{RoleType.BoardRole}")'
+                        },
+                        Status: {
+                            title: "Status",
+                            create: false,
+                            edit: false
+                        },
+                        AddedByName: {
+                            title: 'Added By',
+                            create: false,
+                            edit: false
+                        },
+                        AddedById: {
+                            type: 'hidden'
+                        },
+                        CreatedAt: {
+                            title: 'Added At',
+                            create: false,
+                            edit: false
+                        }
+                    },
+                    formCreated: function(event, data) {
+                        data.form.find('[name=MemberEmail]').autocomplete({
+                                minLength: 0,
+                                source: users,
+                                focus: function(event, ui) {
+                                    $("#Edit-MemberEmail").val(ui.item.label);
+                                    return false;
+                                },
+                                select: function(event, ui) {
+                                    $("#Edit-MemberEmail").val(ui.item.label);
+                                    $("#Edit-MemberId").val(ui.item.value);
+                                    return false;
+                                }
+                            })
+                            .autocomplete("instance")._renderItem = function(ul, item) {
+                                return $("<li>").append("<div>" + item.label + "</div>").appendTo(ul);
+                            };
+                    }
+                }).jtable('load');
+            } else {
+                console.log(`Could not load members table due to the error '${listProspectiveUsersResponseJson.message}'`);
+            }
+        }    
+    </script>
+}
+
 }

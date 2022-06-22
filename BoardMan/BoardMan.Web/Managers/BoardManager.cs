@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BoardMan.Web.Auth;
 using BoardMan.Web.Data;
 using BoardMan.Web.Infrastructure.Utils;
 using BoardMan.Web.Models;
@@ -14,8 +15,10 @@ namespace BoardMan.Web.Managers
 
 		Task DeleteBoardAsync(Guid boardId);
 
-		Task<List<ComboOption>> ListBoardMembersForDisplayAsync(Guid boardId, Guid currentUserId);
-		
+		Task<List<ComboOption>> ListWatchersForDisplayAsync(Guid boardId);
+
+		Task<List<ComboOption>> ListAssigneesForDisplayAsync(Guid boardId);
+
 		Task<IEnumerable<ComboOption>> ListOtherListsForDisplayAsync(Guid boardId, Guid currentListId);
 
 		Task<List<BoardMember>> ListBoardMembersAsync(Guid boardId, Guid currentUserId);
@@ -92,6 +95,23 @@ namespace BoardMan.Web.Managers
 					throw new InvalidDataCannotProcessException($"Email {boardMember.MemberEmail} belongs to the current user");
 				}
 
+				if (existingUserId == Users.ApplicationSuperAdminId)
+				{
+					throw new InvalidDataCannotProcessException($"Email {boardMember.MemberEmail} belongs to application super admin");
+				}
+
+				var board = await this.dbContext.Boards.FirstOrDefaultAsync(x => x.Id == boardMember.BoardId && x.DeletedAt == null);
+
+				if (board == null)
+				{
+					throw new EntityNotFoundException($"Board with id {boardMember.BoardId} does not exist");
+				}
+
+				if (existingUserId == board.OwnerId)
+				{
+					throw new EntityNotFoundException($"Email {boardMember.MemberEmail} belongs to board owner");
+				}
+
 				// Existing User
 				var dbBoardMember = this.mapper.Map<DbBoardMember>(boardMember);
 				this.dbContext.BoardMembers.Add(dbBoardMember);
@@ -112,25 +132,37 @@ namespace BoardMan.Web.Managers
 
 		public async Task DeleteBoardMemberAsync(Guid boardMemberId)
 		{
-			var dbBoardMember = await this.dbContext.BoardMembers.FirstOrDefaultAsync(x => x.Id == boardMemberId);
-			var dbEmailInvite = await this.dbContext.EmailInvites.FirstOrDefaultAsync(x => x.Id == boardMemberId);
-			if (dbBoardMember == null && dbEmailInvite == null)
-			{
-				throw new EntityNotFoundException($"BoardMember or EmailInvite with Id {boardMemberId} not found");
-			}
-
+			var dbBoardMember = await this.dbContext.BoardMembers.FirstOrDefaultAsync(x => x.Id == boardMemberId && x.DeletedAt == null);
+			var dbEmailInvite = await this.dbContext.EmailInvites.FirstOrDefaultAsync(x => x.Id == boardMemberId && x.DeletedAt == null);
+			
 			if(dbBoardMember != null)
 				dbBoardMember.DeletedAt = DateTime.UtcNow;
-			else
+			else if(dbEmailInvite != null)
 				dbEmailInvite.DeletedAt = DateTime.UtcNow;
+			else
+				throw new EntityNotFoundException($"BoardMember or EmailInvite with Id {boardMemberId} not found");
 
 			await this.dbContext.SaveChangesAsync().ConfigureAwait(false);
 		}
-
-		// ToDo should only load those members who atleast have readwrite access
-		public async Task<List<ComboOption>> ListBoardMembersForDisplayAsync(Guid boardId, Guid currentUserId)
+		
+		public async Task<List<ComboOption>> ListWatchersForDisplayAsync(Guid boardId)
 		{
-			var members = await this.dbContext.BoardMembers.Where(x => x.BoardId == boardId && x.MemberId != currentUserId).Select(x => new ComboOption { Value = x.Member.Id, DisplayText = x.Member.UserName }).ToListAsync();			
+			var members = await this.dbContext.BoardMembers.Where(x => x.BoardId == boardId && x.DeletedAt == null).Select(x => new ComboOption { Value = x.Member.Id, DisplayText = x.Member.UserName }).ToListAsync();			
+			members.Insert(0, new ComboOption { Value = Guid.Empty, DisplayText = "Select a user" });
+			return members;
+		}
+
+		public async Task<List<ComboOption>> ListAssigneesForDisplayAsync(Guid boardId)
+		{
+			var applicableRoles = new List<string> { Roles.BoardAdmin, Roles.BoardContributor, Roles.BoardSuperAdmin };
+			var board = await this.dbContext.Boards.Include(x => x.Owner).FirstOrDefaultAsync(x => x.Id == boardId && x.DeletedAt == null).ConfigureAwait(false);
+			if(board == null)
+			{
+				throw new EntityNotFoundException($"Board with Id {boardId} not found");
+			}
+
+			var members = await this.dbContext.BoardMembers.Where(x => x.BoardId == boardId && applicableRoles.Contains(x.Role.Name) && x.DeletedAt == null).Select(x => new ComboOption { Value = x.Member.Id, DisplayText = x.Member.UserName }).ToListAsync();
+			members.Insert(0, new ComboOption { Value = board.Owner.Id, DisplayText = board.Owner.UserName });
 			members.Insert(0, new ComboOption { Value = Guid.Empty, DisplayText = "Select a user" });
 			return members;
 		}
@@ -144,32 +176,33 @@ namespace BoardMan.Web.Managers
 
 		public async Task<List<UsersOption>> ListProspectiveUsersAsync(Guid currentUserId, Guid boardId)
 		{
-			var results = dbContext.Users.Where(x => !dbContext.BoardMembers.Select(m => m.MemberId).Contains(x.Id));
-						
-			var existingUsers = await results.Where(x => x.Id != currentUserId).Select(x => new UsersOption
+			var board = await this.dbContext.Boards.FirstOrDefaultAsync(x => x.Id == boardId && x.DeletedAt == null);
+			if (board == null)
 			{
-				Value = x.Id,
-				Label = x.UserName
-			}).ToListAsync();
+				throw new EntityNotFoundException($"Board with id {boardId} does not exist");
+			}
+
+			var existingUsers = await dbContext.Users
+				.Where(x => !dbContext.BoardMembers.Where(x => x.BoardId == boardId && x.DeletedAt == null).Select(m => m.MemberId).Contains(x.Id) && x.Id != currentUserId && x.Id != Users.ApplicationSuperAdminId
+				&& x.Id != board.OwnerId)
+				.Select(x => new UsersOption
+				{
+					Value = x.Id,
+					Label = x.UserName
+				}).ToListAsync();
 
 			return existingUsers;
 		}
 
 		public async Task<BoardMember> EditBoardMemberAsync(BoardMember boardMember, Guid currentUserId)
 		{
-			var existingUserId = boardMember.MemberId ?? (await this.dbContext.Users.Where(x => x.UserName == boardMember.MemberEmail).FirstOrDefaultAsync())?.Id;
+			var dbBoardMember = await this.dbContext.BoardMembers.FirstOrDefaultAsync(x => x.Id == boardMember.Id && x.DeletedAt == null);
 
-			if (existingUserId.HasValue)
+			if (dbBoardMember != null)
 			{
-				if (existingUserId == currentUserId)
+				if (dbBoardMember.Member.UserName != boardMember.MemberEmail)
 				{
-					throw new InvalidDataCannotProcessException($"Email {boardMember.MemberEmail} belongs to the current user");
-				}
-
-				var dbBoardMember = await this.dbContext.BoardMembers.FirstOrDefaultAsync(x => x.Id == boardMember.Id);
-				if (dbBoardMember == null)
-				{
-					throw new EntityNotFoundException($"BoardMember with Id {boardMember.Id} not found");
+					throw new InvalidDataCannotProcessException($"Email {boardMember.MemberEmail} has changed.");
 				}
 
 				this.mapper.Map(boardMember, dbBoardMember);
@@ -182,6 +215,11 @@ namespace BoardMan.Web.Managers
 				if (dbEmailInvite == null)
 				{
 					throw new EntityNotFoundException($"EmailInvite with Id {boardMember.Id} not found");
+				}
+
+				if (dbEmailInvite.EmailAddress != boardMember.MemberEmail)
+				{
+					throw new InvalidDataCannotProcessException($"Email {boardMember.MemberEmail} has changed.");
 				}
 
 				this.mapper.Map(boardMember, dbEmailInvite);

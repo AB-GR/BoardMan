@@ -1,7 +1,8 @@
-﻿@using BoardMan.Web.Data
+﻿@using BoardMan.Web.Auth
+@using BoardMan.Web.Data
 @using Microsoft.AspNetCore.Identity
 
-@inject SignInManager<AppUser> SignInManager
+@inject SignInManager<DbAppUser> SignInManager
 
 <!DOCTYPE html>
 <html lang="en">
@@ -31,6 +32,15 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Subscriptions" asp-action="Index">Subscriptions</a>
                             </li>
                         </ul> 
+
+                        if(User.IsInRole(Roles.ApplicationSuperAdmin))
+                        {
+                             <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">Users</a>
+                            </li>
+                        </ul> 
+                        }
                     }
                     else{
                         <ul class="navbar-nav flex-grow-1">

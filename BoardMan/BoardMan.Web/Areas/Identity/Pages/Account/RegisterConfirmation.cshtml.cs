@@ -18,10 +18,10 @@ namespace BoardMan.Web.Areas.Identity.Pages.Account
     [AllowAnonymous]
     public class RegisterConfirmationModel : PageModel
     {
-        private readonly UserManager<AppUser> _userManager;
+        private readonly UserManager<DbAppUser> _userManager;
         private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<AppUser> userManager, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<DbAppUser> userManager, IEmailSender sender)
         {
             _userManager = userManager;
             _sender = sender;

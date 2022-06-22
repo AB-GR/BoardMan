@@ -14,12 +14,12 @@ namespace BoardMan.Web.Areas.Identity.Pages.Account.Manage
 {
     public class SetPasswordModel : PageModel
     {
-        private readonly UserManager<AppUser> _userManager;
-        private readonly SignInManager<AppUser> _signInManager;
+        private readonly UserManager<DbAppUser> _userManager;
+        private readonly SignInManager<DbAppUser> _signInManager;
 
         public SetPasswordModel(
-            UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager)
+            UserManager<DbAppUser> userManager,
+            SignInManager<DbAppUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;

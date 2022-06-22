@@ -18,5 +18,8 @@ namespace BoardMan.Web.Models
 		public PaymentTransaction PaymentTrasaction { get; set; } = null!;
 
 		public string PlanName { get; set; } = null!;
+
+		[JsonConverter(typeof(FormattedDateTimeZonePropertyConverter), DateTimeFormats.DateFormat)]
+		public DateTime DeletedAt { get; set; }
 	}
 }

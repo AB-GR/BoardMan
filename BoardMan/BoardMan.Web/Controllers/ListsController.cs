@@ -1,7 +1,9 @@
-﻿using BoardMan.Web.Data;
+﻿using BoardMan.Web.Auth;
+using BoardMan.Web.Data;
 using BoardMan.Web.Infrastructure.Utils.Extensions;
 using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -12,7 +14,7 @@ namespace BoardMan.Web.Controllers
 	{
         private readonly IListManager listManager;
 
-		public ListsController(UserManager<AppUser> userManager, IConfiguration configuration, ILogger<ListsController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IListManager listManager) : base(userManager, configuration, logger, sharedLocalizer)
+		public ListsController(UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<ListsController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IListManager listManager) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.listManager = listManager;
 		}
@@ -20,43 +22,51 @@ namespace BoardMan.Web.Controllers
         [HttpPost]
         public async Task<ActionResult> GetListsByBoardId(Guid boardId)
         {
-            return JsonResponse(ApiResponse.List(await this.listManager.GetListsAsync(boardId)));
+            return await AuthorizedJsonResposeAsync(async () => {
+                return JsonResponse(ApiResponse.List(await this.listManager.GetListsAsync(boardId)));
+            }, new EntityResource { Id = boardId, Type = EntityType.Board }, Policies.BoardReaderPolicy );            
         }
 
         [HttpPost]
         public async Task<ActionResult> CreateList(List list)
         {
-            if (ModelState.IsValid)
-            {
-                var record = await this.listManager.CreateListAsync(list);
-                return JsonResponse(ApiResponse.Single(record));
-            }
+            return await AuthorizedJsonResposeAsync(async () => {
+                if (ModelState.IsValid)
+                {
+                    var record = await this.listManager.CreateListAsync(list);
+                    return JsonResponse(ApiResponse.Single(record));
+                }
 
-            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+                return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+            }, new EntityResource { Id = list.BoardId, Type = EntityType.Board }, Policies.BoardContributorPolicy);            
         }
 
         [HttpPost]
         public async Task<ActionResult> UpdateList(List list)
         {
-            if (ModelState.IsValid)
-            {
-                var record = await this.listManager.UpdateListAsync(list);
-                return JsonResponse(ApiResponse.Single(record));
-            }
+            return await AuthorizedJsonResposeAsync(async () => {
+                if (ModelState.IsValid)
+                {
+                    var record = await this.listManager.UpdateListAsync(list);
+                    return JsonResponse(ApiResponse.Single(record));
+                }
 
-            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+                return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+            }, new EntityResource { Id = list.BoardId, Type = EntityType.Board }, Policies.BoardContributorPolicy);
         }
 
         [HttpPost]
         public async Task<ActionResult> DeleteList(Guid id)
         {
-            if (ModelState.IsValid)
-            {
-                await this.listManager.DeleteListAsync(id);
-                return JsonResponse(ApiResponse.Success());
-            }
+            return await AuthorizedJsonResposeAsync(async () => {
+                if (ModelState.IsValid)
+                {
+                    await this.listManager.DeleteListAsync(id);
+                    return JsonResponse(ApiResponse.Success());
+                }
 
-            return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+                return JsonResponse(ApiResponse.Error(ModelState.Errors()));
+            }, new EntityResource { Id = id, Type = EntityType.List }, Policies.BoardContributorPolicy);
         }
     }
 }

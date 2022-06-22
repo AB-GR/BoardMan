@@ -17,7 +17,7 @@ namespace BoardMan.Tests
 {
 	public class SubscriptionManagerTests
 	{
-		private AppUser appUser = A.New<AppUser>();
+		private DbAppUser appUser = A.New<DbAppUser>();
 
 		[Theory]
 		[MemberData(nameof(Data))]

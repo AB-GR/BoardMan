@@ -2,6 +2,7 @@
 using BoardMan.Web.Extensions;
 using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -10,7 +11,7 @@ namespace BoardMan.Web.Controllers
 {
 	public class SubscriptionsController : SiteControllerBase
 	{
-		public SubscriptionsController(ISubscriptionManager subscriptionManager, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<SubscriptionsController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, configuration, logger, sharedLocalizer)
+		public SubscriptionsController(ISubscriptionManager subscriptionManager, UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<SubscriptionsController> logger, IStringLocalizer<SharedResource> sharedLocalizer) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.subscriptionManager = subscriptionManager;
 		}

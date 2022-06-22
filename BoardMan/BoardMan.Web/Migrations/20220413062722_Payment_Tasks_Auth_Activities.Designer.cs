@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoardMan.Web.Migrations
 {
     [DbContext(typeof(BoardManDbContext))]
-    [Migration("20220312081228_optional-assigned-id")]
-    partial class optionalassignedid
+    [Migration("20220413062722_Payment_Tasks_Auth_Activities")]
+    partial class Payment_Tasks_Auth_Activities
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,35 @@ namespace BoardMan.Web.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+
+            modelBuilder.Entity("BoardMan.Web.Data.AppRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newsequentialid()");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
 
             modelBuilder.Entity("BoardMan.Web.Data.AppUser", b =>
                 {
@@ -118,6 +147,12 @@ namespace BoardMan.Web.Migrations
                     b.Property<Guid>("DoneById")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EntityDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("EntityUrn")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -125,16 +160,11 @@ namespace BoardMan.Web.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("NewValue")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("OldValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PropertyName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool?>("Succeeded")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -265,6 +295,9 @@ namespace BoardMan.Web.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
+                    b.Property<Guid>("AddedById")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("BoardId")
                         .HasColumnType("uniqueidentifier");
 
@@ -280,13 +313,57 @@ namespace BoardMan.Web.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AddedById");
 
                     b.HasIndex("BoardId");
 
-                    b.HasIndex("MemberId");
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("MemberId", "RoleId")
+                        .IsUnique();
 
                     b.ToTable("BoardMembers");
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbChangedProperty", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newsequentialid()");
+
+                    b.Property<Guid>("ActivityTrackingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NewValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PropertyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActivityTrackingId");
+
+                    b.ToTable("ChangedProperties");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbEmailInvite", b =>
@@ -299,6 +376,9 @@ namespace BoardMan.Web.Migrations
                     b.Property<bool?>("Accepted")
                         .HasColumnType("bit");
 
+                    b.Property<Guid>("AddedById")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -307,7 +387,7 @@ namespace BoardMan.Web.Migrations
 
                     b.Property<string>("EmailAddress")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("EntityUrn")
                         .IsRequired()
@@ -319,11 +399,21 @@ namespace BoardMan.Web.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AddedById");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("EmailAddress", "RoleId")
+                        .IsUnique();
 
                     b.ToTable("EmailInvites");
                 });
@@ -438,6 +528,9 @@ namespace BoardMan.Web.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
+                    b.Property<int?>("BoardLimit")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Cost")
                         .HasPrecision(19, 4)
                         .HasColumnType("decimal(19,4)");
@@ -474,52 +567,6 @@ namespace BoardMan.Web.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Plans");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("dcbd834b-e724-4775-becc-3cf273a5c943"),
-                            Cost = 99m,
-                            CreatedAt = new DateTime(2022, 3, 12, 8, 12, 28, 91, DateTimeKind.Utc).AddTicks(6531),
-                            Currency = "USD",
-                            Description = "This is the standard monthly plan",
-                            ExpireAt = new DateTime(2023, 3, 12, 8, 12, 28, 91, DateTimeKind.Utc).AddTicks(6535),
-                            Name = "Standard (Monhtly)",
-                            PlanType = 0
-                        },
-                        new
-                        {
-                            Id = new Guid("1e003d26-a0ef-4135-837a-d9325d5db388"),
-                            Cost = 948m,
-                            CreatedAt = new DateTime(2022, 3, 12, 8, 12, 28, 91, DateTimeKind.Utc).AddTicks(6580),
-                            Currency = "USD",
-                            Description = "This is the standard annual plan",
-                            ExpireAt = new DateTime(2023, 3, 12, 8, 12, 28, 91, DateTimeKind.Utc).AddTicks(6580),
-                            Name = "Standard (Annual)",
-                            PlanType = 1
-                        },
-                        new
-                        {
-                            Id = new Guid("1344f5a2-8cc6-4108-ac73-df25af1bfe5f"),
-                            Cost = 299m,
-                            CreatedAt = new DateTime(2022, 3, 12, 8, 12, 28, 91, DateTimeKind.Utc).AddTicks(6592),
-                            Currency = "USD",
-                            Description = "This is the premium monthly plan",
-                            ExpireAt = new DateTime(2023, 3, 12, 8, 12, 28, 91, DateTimeKind.Utc).AddTicks(6593),
-                            Name = "Premium (Monthly)",
-                            PlanType = 0
-                        },
-                        new
-                        {
-                            Id = new Guid("1632aedb-a028-46e2-8dfc-4c84f185643f"),
-                            Cost = 3000m,
-                            CreatedAt = new DateTime(2022, 3, 12, 8, 12, 28, 91, DateTimeKind.Utc).AddTicks(6603),
-                            Currency = "USD",
-                            Description = "This is the premium annual plan",
-                            ExpireAt = new DateTime(2023, 3, 12, 8, 12, 28, 91, DateTimeKind.Utc).AddTicks(6604),
-                            Name = "Premium (Annual)",
-                            PlanType = 1
-                        });
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbPlanDiscount", b =>
@@ -671,25 +718,26 @@ namespace BoardMan.Web.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("FileUri")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
                     b.Property<Guid>("TaskId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Type")
-                        .HasMaxLength(25)
-                        .HasColumnType("int");
+                    b.Property<string>("TrustedFileName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid>("UploadedById")
                         .HasColumnType("uniqueidentifier");
@@ -710,11 +758,11 @@ namespace BoardMan.Web.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
-                    b.Property<Guid>("CommentedById")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -738,7 +786,7 @@ namespace BoardMan.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CommentedById");
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("TaskId");
 
@@ -890,6 +938,9 @@ namespace BoardMan.Web.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
+                    b.Property<Guid>("AddedById")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -902,45 +953,23 @@ namespace BoardMan.Web.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("WorkspaceId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AddedById");
+
                     b.HasIndex("MemberId");
+
+                    b.HasIndex("RoleId");
 
                     b.HasIndex("WorkspaceId");
 
                     b.ToTable("WorkspaceMembers");
-                });
-
-            modelBuilder.Entity("BoardMan.Web.Data.Role", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newsequentialid()");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
-
-                    b.ToTable("AspNetRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -1093,6 +1122,12 @@ namespace BoardMan.Web.Migrations
 
             modelBuilder.Entity("BoardMan.Web.Data.DbBoardMember", b =>
                 {
+                    b.HasOne("BoardMan.Web.Data.AppUser", "AddedBy")
+                        .WithMany()
+                        .HasForeignKey("AddedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("BoardMan.Web.Data.DbBoard", "Board")
                         .WithMany()
                         .HasForeignKey("BoardId")
@@ -1105,9 +1140,49 @@ namespace BoardMan.Web.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("BoardMan.Web.Data.AppRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AddedBy");
+
                     b.Navigation("Board");
 
                     b.Navigation("Member");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbChangedProperty", b =>
+                {
+                    b.HasOne("BoardMan.Web.Data.DbActivityTracking", "ActivityTracking")
+                        .WithMany("ChangedProperties")
+                        .HasForeignKey("ActivityTrackingId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("ActivityTracking");
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbEmailInvite", b =>
+                {
+                    b.HasOne("BoardMan.Web.Data.AppUser", "AddedBy")
+                        .WithMany()
+                        .HasForeignKey("AddedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BoardMan.Web.Data.AppRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AddedBy");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbList", b =>
@@ -1215,9 +1290,9 @@ namespace BoardMan.Web.Migrations
 
             modelBuilder.Entity("BoardMan.Web.Data.DbTaskChecklist", b =>
                 {
-                    b.HasOne("BoardMan.Web.Data.AppUser", "CommentedBy")
+                    b.HasOne("BoardMan.Web.Data.AppUser", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("CommentedById")
+                        .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -1227,7 +1302,7 @@ namespace BoardMan.Web.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("CommentedBy");
+                    b.Navigation("CreatedBy");
 
                     b.Navigation("Task");
                 });
@@ -1301,9 +1376,21 @@ namespace BoardMan.Web.Migrations
 
             modelBuilder.Entity("BoardMan.Web.Data.DbWorkspaceMember", b =>
                 {
+                    b.HasOne("BoardMan.Web.Data.AppUser", "AddedBy")
+                        .WithMany()
+                        .HasForeignKey("AddedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("BoardMan.Web.Data.AppUser", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BoardMan.Web.Data.AppRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -1313,14 +1400,18 @@ namespace BoardMan.Web.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.Navigation("AddedBy");
+
                     b.Navigation("Member");
+
+                    b.Navigation("Role");
 
                     b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("BoardMan.Web.Data.Role", null)
+                    b.HasOne("BoardMan.Web.Data.AppRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1347,7 +1438,7 @@ namespace BoardMan.Web.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.HasOne("BoardMan.Web.Data.Role", null)
+                    b.HasOne("BoardMan.Web.Data.AppRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1367,6 +1458,11 @@ namespace BoardMan.Web.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("BoardMan.Web.Data.DbActivityTracking", b =>
+                {
+                    b.Navigation("ChangedProperties");
                 });
 
             modelBuilder.Entity("BoardMan.Web.Data.DbPaymentTransaction", b =>

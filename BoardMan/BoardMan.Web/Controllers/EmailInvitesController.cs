@@ -2,6 +2,7 @@
 using BoardMan.Web.Extensions;
 using BoardMan.Web.Managers;
 using BoardMan.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -12,14 +13,15 @@ using System.Text.Encodings.Web;
 
 namespace BoardMan.Web.Controllers
 {
+	[AllowAnonymous]
 	public class EmailInvitesController : SiteControllerBase
 	{
 		private readonly IEmailInviteManager emailInviteManager;
 		private readonly IWorkspaceManager workspaceManager;
-		private readonly SignInManager<AppUser> signInManager;
+		private readonly SignInManager<DbAppUser> signInManager;
 		private readonly IEmailSender emailSender;
 
-		public EmailInvitesController(SignInManager<AppUser> signInManager, IEmailSender emailSender, IWorkspaceManager workspaceManager, UserManager<AppUser> userManager, IConfiguration configuration, ILogger<EmailInvitesController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IEmailInviteManager emailInviteManager) : base(userManager, configuration, logger, sharedLocalizer)
+		public EmailInvitesController(SignInManager<DbAppUser> signInManager, IEmailSender emailSender, IWorkspaceManager workspaceManager, UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger<EmailInvitesController> logger, IStringLocalizer<SharedResource> sharedLocalizer, IEmailInviteManager emailInviteManager) : base(userManager, authorizationService, configuration, logger, sharedLocalizer)
 		{
 			this.signInManager = signInManager;
 			this.emailSender = emailSender;
@@ -90,16 +92,16 @@ namespace BoardMan.Web.Controllers
 			return View(model);
 		}
 
-		private AppUser CreateUser()
+		private DbAppUser CreateUser()
 		{
 			try
 			{
-				return Activator.CreateInstance<AppUser>();
+				return Activator.CreateInstance<DbAppUser>();
 			}
 			catch
 			{
-				throw new InvalidOperationException($"Can't create an instance of '{nameof(AppUser)}'. " +
-					$"Ensure that '{nameof(AppUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+				throw new InvalidOperationException($"Can't create an instance of '{nameof(DbAppUser)}'. " +
+					$"Ensure that '{nameof(DbAppUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
 					$"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
 			}
 		}

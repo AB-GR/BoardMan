@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BoardMan.Web.Auth;
 using BoardMan.Web.Data;
 using BoardMan.Web.Infrastructure.Utils;
 using BoardMan.Web.Infrastructure.Utils.Extensions;
@@ -16,6 +17,8 @@ namespace BoardMan.Web.Managers
 		Task<PaymentIntentResponse> CreatePaymentIntentAsync(PaymentIntentRequest request);
 
 		Task<PaymentResult> ProcessPaymentAsync(PaymentSuccessRequest request);
+
+		Task<PaymentResult> ProcessFreeAccountAsync(RegisterInfoRequest request);
 	}
 
 	public class PaymentManager : IPaymentManager
@@ -25,10 +28,10 @@ namespace BoardMan.Web.Managers
 		private readonly IPlanManager planManager;
 		private readonly IPaymentService paymentService;
 		private readonly IMapper mapper;
-		private readonly UserManager<AppUser> userManager;
+		private readonly UserManager<DbAppUser> userManager;
 		private readonly IWorkspaceManager workspaceManager;
 
-		public PaymentManager(IPlanManager planManager, IPaymentService paymentService, BoardManDbContext dbContext, ILogger<PaymentManager> logger, IMapper mapper, UserManager<AppUser> userManager, IWorkspaceManager workspaceManager)
+		public PaymentManager(IPlanManager planManager, IPaymentService paymentService, BoardManDbContext dbContext, ILogger<PaymentManager> logger, IMapper mapper, UserManager<DbAppUser> userManager, IWorkspaceManager workspaceManager)
 		{
 			this.planManager = planManager;
 			this.paymentService = paymentService;
@@ -52,6 +55,66 @@ namespace BoardMan.Web.Managers
 			request.PlanDescription = plan.Description;
 
 			return await this.paymentService.CreatePaymentIntentAsync(request).ConfigureAwait(false);
+		}
+
+		public async Task<PaymentResult> ProcessFreeAccountAsync(RegisterInfoRequest request)
+		{
+			var result = new PaymentResult { UserDetails = new UserResult() };
+			var transaction = await PopulateTransactionAsync(new PaymentTransaction
+			{
+				BillingDetails = request.BillingDetails,
+				CostBeforeDiscount = 0,
+				Currency = "USD",
+				DiscountApplied = 0,
+				FinalCost = 0,
+				PaymentReference = $"{Guid.NewGuid()}",
+				PlanId = Plans.FreePlanId,
+				Status  = PaymentStatus.CanBeProcessed,
+				StatusReason = "Free Plan",
+				TransactedById = request.UserId,
+				RawData = string.Empty				
+			}).ConfigureAwait(false);
+
+			if (request.UserId.IsNullOrEmpty())
+			{
+				var user = await this.userManager.FindByEmailAsync(request.BillingDetails.UserEmail).ConfigureAwait(false);
+				if (user != null)
+				{
+					transaction.TransactedById = user.Id;
+					transaction.TransactedBy = user;
+				}
+				else
+				{
+					result.UserDetails = await CreateNewUserAsync(new DbAppUser
+					{
+						FirstName = request.BillingDetails.UserFirstName,
+						LastName = request.BillingDetails.UserLastName,
+						Email = request.BillingDetails.UserEmail,
+						UserName = request.BillingDetails.UserEmail
+					}, request.BillingDetails.Password).ConfigureAwait(false);
+
+					if (result.UserDetails.CreateResult.Succeeded)
+					{
+						transaction.TransactedById = result.UserDetails.User.Id;
+						transaction.TransactedBy = result.UserDetails.User;
+					}
+					else
+					{
+						transaction.Status = PaymentStatus.Invalid;
+						transaction.StatusReason = "New user could not be created";
+						logger.LogWarning($"New user for the Free Account could not be created because of this error: {result.UserDetails.CreateResult.ErrorsString()}");
+					}
+				}
+			}
+			else
+			{
+				result.UserDetails.UserIsLoggedIn = true;
+			}
+
+			await ProcessTransactionAsync(transaction).ConfigureAwait(false);
+
+			result.PaymentStatus = transaction.Status;
+			return result;
 		}
 
 		public async Task<PaymentResult> ProcessPaymentAsync(PaymentSuccessRequest request)
@@ -79,7 +142,13 @@ namespace BoardMan.Web.Managers
 						}
 						else
 						{
-							result.UserDetails = await CreateNewUserAsync(paymentIntentVM).ConfigureAwait(false);
+							result.UserDetails = await CreateNewUserAsync(new DbAppUser
+							{
+								FirstName = paymentIntentVM.BillingDetails.UserFirstName,
+								LastName = paymentIntentVM.BillingDetails.UserLastName,
+								Email = paymentIntentVM.BillingDetails.UserEmail,
+								UserName = paymentIntentVM.BillingDetails.UserEmail
+							}, paymentIntentVM.BillingDetails.Password).ConfigureAwait(false);
 							if (result.UserDetails.CreateResult.Succeeded)
 							{
 								transaction.TransactedById = result.UserDetails.User.Id;
@@ -115,7 +184,7 @@ namespace BoardMan.Web.Managers
 			};
 			
 			// Check for a valid user
-			AppUser user;
+			DbAppUser user;
 			if(!request.UserId.IsNullOrEmpty())
 			{
 				user = await this.userManager.FindByIdAsync(request.UserId.GetValueOrDefault().ToString()).ConfigureAwait(false);
@@ -152,17 +221,9 @@ namespace BoardMan.Web.Managers
 			return response;
 		}
 		
-		private async Task<UserResult> CreateNewUserAsync(PaymentTransaction paymentIntentVM)
-		{
-			var user = new AppUser
-			{
-				FirstName = paymentIntentVM.BillingDetails.UserFirstName,
-				LastName = paymentIntentVM.BillingDetails.UserLastName,
-				Email = paymentIntentVM.BillingDetails.UserEmail,
-				UserName = paymentIntentVM.BillingDetails.UserEmail
-			};
-
-			var result = await userManager.CreateAsync(user, paymentIntentVM.BillingDetails.Password).ConfigureAwait(false);
+		private async Task<UserResult> CreateNewUserAsync(DbAppUser user, string password)
+		{			
+			var result = await userManager.CreateAsync(user, password).ConfigureAwait(false);
 
 			return new UserResult
 			{

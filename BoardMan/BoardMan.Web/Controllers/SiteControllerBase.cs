@@ -3,6 +3,7 @@ using BoardMan.Web.Infrastructure.Converters;
 using BoardMan.Web.Infrastructure.Utils;
 using BoardMan.Web.Models;
 using BoardMan.Web.Resources;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,18 +17,20 @@ namespace BoardMan.Web.Controllers
 {
 	public abstract class SiteControllerBase : Controller
 	{		
-		protected readonly UserManager<AppUser> userManager;
+		protected readonly UserManager<DbAppUser> userManager;
 		protected readonly IConfiguration configuration;
 		protected readonly ILogger logger;
         protected readonly IStringLocalizer<SharedResource> sharedLocalizer;
+        protected readonly IAuthorizationService authorizationService;
 
-		protected SiteControllerBase(UserManager<AppUser> userManager, IConfiguration configuration, ILogger logger, IStringLocalizer<SharedResource> sharedLocalizer)
+        protected SiteControllerBase(UserManager<DbAppUser> userManager, IAuthorizationService authorizationService, IConfiguration configuration, ILogger logger, IStringLocalizer<SharedResource> sharedLocalizer)
 		{
 			this.userManager = userManager;
 			this.configuration = configuration;
 			this.logger = logger;
 			this.sharedLocalizer = sharedLocalizer;
-		}
+            this.authorizationService = authorizationService;
+        }
 
         protected ActionResult RedirectWithMessage(string actionName, string controllerName, string message)
         {
@@ -54,8 +57,7 @@ namespace BoardMan.Web.Controllers
                     Converters = new JsonConverter[] { new FormattedDateTimeZoneConverter(requestFeature.RequestCulture.Culture), new StringEnumConverter() },
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 });
-            return Content(content,
-                "application/json; charset=utf-8");
+            return Content(content, "application/json; charset=utf-8");
         }
 
         protected virtual async Task<ActionResult> SecureJsonActionAsync(Func<Task<ActionResult>> method)
@@ -100,6 +102,52 @@ namespace BoardMan.Web.Controllers
 
                 return Json(response);
             });
+        }
+
+        protected virtual async Task<ActionResult> AuthorizedResposeAsync(Func<Task<ActionResult>> method, object? resource, string policyName)
+		{
+            var authorizationResult = await this.authorizationService.AuthorizeAsync(User, resource, policyName);
+
+            if (authorizationResult.Succeeded)
+            {
+                return await method();
+            }
+            else if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return new ForbidResult();
+            }
+            else
+            {
+                return new ChallengeResult();
+            }            
+        }
+
+        protected virtual async Task<ActionResult> AuthorizedJsonResposeAsync(Func<Task<ActionResult>> method, object? resource, string policyName)
+        {
+            var authorizationResult = await this.authorizationService.AuthorizeAsync(User, resource, policyName);
+
+            if (authorizationResult.Succeeded)
+            {
+                return await method();
+            }
+            else
+            {
+                return JsonResponse(ApiResponse.Error("You are not authorized to perform this action"));
+            }
+        }
+
+        protected virtual async Task<ActionResult> AuthorizedJsonAsync(Func<Task<ActionResult>> method, object? resource, string policyName)
+        {
+            var authorizationResult = await this.authorizationService.AuthorizeAsync(User, resource, policyName);
+
+            if (authorizationResult.Succeeded)
+            {
+                return await method();
+            }
+            else
+            {
+                return Json(ApiResponse.Error("You are not authorized to perform this action"));
+            }
         }
 
         #endregion

@@ -15,6 +15,17 @@ namespace BoardMan.Web.Data
 		public DateTime? DeletedAt { get; set; }
 	}
 
+	public interface IActivityTracked
+	{		
+		string? EntityDisplayName { get; }
+	}
+
+	[AttributeUsage(AttributeTargets.Property)]
+	public class ActivityTrackedAttribute : Attribute
+	{
+
+	}
+
 	public enum SqlErrors
 	{		
 		UniqueIndex = 2601,
@@ -37,7 +48,8 @@ namespace BoardMan.Web.Data
 		CanBeProcessed,
 		Invalid,
 		PlanExpired,
-		AmountNotMatched
+		AmountNotMatched,
+		ProcessedNoCharge
 	}
 
 	public enum AttachmentType
@@ -51,12 +63,23 @@ namespace BoardMan.Web.Data
 	{
 		Workspace,
 		Board,
-		Task
+		List,
+		Task,
+		TaskComment,
+		Tasklabel,
+		TaskChecklist,
+		TaskWatcher,
+		TaskAttachment,
+		BoardMember,
+		WorkspaceMember
 	}
 
 	public enum UserAction
 	{
-		None
+		None,
+		Add,
+		Update,
+		Delete
 	}
 
 	public enum MemberStatus
@@ -68,23 +91,22 @@ namespace BoardMan.Web.Data
 		InviteExpired,
 		ExistingUser
 	}
-
-	[Table("Roles")]
-	public class DbRole : DbEntity
+	
+	public enum RoleType
 	{
-		[MaxLength(50)]
-		public string Name { get; set; } = null!;
-
-		[MaxLength(250)]
-		public string? Description { get; set; }
+		BoardRole,
+		WorkSpaceRole,
+		ApplicationRole
 	}
 
 	[Table("Workspaces")]
-	public class DbWorkspace : DbEntity
+	public class DbWorkspace : DbEntity, IActivityTracked
 	{
+		[ActivityTracked]
 		[MaxLength(100)]
 		public string Title { get; set; } = null!;
 
+		[ActivityTracked]
 		[MaxLength(250)]
 		public string? Description { get; set; }
 
@@ -96,13 +118,16 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Owner")]
 		public Guid OwnerId { get; set; }
 
-		public AppUser Owner { get; set; } = null!;
+		public DbAppUser Owner { get; set; } = null!;
 
 		public List<DbBoard> Boards { get; set; } = null!;
+
+		[NotMapped]
+		public string? EntityDisplayName => Title;
 	}
 
 	[Table("WorkspaceMembers")]
-	public class DbWorkspaceMember : DbEntity
+	public class DbWorkspaceMember : DbEntity, IActivityTracked
 	{
 		//  Include role as well
 
@@ -114,25 +139,30 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Member")]
 		public Guid MemberId { get; set; }
 
-		public AppUser Member { get; set; } = null!;
+		public DbAppUser Member { get; set; } = null!;
 
 		[ForeignKey("Role")]
 		public Guid RoleId { get; set; }
 
-		public DbRole Role { get; set; } = null!;
+		public DbAppRole Role { get; set; } = null!;
 
 		[ForeignKey("AddedBy")]
 		public Guid AddedById { get; set; }
 
-		public AppUser AddedBy { get; set; } = null!;
+		public DbAppUser AddedBy { get; set; } = null!;
+
+		[NotMapped]
+		public string? EntityDisplayName => Member?.UserName;
 	}
 
 	[Table("Boards")]
-	public class DbBoard : DbEntity
+	public class DbBoard : DbEntity, IActivityTracked
 	{
+		[ActivityTracked]
 		[MaxLength(100)]
 		public string Title { get; set; } = null!;
 
+		[ActivityTracked]
 		[MaxLength(250)]
 		public string? Description { get; set; }
 
@@ -144,7 +174,10 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Owner")]
 		public Guid OwnerId { get; set; }
 
-		public AppUser Owner { get; set; } = null!;
+		public DbAppUser Owner { get; set; } = null!;
+
+		[NotMapped]
+		public string? EntityDisplayName => Title;
 	}
 
 	[Table("BoardMembers")]
@@ -160,19 +193,18 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Member")]
 		public Guid MemberId { get; set; }
 
-		public AppUser Member { get; set; } = null!;
+		public DbAppUser Member { get; set; } = null!;
 
 		[ForeignKey("Role")]
 		public Guid RoleId { get; set; }
 
-		public DbRole Role { get; set; } = null!;
+		public DbAppRole Role { get; set; } = null!;
 
 		[ForeignKey("AddedBy")]
 		public Guid AddedById { get; set; }
 
-		public AppUser AddedBy { get; set; } = null!;
+		public DbAppUser AddedBy { get; set; } = null!;
 	}
-
 
 	[Table("Lists")]
 	public class DbList : DbEntity
@@ -212,7 +244,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("AssignedTo")]
 		public Guid? AssignedToId { get; set; }
 
-		public AppUser? AssignedTo { get; set; } = null!;
+		public DbAppUser? AssignedTo { get; set; } = null!;
 	}
 
 	[Table("TaskComments")]
@@ -229,7 +261,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("CommentedBy")]
 		public Guid CommentedById { get; set; }
 
-		public AppUser CommentedBy { get; set; } = null!;
+		public DbAppUser CommentedBy { get; set; } = null!;
 	}
 
 	[Table("TaskChecklists")]
@@ -250,7 +282,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("CommentedBy")]
 		public Guid CreatedById { get; set; }
 
-		public AppUser CreatedBy { get; set; } = null!;
+		public DbAppUser CreatedBy { get; set; } = null!;
 	}
 
 	[Table("TaskAttachments")]
@@ -273,7 +305,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("UploadedBy")]
 		public Guid UploadedById { get; set; }
 
-		public AppUser UploadedBy { get; set; } = null!;
+		public DbAppUser UploadedBy { get; set; } = null!;
 	}
 
 	[Table("TaskWatchers")]
@@ -287,7 +319,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("WatchedBy")]
 		public Guid WatchedById { get; set; }
 
-		public AppUser WatchedBy { get; set; } = null!;
+		public DbAppUser WatchedBy { get; set; } = null!;
 	}
 
 	[Table("TaskLabels")]
@@ -307,18 +339,37 @@ namespace BoardMan.Web.Data
 	{
 		public string EntityUrn { get; set; } = null!;
 
-		public string PropertyName { get; set; } = null!;
-
-		public string? OldValue { get; set; }
-
-		public string NewValue { get; set; } = null!;
+		public string? EntityDisplayName { get; set; } = null!;		
 
 		public UserAction Action { get; set; }
 
 		[ForeignKey("DoneBy")]
 		public Guid DoneById { get; set; }
 
-		public AppUser DoneBy { get; set; } = null!;
+		public DbAppUser DoneBy { get; set; } = null!;
+
+		public bool? Succeeded { get; set; }
+
+		public DateTime? StartTime { get; set; }
+
+		public DateTime? EndTime { get; set; }
+
+		public List<DbChangedProperty> ChangedProperties { get; set; } = null!;
+	}
+
+	[Table("ChangedProperties")]
+	public class DbChangedProperty : DbEntity
+	{
+		public string PropertyName { get; set; } = null!;
+
+		public string? OldValue { get; set; }
+
+		public string? NewValue { get; set; } = null!;
+
+		[ForeignKey("ActivityTracking")]
+		public Guid ActivityTrackingId { get; set; }
+
+		public DbActivityTracking ActivityTracking { get; set; } = null!;
 	}
 
 	[Table("EmailInvites")]
@@ -337,12 +388,12 @@ namespace BoardMan.Web.Data
 		[ForeignKey("Role")]
 		public Guid RoleId { get; set; }
 
-		public DbRole Role { get; set; } = null!;
+		public DbAppRole Role { get; set; } = null!;
 
 		[ForeignKey("AddedBy")]
 		public Guid AddedById { get; set; }
 
-		public AppUser AddedBy { get; set; } = null!;
+		public DbAppUser AddedBy { get; set; } = null!;
 	}
 
 	[Table("Subscriptions")]
@@ -361,12 +412,12 @@ namespace BoardMan.Web.Data
 		[ForeignKey("PaymentTrasaction")]
 		public Guid PaymentTrasactionId { get; set; }
 
-		public DbPaymentTransaction PaymentTrasaction { get; set; }
+		public DbPaymentTransaction PaymentTrasaction { get; set; } = null!;
 
 		[ForeignKey("AppUser")]
 		public Guid OwnerId { get; set; }
 
-		public AppUser Owner { get; set; }
+		public DbAppUser Owner { get; set; } = null!;
 	}
 
 	[Table("Plans")]
@@ -386,6 +437,8 @@ namespace BoardMan.Web.Data
 		public PlanType PlanType { get; set; }
 
 		public DateTime? ExpireAt { get; set; }
+
+		public int? BoardLimit { get; set; }
 
 		[NotMapped]
 		public bool Expired => ExpireAt.HasValue && ExpireAt <= DateTime.UtcNow;
@@ -446,7 +499,7 @@ namespace BoardMan.Web.Data
 		[ForeignKey("TransactedBy")]
 		public Guid? TransactedById { get; set; }
 
-		public AppUser? TransactedBy { get; set; }
+		public DbAppUser? TransactedBy { get; set; }
 
 		public DbBillingDetails BillingDetails { get; set; }
 
@@ -465,25 +518,25 @@ namespace BoardMan.Web.Data
 		public string UserEmail { get; set; }
 				
 		[MaxLength(100)]
-		public string NameAsOnCard { get; set; }
+		public string? NameAsOnCard { get; set; }
 				
 		[MaxLength(200)]
-		public string AddressLine1 { get; set; }
+		public string? AddressLine1 { get; set; }
 
 		[MaxLength(200)]
 		public string? AddressLine2 { get; set; }
 				
 		[MaxLength(50)]
-		public string City { get; set; }
+		public string? City { get; set; }
 				
 		[MaxLength(50)]
-		public string State { get; set; }
+		public string? State { get; set; }
 				
 		[MaxLength(20)]
-		public string ZipCode { get; set; }
+		public string? ZipCode { get; set; }
 				
 		[MaxLength(3)]
-		public string Country { get; set; }
+		public string? Country { get; set; }
 
 		[ForeignKey("PaymentTransaction")]
 		public Guid PaymentTransactionId { get; set; }

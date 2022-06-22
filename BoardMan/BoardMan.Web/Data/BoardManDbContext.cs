@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using BoardMan.Web.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -6,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BoardMan.Web.Data;
 
-public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
+public class BoardManDbContext : IdentityDbContext<DbAppUser, DbAppRole, Guid>
 {
     public BoardManDbContext()
 	{
@@ -18,6 +19,8 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
     {
         TrackTimeStamps();
     }
+
+    public Guid? LoggedInUserId { get; set; }
 
     public virtual DbSet<DbWorkspace> Workspaces { get; set; } = null!;
 
@@ -55,20 +58,18 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
 
     public virtual DbSet<DbBillingDetails> BillingDetails { get; set; } = null!;
 
-    public virtual DbSet<DbRole> BoardRoles { get; set; } = null!;
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
         // Customize the ASP.NET Identity model and override the defaults if needed.
         // For example, you can rename the ASP.NET Identity table names and more.
         // Add your customizations after calling base.OnModelCreating(builder);
-        builder.Entity<AppUser>(b =>
+        builder.Entity<DbAppUser>(b =>
         {
             b.Property(u => u.Id).HasDefaultValueSql("newsequentialid()");
         });
 
-        builder.Entity<Role>(b =>
+        builder.Entity<DbAppRole>(b =>
         {
             b.Property(u => u.Id).HasDefaultValueSql("newsequentialid()");
         });
@@ -85,8 +86,21 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
         }
 
         builder.Entity<DbPlanDiscount>().HasIndex(pd => new { pd.Code, pd.PlanId }).IsUnique();
-        builder.Entity<DbBoardMember>().HasIndex(pd => new { pd.MemberId, pd.RoleId }).IsUnique();
-        builder.Entity<DbEmailInvite>().HasIndex(pd => new { pd.EmailAddress, pd.RoleId }).IsUnique();
+        builder.Entity<DbWorkspaceMember>()
+                .HasIndex(x => new { x.WorkspaceId, x.MemberId })
+                .HasDatabaseName("UK_WorkspaceMember_WorkspaceId_MemberId_DeletedAt")
+                .IsUnique()
+                .HasFilter("[DeletedAt] IS NULL");
+
+        builder.Entity<DbBoardMember>().HasIndex(x => new { x.BoardId, x.MemberId })
+                .HasDatabaseName("UK_BoardMember_BoardId_MemberId_DeletedAt")
+                .IsUnique()
+                .HasFilter("[DeletedAt] IS NULL");
+
+        builder.Entity<DbEmailInvite>().HasIndex(pd => new { pd.EntityUrn, pd.EmailAddress })
+                .HasDatabaseName("UK_EmailInvite_EntityUrn_EmailAddress_DeletedAt")
+                .IsUnique()
+                .HasFilter("[DeletedAt] IS NULL");
 
         builder.Entity<DbPlan>().Property(p => p.Cost).HasPrecision(19, 4);
         builder.Entity<DbPlanDiscount>().Property(p => p.DiscountPercent).HasPrecision(5, 2);
@@ -102,22 +116,35 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
             relationship.DeleteBehavior = DeleteBehavior.NoAction;
         }
 
-        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Monthly)", Cost = 99, Currency = "USD", Description = "This is the standard monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
-        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Annual)", Cost = 948, Currency = "USD", Description = "This is the standard annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
-        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Monthly)", Cost = 299, Currency = "USD", Description = "This is the premium monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
-        builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Annual)", Cost = 3000, Currency = "USD", Description = "This is the premium annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
+		//builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Free", Cost = 0, Currency = "USD", Description = "This is the free plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1), BoardLimit = 1 });
+		//builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Monthly)", Cost = 99, Currency = "USD", Description = "This is the standard monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1), BoardLimit = 5 });
+		//builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Standard (Annual)", Cost = 948, Currency = "USD", Description = "This is the standard annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1), BoardLimit = 5 });
+		//builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Monthly)", Cost = 299, Currency = "USD", Description = "This is the premium monthly plan", PlanType = PlanType.Monthly, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
+		//builder.Entity<DbPlan>().HasData(new DbPlan { Id = Guid.NewGuid(), Name = "Premium (Annual)", Cost = 3000, Currency = "USD", Description = "This is the premium annual plan", PlanType = PlanType.Annual, CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddYears(1) });
 
-        builder.Entity<DbRole>().HasData(new DbRole { Id = Guid.NewGuid(), Name = "Read-Only", Description = "This is a readonly role meant to give view access to users", CreatedAt = DateTime.UtcNow });
-        builder.Entity<DbRole>().HasData(new DbRole { Id = Guid.NewGuid(), Name = "Read-Write", Description = "This is a readwrite role meant to give access to read and write different entities", CreatedAt = DateTime.UtcNow });
-        builder.Entity<DbRole>().HasData(new DbRole { Id = Guid.NewGuid(), Name = "Admin", Description = "This is an admin role meant for overall access", CreatedAt = DateTime.UtcNow });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.ApplicationSuperAdmin, NormalizedName = RoleNames.ApplicationSuperAdmin });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceSuperAdmin, NormalizedName = RoleNames.WorkspaceSuperAdmin });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceAdmin, NormalizedName = RoleNames.WorkspaceAdmin });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceContributor, NormalizedName = RoleNames.WorkspaceContributor });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.WorkspaceReader, NormalizedName = RoleNames.WorkspaceReader });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardSuperAdmin, NormalizedName = RoleNames.BoardSuperAdmin });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardAdmin, NormalizedName = RoleNames.BoardAdmin });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardContributor, NormalizedName = RoleNames.BoardContributor });
+		//builder.Entity<AppRole>().HasData(new AppRole { Id = Guid.NewGuid(), Name = RoleNames.BoardReader, NormalizedName = RoleNames.BoardReader });
+
+		//var userId = Guid.NewGuid();
+        //builder.Entity<AppUser>().HasData(new AppUser { Id = userId, FirstName = "Admin", LastName = "User", UserName = "admin@boardman.com", NormalizedUserName = "admin@boardman.com", Email = "admin@boardman.com", NormalizedEmail = "admin@boardman.com", EmailConfirmed = true, PasswordHash = "", SecurityStamp = Guid.NewGuid().ToString() });
+        //builder.Entity<IdentityUserRole<Guid>>().HasData(new IdentityUserRole<Guid> { UserId = userId, RoleId = Guid.Parse("49e3045d-b948-4d0a-b596-455673bd989c") });
 
         builder.Entity<DbEmailInvite>().Navigation(e => e.AddedBy).AutoInclude();
 
         builder.Entity<DbBoardMember>().Navigation(e => e.AddedBy).AutoInclude();
         builder.Entity<DbBoardMember>().Navigation(e => e.Member).AutoInclude();
+        builder.Entity<DbBoardMember>().Navigation(e => e.Role).AutoInclude();
 
         builder.Entity<DbWorkspaceMember>().Navigation(e => e.AddedBy).AutoInclude();
-        builder.Entity<DbWorkspaceMember>().Navigation(e => e.Member).AutoInclude();        
+        builder.Entity<DbWorkspaceMember>().Navigation(e => e.Member).AutoInclude();
+        builder.Entity<DbWorkspaceMember>().Navigation(e => e.Role).AutoInclude();
     }
 
     private void TrackTimeStamps()
@@ -143,11 +170,14 @@ public class BoardManDbContext : IdentityDbContext<AppUser, Role, Guid>
     }
 }
 
-public class AppUser : IdentityUser<Guid>
+public class DbAppUser : IdentityUser<Guid>
 {
 	public string FirstName { get; set; } = null!;
 
     public string LastName { get; set; } = null!;
 }
 
-public class Role : IdentityRole<Guid> { }
+public class DbAppRole : IdentityRole<Guid> 
+{
+	public RoleType RoleType { get; set; }
+}
